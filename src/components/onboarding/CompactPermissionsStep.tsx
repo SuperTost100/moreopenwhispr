@@ -225,6 +225,15 @@ export default function CompactPermissionsStep({
           )}
         </div>
 
+        {platform === "darwin" &&
+          import.meta.env.DEV &&
+          (!permissions.accessibilityPermissionGranted ||
+            (showScreenContext && screenContext && !screenContext.granted)) && (
+            <p className="mt-2 text-left text-xs leading-4 text-[var(--onboarding-text-secondary)]">
+              {t("onboarding.permissions.electronDevHint")}
+            </p>
+          )}
+
         {platform === "darwin" && screenContext?.enabled && screenContext.needsRelaunch && (
           <p className="mt-2 text-left text-xs leading-4 text-warning/80">
             {t("dictationAgent.screenContext.relaunchHint")}

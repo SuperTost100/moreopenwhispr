@@ -169,6 +169,43 @@ export function resolveLifecycleInputKind({ voiceAgentRequested, translationRequ
   return "dictation";
 }
 
+const DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL = "gemini-3.5-transcribe";
+
+function isAntigravityTranscribeModel(model) {
+  const id = String(model || "").trim();
+  return (
+    id === "gemini-3.5-transcribe" ||
+    id === "gemini-3.5-transcribe-preview" ||
+    id === "gemini-3.5-transcribe-live" ||
+    id.startsWith("gemini-3.5-transcribe")
+  );
+}
+
+function resolveAntigravityTranscriptionMode(settings) {
+  const mode = settings?.antigravityTranscriptionMode;
+  if (mode === "verbatim" || mode === "VERBATIM") return "VERBATIM";
+  return "SMART";
+}
+
+function resolveAntigravityDictationMode(settings) {
+  return settings?.antigravityDictationMode === "polished" ? "polished" : "fast";
+}
+
+/** Skip post-cleanup when Antigravity SMART transcribe already polishes the text. */
+export function shouldSkipAntigravityDictationCleanup(settings) {
+  if (resolveAntigravityDictationMode(settings) === "polished") {
+    return false;
+  }
+  if (settings?.cloudTranscriptionProvider !== "antigravity") {
+    return false;
+  }
+  const model = settings?.cloudTranscriptionModel || DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL;
+  if (!isAntigravityTranscribeModel(model)) {
+    return false;
+  }
+  return resolveAntigravityTranscriptionMode(settings) === "SMART";
+}
+
 export function resolveDictationRouteKind({
   cleanupReachable,
   agentReachable,

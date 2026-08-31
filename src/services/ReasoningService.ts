@@ -13,6 +13,7 @@ import { API_ENDPOINTS, TOKEN_LIMITS, buildApiUrl, ensureV1Suffix } from "../con
 import logger from "../utils/logger";
 import { getSettings, isCloudCleanupMode } from "../stores/settingsStore";
 import { wrapCleanupTranscript } from "../config/prompts";
+import { runAntigravityChatStream, type AntigravityToolSchema } from "./ai/antigravityChat";
 import { stripThinkingTags } from "../helpers/stripThinking.js";
 import { getLlmRequestTimeoutSeconds } from "../helpers/llmRequestTimeout.js";
 import { streamText, stepCountIs } from "ai";
@@ -733,7 +734,11 @@ class ReasoningService extends BaseReasoningService {
     messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }>,
     model: string,
     provider: string,
-    config: ReasoningConfig & { systemPrompt: string },
+    config: ReasoningConfig & {
+      systemPrompt: string;
+      executeToolCall?: (name: string, argsJson: string) => Promise<ToolExecutionResult>;
+      antigravityToolSchemas?: AntigravityToolSchema[];
+    },
     tools?: Record<string, import("ai").Tool>
   ): AsyncGenerator<AgentStreamChunk, void, unknown> {
     ({ model, provider, config } = this.resolveManagedScope(
@@ -764,6 +769,42 @@ class ReasoningService extends BaseReasoningService {
     const isEnterprise = route.kind === "enterprise";
     const isLocalProvider = route.kind === "local";
     const isLanChat = route.kind === "self-hosted";
+
+    if (provider === "antigravity") {
+      try {
+        const toolSchemas =
+          config.antigravityToolSchemas ??
+          (tools
+            ? Object.entries(tools).map(([name, tool]) => ({
+                name,
+                description: tool.description ?? "",
+                parameters:
+                  (tool as { inputSchema?: { jsonSchema?: Record<string, unknown> } }).inputSchema
+                    ?.jsonSchema ?? { type: "object" },
+              }))
+            : []);
+        const stream = runAntigravityChatStream({
+          systemPrompt: config.systemPrompt,
+          messages,
+          tools: toolSchemas,
+          model,
+          executeToolCall: config.executeToolCall,
+          abortSignal: abortController.signal,
+          screenContext: config.screenContext,
+        });
+        for await (const chunk of stream) {
+          yield chunk;
+        }
+      } catch (error) {
+        if (abortController.signal.aborted && (error as Error).name === "AbortError") return;
+        throw error;
+      } finally {
+        if (this.streamAbortController === abortController) {
+          this.streamAbortController = null;
+        }
+      }
+      return;
+    }
 
     if ((isLocalProvider || isLanChat) && !tools) {
       // Attachments are never routed to local/LAN providers, so content is string-only here.
@@ -1233,6 +1274,12 @@ class ReasoningService extends BaseReasoningService {
         if (hasVertexCreds) return true;
       }
 
+      if (settings.cleanupProvider === "antigravity") {
+        const agy = await window.electronAPI?.checkAntigravityAvailable?.();
+        logger.logReasoning("API_KEY_CHECK", { antigravity: true, available: !!agy?.available });
+        if (agy?.available) return true;
+      }
+
       const openaiKey = await window.electronAPI?.getOpenAIKey?.();
       const anthropicKey = await window.electronAPI?.getAnthropicKey?.();
       const geminiKey = await window.electronAPI?.getGeminiKey?.();
@@ -1241,6 +1288,7 @@ class ReasoningService extends BaseReasoningService {
       const tinfoilKey = await window.electronAPI?.getTinfoilKey?.();
       const cortiKey = await window.electronAPI?.getCortiKey?.();
       const localAvailable = await window.electronAPI?.checkLocalReasoningAvailable?.();
+      const antigravityAvailable = await window.electronAPI?.checkAntigravityAvailable?.();
 
       logger.logReasoning("API_KEY_CHECK", {
         hasOpenAI: !!openaiKey,
@@ -1251,6 +1299,7 @@ class ReasoningService extends BaseReasoningService {
         hasTinfoil: !!tinfoilKey,
         hasCorti: !!cortiKey,
         hasLocal: !!localAvailable,
+        hasAntigravity: !!antigravityAvailable?.available,
       });
 
       return !!(
@@ -1261,7 +1310,8 @@ class ReasoningService extends BaseReasoningService {
         openrouterKey ||
         tinfoilKey ||
         cortiKey ||
-        localAvailable
+        localAvailable ||
+        antigravityAvailable?.available
       );
     } catch (error) {
       logger.logReasoning("API_KEY_CHECK_ERROR", {

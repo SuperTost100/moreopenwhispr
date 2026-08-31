@@ -357,6 +357,17 @@
             "title": "Auto-hébergé",
             "description": "Connectez votre propre modèle hébergé."
           }
+        },
+        "antigravity": {
+          "title": "Antigravity",
+          "description": "Use your Google Antigravity subscription through the local agy CLI. No extra API keys.",
+          "continue": "Use Antigravity",
+          "features": {
+            "subscription": "Uses the Antigravity plan you already have",
+            "noKey": "No Gemini or OpenAI API key",
+            "localCli": "Talks to agy on this Mac",
+            "features": "Dictation, cleanup, and assistant on the same subscription"
+          }
         }
       },
       "provider": {
@@ -399,8 +410,10 @@
           "modelNotFound": "Le modèle sélectionné n’est pas disponible auprès de ce fournisseur.",
           "providerStatus": "Le fournisseur a renvoyé le statut {{status}}.",
           "timeout": "Le test de connexion a expiré.",
-          "network": "Le fournisseur est injoignable."
-        }
+          "network": "Le fournisseur est injoignable.",
+          "agyMissing": "Antigravity CLI (agy) was not found. Install it and sign in with agy."
+        },
+        "antigravityNote": "Uses the local Antigravity CLI (agy). No API key — sign in with agy if a test fails."
       },
       "local": {
         "title": "Configurer les modèles locaux",
@@ -455,7 +468,8 @@
       "systemAudioDescription": "Permet à l'enregistreur de réunion d'entendre vos interlocuteurs : réunions, cours, podcasts. Activable plus tard dans les Réglages.",
       "optional": "Facultatif",
       "recommended": "Recommandé",
-      "accessibilityTroubleshooting": "Dans Réglages Système → Accessibilité, désactivez le bouton d'OpenWhispr puis réactivez-le. Si OpenWhispr n'apparaît pas du tout dans la liste, cliquez sur + et ajoutez-le depuis le dossier Applications. Toujours bloqué ? Écrivez à support@openwhispr.com."
+      "accessibilityTroubleshooting": "Dans Réglages Système → Accessibilité, désactivez le bouton d'OpenWhispr puis réactivez-le. Si OpenWhispr n'apparaît pas du tout dans la liste, cliquez sur + et ajoutez-le depuis le dossier Applications. Toujours bloqué ? Écrivez à support@openwhispr.com.",
+      "electronDevHint": "This is a development build. Click Enable: Finder will highlight Electron.app. In System Settings click +, choose that highlighted app, and turn the toggle on. After Screen Recording, quit and reopen Electron."
     },
     "transcription": {
       "title": "Configuration de la transcription",
@@ -796,6 +810,11 @@
     },
     "corti": {
       "euOnly": "Les modèles Corti ne sont disponibles que dans la région UE."
+    },
+    "antigravity": {
+      "checking": "Checking Antigravity CLI…",
+      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
+      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
     }
   },
   "transcription": {
@@ -829,6 +848,9 @@
     "tinfoil": {
       "transportNote": "Tinfoil diffuse avec Voxtral Mini 4B et traite les lots avec Voxtral Small 24B.",
       "docsLink": "Voir la documentation"
+    },
+    "antigravity": {
+      "transportNote": "Uses your local Antigravity CLI (agy) and Google subscription. No API key. Run agy once to sign in if prompts fail."
     }
   },
   "hooks": {
@@ -839,7 +861,8 @@
         "agentUnavailable": "Agent indisponible",
         "screenContextSkipped": "Contexte d'écran ignoré",
         "dailyLimitReached": "Limite quotidienne atteinte",
-        "providerRateLimited": "Limite de débit du fournisseur"
+        "providerRateLimited": "Limite de débit du fournisseur",
+        "antigravityQuotaExceeded": "Quota Antigravity épuisé"
       },
       "fallback": {
         "title": "Mode de secours",
@@ -870,6 +893,7 @@
         "offline": "Vous êtes hors ligne. La transcription cloud nécessite une connexion Internet.",
         "dailyLimitReached": "Vous avez atteint votre limite de transcription du jour. Réessayez demain ou améliorez votre forfait.",
         "providerRateLimited": "Votre fournisseur de transcription a limité la requête. Patientez un instant et réessayez.",
+        "antigravityQuotaExceeded": "Le quota de votre abonnement Antigravity est épuisé. OpenWhispr réessaiera via agy si possible — sinon, patientez quelques minutes.",
         "chunkLoss": "Un problème réseau a fait perdre une trop grande partie de l'enregistrement. Retranscrivez-le depuis l'historique.",
         "agentReasoningFailed": "Votre assistant vocal n'a pas pu traiter la commande ; la transcription brute a été insérée à la place.",
         "screenContextSkipped": "La capture n'a pas pu être envoyée ; votre commande a été exécutée sans contexte d'écran.",
@@ -2581,7 +2605,9 @@
         "gemini_3_5_transcribe": "Reconnaissance vocale Gemini de Google",
         "corti_transcribe": "Transcription médicale de qualité clinique",
         "xai_grok_stt": "Reconnaissance vocale haute précision par xAI",
-        "tinfoil_voxtral": "Transcription vérifiablement privée"
+        "tinfoil_voxtral": "Transcription vérifiablement privée",
+        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
+        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)"
       },
       "cloud": {
         "openai_gpt_5_2": "Modèle de raisonnement performant",
@@ -2624,7 +2650,14 @@
         "corti_corti_s1_instant": "Modèle de santé rapide, sans trace de raisonnement",
         "corti_corti_s1": "Modèle clinique le plus performant avec raisonnement",
         "corti_corti_s1_mini_instant": "Modèle de santé compact, le plus rapide et le moins cher",
-        "corti_corti_s1_mini": "Modèle clinique compact avec raisonnement à moitié prix"
+        "corti_corti_s1_mini": "Modèle clinique compact avec raisonnement à moitié prix",
+        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
+        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
+        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
+        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
+        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
+        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
+        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "Le modèle Claude le plus performant. Idéal pour les tâches les plus difficiles du Mode Agent.",

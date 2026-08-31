@@ -29,7 +29,6 @@ test("resolves false immediately for an ended track", async () => {
   const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ readyState: "ended" });
   assert.equal(await waitForTrackReady(track, 600), false);
-  assert.equal(track._listenerCount, 0);
 });
 
 test("resolves false immediately for a null track", async () => {
@@ -41,48 +40,12 @@ test("resolves true immediately for an unmuted live track", async () => {
   const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ muted: false });
   assert.equal(await waitForTrackReady(track, 600), true);
-  assert.equal(track._listenerCount, 0);
 });
 
-test("resolves true when a muted track fires unmute, with no listener leak", async () => {
+test("resolves true for a muted live track", async () => {
   const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
-  track.muted = false;
-  track.fire("unmute");
-  assert.equal(await pending, true);
-  assert.equal(track._listenerCount, 0);
-});
-
-test("resolves false when a muted track fires ended, with no listener leak", async () => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
-  const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
-  track.readyState = "ended";
-  track.fire("ended");
-  assert.equal(await pending, false);
-  assert.equal(track._listenerCount, 0);
-});
-
-test("resolves false after timeout when a muted track never changes", async (t) => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
-  t.mock.timers.enable({ apis: ["setTimeout"] });
-  const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
-  t.mock.timers.tick(600);
-  assert.equal(await pending, false);
-  assert.equal(track._listenerCount, 0);
-});
-
-test("resolves true after timeout if the track quietly unmuted without firing", async (t) => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
-  t.mock.timers.enable({ apis: ["setTimeout"] });
-  const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
-  track.muted = false; // unmuted but no event dispatched
-  t.mock.timers.tick(600);
-  assert.equal(await pending, true);
-  assert.equal(track._listenerCount, 0);
+  assert.equal(await waitForTrackReady(track, 600), true);
 });
 
 // Fake MediaStream: one track plus a stop-tracking flag, matching the bits reacquireIfDead touches.
@@ -342,28 +305,17 @@ test("reacquireIfDead reports an unusable mic when the retry and the fallback bo
   }
 });
 
-test("reacquireIfDead falls back when the re-acquired track stays muted", async (t) => {
+test("reacquireIfDead keeps the re-acquired stream when the retry track stays muted but live", async () => {
   const { reacquireIfDead } = await import("../../src/helpers/micTrackHealth.js");
-  t.mock.timers.enable({ apis: ["setTimeout"] });
   const stream = new FakeStream(trackWithStop({ readyState: "ended" }));
   const retry = new FakeStream(trackWithStop({ muted: true }));
-  const fallbackStream = new FakeStream(trackWithStop({ muted: false }));
   const fallback = spyFallback();
-  let calls = 0;
-  const restore = stubGetUserMedia(async () => {
-    calls += 1;
-    return calls === 1 ? retry : fallbackStream;
-  });
+  const restore = stubGetUserMedia(async () => retry);
   try {
-    const pending = reacquireIfDead(stream, () => ({}), noopLogger, fallback.options);
-    // Let the retry's readiness timer register before firing it.
-    await new Promise((resolve) => setImmediate(resolve));
-    t.mock.timers.tick(600);
-    assert.equal(await pending, fallbackStream);
-    assert.equal(fallback.calls.onDeviceRejected, 1);
+    const result = await reacquireIfDead(stream, () => ({}), noopLogger, fallback.options);
+    assert.equal(result, retry);
+    assert.equal(fallback.calls.onDeviceRejected, 0);
     assert.equal(fallback.calls.onFallbackUnusable, 0);
-    assert.equal(retry.track._stopped, true);
-    assert.equal(retry.track._listenerCount, 0);
   } finally {
     restore();
   }

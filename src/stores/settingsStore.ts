@@ -692,6 +692,11 @@ export interface SettingsState
   uploadCloudTranscriptionBaseUrl: string;
   uploadCloudTranscriptionMode: string;
 
+  /** Antigravity fork: fast skips post-cleanup when using SMART transcribe. */
+  antigravityDictationMode: "fast" | "polished";
+  /** Antigravity fork: smart transcribe includes built-in polish. */
+  antigravityTranscriptionMode: "smart" | "verbatim";
+
   /** Last model used per scope+provider (`"<context>:<providerId>"`), so switching providers restores it. */
   transcriptionModelByProvider: Record<string, string>;
 
@@ -834,6 +839,8 @@ export interface SettingsState
   setChineseScriptPreference: (value: ChineseScriptPreference) => void;
   setCloudTranscriptionProvider: (value: string) => void;
   setCloudTranscriptionModel: (value: string) => void;
+  setAntigravityDictationMode: (value: "fast" | "polished") => void;
+  setAntigravityTranscriptionMode: (value: "smart" | "verbatim") => void;
   setCloudTranscriptionBaseUrl: (value: string) => void;
   setCloudTranscriptionMode: (value: string) => void;
   switchCloudTranscriptionProvider: (
@@ -1236,8 +1243,16 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   chineseScriptPreference: normalizeChineseScriptPreference(
     readString("chineseScriptPreference", "as-transcribed")
   ),
-  cloudTranscriptionProvider: readString("cloudTranscriptionProvider", "openai"),
-  cloudTranscriptionModel: readString("cloudTranscriptionModel", "gpt-4o-mini-transcribe"),
+  cloudTranscriptionProvider: readString("cloudTranscriptionProvider", "antigravity"),
+  cloudTranscriptionModel: readString("cloudTranscriptionModel", "gemini-3.5-transcribe"),
+  antigravityDictationMode: (() => {
+    const v = readString("antigravityDictationMode", "fast");
+    return v === "polished" ? "polished" : "fast";
+  })(),
+  antigravityTranscriptionMode: (() => {
+    const v = readString("antigravityTranscriptionMode", "smart");
+    return v === "verbatim" ? "verbatim" : "smart";
+  })(),
   cloudTranscriptionBaseUrl: readString(
     "cloudTranscriptionBaseUrl",
     API_ENDPOINTS.TRANSCRIPTION_BASE
@@ -1246,8 +1261,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   reasoningModelByProvider: readModelMemory("reasoningModelByProvider"),
   // Secrets aren't hydrated yet at construction; the BYOK default is set
   // post-hydration in initializeSettings.
-  cloudTranscriptionMode: readString("cloudTranscriptionMode", "openwhispr"),
-  cleanupCloudMode: readString("cleanupCloudMode", "openwhispr"),
+  cloudTranscriptionMode: readString("cloudTranscriptionMode", "providers"),
+  cleanupCloudMode: readString("cleanupCloudMode", "providers"),
   cleanupCloudBaseUrl: readString("cleanupCloudBaseUrl", API_ENDPOINTS.OPENAI_BASE),
   cortiEnvironment: readString("cortiEnvironment", "us"),
   cortiTenant: readString("cortiTenant", "base"),
@@ -1265,8 +1280,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   autoGenerateNoteTitle: readBoolean("autoGenerateNoteTitle", true),
   useCleanupModel: readBoolean("useCleanupModel", true),
   useDictationAgent: readBoolean("useDictationAgent", true),
-  cleanupModel: readString("cleanupModel", ""),
-  cleanupProvider: readString("cleanupProvider", "openai"),
+  cleanupModel: readString("cleanupModel", "gemini-3.5-flash-low"),
+  cleanupProvider: readString("cleanupProvider", "antigravity"),
 
   // Secrets hydrate from main process in initializeSettings, never from localStorage.
   openaiApiKey: "",
@@ -1416,9 +1431,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   isSignedIn: readBoolean("isSignedIn", false),
 
   transcriptionMode: (() => {
-    const v = readString("transcriptionMode", "openwhispr");
+    const v = readString("transcriptionMode", "providers");
     if (v === "openwhispr" || v === "providers" || v === "local" || v === "self-hosted") return v;
-    return "openwhispr" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
   remoteTranscriptionType: (() => {
     const v = readString("remoteTranscriptionType", "lan");
@@ -1427,7 +1442,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   remoteTranscriptionUrl: readString("remoteTranscriptionUrl", ""),
   remoteTranscriptionModel: readString("remoteTranscriptionModel", ""),
   cleanupMode: (() => {
-    const v = readString("cleanupMode", "openwhispr");
+    const v = readString("cleanupMode", "providers");
     if (
       v === "openwhispr" ||
       v === "providers" ||
@@ -1436,7 +1451,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       v === "enterprise"
     )
       return v;
-    return "openwhispr" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
   cleanupRemoteUrl: readString("cleanupRemoteUrl", ""),
 
@@ -1604,11 +1619,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ translationTargets: normalized });
   },
 
-  chatAgentModel: readString("chatAgentModel", "openai/gpt-oss-120b"),
-  chatAgentProvider: readString("chatAgentProvider", "groq"),
-  chatAgentCloudMode: readString("chatAgentCloudMode", "openwhispr"),
+  chatAgentModel: readString("chatAgentModel", "gemini-3.5-flash-medium"),
+  chatAgentProvider: readString("chatAgentProvider", "antigravity"),
+  chatAgentCloudMode: readString("chatAgentCloudMode", "byok"),
   chatAgentMode: (() => {
-    const v = readString("chatAgentMode", "openwhispr");
+    const v = readString("chatAgentMode", "providers");
     if (
       v === "openwhispr" ||
       v === "providers" ||
@@ -1617,14 +1632,14 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       v === "enterprise"
     )
       return v;
-    return "openwhispr" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
   chatAgentRemoteUrl: readString("chatAgentRemoteUrl", ""),
   chatAgentCloudBaseUrl: readString("chatAgentCloudBaseUrl", ""),
   chatAgentCustomApiKey: readString("chatAgentCustomApiKey", ""),
 
   dictationAgentMode: (() => {
-    const v = readString("dictationAgentMode", "openwhispr");
+    const v = readString("dictationAgentMode", "providers");
     if (
       v === "openwhispr" ||
       v === "providers" ||
@@ -1633,10 +1648,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       v === "enterprise"
     )
       return v;
-    return "openwhispr" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
-  dictationAgentProvider: readString("dictationAgentProvider", ""),
-  dictationAgentModel: readString("dictationAgentModel", ""),
+  dictationAgentProvider: readString("dictationAgentProvider", "antigravity"),
+  dictationAgentModel: readString("dictationAgentModel", "gemini-3.5-flash-medium"),
   dictationAgentCloudMode: readString("dictationAgentCloudMode", "openwhispr"),
   dictationAgentCloudBaseUrl: readString("dictationAgentCloudBaseUrl", ""),
   dictationAgentRemoteUrl: readString("dictationAgentRemoteUrl", ""),
@@ -1645,12 +1660,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   voiceAgentScreenContext: readBoolean("voiceAgentScreenContext", false),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
   dictationAgentVisionMode: (() => {
-    const v = readString("dictationAgentVisionMode", "openwhispr");
+    const v = readString("dictationAgentVisionMode", "providers");
     if (v === "openwhispr" || v === "providers") return v as InferenceMode;
-    return "openwhispr" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
-  dictationAgentVisionProvider: readString("dictationAgentVisionProvider", ""),
-  dictationAgentVisionModel: readString("dictationAgentVisionModel", ""),
+  dictationAgentVisionProvider: readString("dictationAgentVisionProvider", "antigravity"),
+  dictationAgentVisionModel: readString("dictationAgentVisionModel", "gemini-3.5-flash-high"),
   dictationAgentVisionCloudMode: readString("dictationAgentVisionCloudMode", "openwhispr"),
   dictationAgentVisionCloudBaseUrl: readString("dictationAgentVisionCloudBaseUrl", ""),
   dictationAgentVisionCustomApiKey: readString("dictationAgentVisionCustomApiKey", ""),
@@ -1723,6 +1738,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     createStringSetter("chineseScriptPreference")(normalizeChineseScriptPreference(value)),
   setCloudTranscriptionProvider: createStringSetter("cloudTranscriptionProvider"),
   setCloudTranscriptionModel: createStringSetter("cloudTranscriptionModel"),
+  setAntigravityDictationMode: (value: "fast" | "polished") =>
+    createStringSetter("antigravityDictationMode")(value === "polished" ? "polished" : "fast"),
+  setAntigravityTranscriptionMode: (value: "smart" | "verbatim") =>
+    createStringSetter("antigravityTranscriptionMode")(value === "verbatim" ? "verbatim" : "smart"),
   setCloudTranscriptionBaseUrl: createStringSetter("cloudTranscriptionBaseUrl"),
 
   // Every provider shares one model slot per scope, so a plain provider write

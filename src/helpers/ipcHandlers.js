@@ -32,9 +32,6 @@ const { resolveSystemDefaultMicrophone } = require("./systemDefaultMicrophone");
 // packaged, and the route resolver only needs {id, baseUrl} per provider.
 const transcriptionProviderBaseUrls = () =>
   require("../models/modelRegistryData.json").transcriptionProviders;
-// ipcMain.handle keeps only the message when a promise rejects, dropping custom
-// props — proxy handlers return {error, code, messageKey} so the renderer can
-// rebuild the error.
 const serializeIpcError =
   (fn) =>
   async (...args) => {
@@ -44,6 +41,24 @@ const serializeIpcError =
       return { error: error.message, code: error.code, messageKey: error.messageKey };
     }
   };
+
+// Dev builds are Electron.app, not OpenWhispr.app. Reveal the bundle so the
+// user can pick it with + in Privacy & Security instead of hunting Applications.
+function hostAppBundlePath() {
+  const exe = app.getPath("exe");
+  const bundle = path.resolve(exe, "..", "..", "..");
+  return bundle.endsWith(".app") ? bundle : exe;
+}
+
+function revealHostAppInFinder() {
+  if (process.platform !== "darwin") return;
+  try {
+    shell.showItemInFolder(hostAppBundlePath());
+  } catch (error) {
+    debugLogger.debug("Failed to reveal host app", { error: error.message });
+  }
+}
+
 // Which diarization dialect a resolved endpoint speaks, for Custom endpoints
 // that front a known provider. Null when the host offers no known dialect.
 const diarizationHost = (endpoint) => {
@@ -1243,6 +1258,18 @@ class IPCHandlers {
     });
 
     ipcMain.handle("test-provider-connection", async (_event, config) => {
+      if (config?.provider === "antigravity") {
+        try {
+          require("./antigravityCli").resolveAgyBinary();
+          return { success: true };
+        } catch {
+          return {
+            success: false,
+            errorCode: "agyMissing",
+            error: "Antigravity CLI (agy) was not found.",
+          };
+        }
+      }
       if (config?.provider === "corti" && config?.scope === "transcription") {
         try {
           const clientId = String(config.clientId || "").trim();
@@ -4257,6 +4284,86 @@ class IPCHandlers {
       })
     );
 
+    ipcMain.handle(
+      "proxy-antigravity-transcription",
+      serializeIpcError(async (event, { audioBuffer, model, language, keyterms, transcriptionMode }) => {
+        const { transcribeWithAntigravity } = require("./antigravityTranscription");
+        let ffmpegPath;
+        try {
+          ffmpegPath = require("ffmpeg-static");
+        } catch {
+          ffmpegPath = undefined;
+        }
+        return await transcribeWithAntigravity({
+          audioBuffer: Buffer.from(audioBuffer),
+          model,
+          contentType: "audio/webm",
+          language,
+          keyterms,
+          transcriptionMode,
+          ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+        });
+      })
+    );
+
+    ipcMain.handle(
+      "process-antigravity-reasoning",
+      async (event, text, modelId, _agentName, config) => {
+        try {
+          const { reasonWithAntigravity } = require("./antigravityReasoning");
+          const result = await reasonWithAntigravity({
+            text,
+            model: modelId,
+            systemPrompt: config?.systemPrompt || "",
+            screenContext: config?.screenContext,
+          });
+          return { success: true, text: result };
+        } catch (error) {
+          return { success: false, error: error.message, code: error.code };
+        }
+      }
+    );
+
+    ipcMain.handle("process-antigravity-tool-turn", async (event, payload) => {
+      const fs = require("fs");
+      const os = require("os");
+      const path = require("path");
+      const { runToolLoopTurn } = require("./antigravityReasoning");
+      const { ensureWritableDir } = require("./antigravityCli");
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-antigravity-chat-"));
+      ensureWritableDir(tmpDir);
+      try {
+        const { result, conversationId } = await runToolLoopTurn({
+          systemPrompt: payload?.systemPrompt || "",
+          messages: payload?.messages || [],
+          tools: payload?.tools || [],
+          model: payload?.model,
+          conversationId: payload?.conversationId,
+          timeoutMs: payload?.timeoutMs,
+          cwd: tmpDir,
+        });
+        return { success: true, result, conversationId };
+      } catch (error) {
+        return { success: false, error: error.message, code: error.code };
+      } finally {
+        try {
+          fs.rmSync(tmpDir, { recursive: true, force: true });
+        } catch {
+          // best-effort cleanup
+        }
+      }
+    });
+
+    ipcMain.handle("check-antigravity-available", async () => {
+      try {
+        const { resolveAgyBinary } = require("./antigravityCli");
+        resolveAgyBinary();
+        return { available: true };
+      } catch (error) {
+        return { available: false, error: error.message };
+      }
+    });
+
     ipcMain.handle("get-custom-transcription-key", async () => {
       return this.environmentManager.getCustomTranscriptionKey();
     });
@@ -5018,15 +5125,17 @@ class IPCHandlers {
 
     const SYSTEM_SETTINGS_URLS = {
       darwin: {
-        microphone: "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone",
+        microphone:
+          "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Microphone",
         sound: "x-apple.systempreferences:com.apple.preference.sound?input",
         accessibility:
-          "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+          "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
         systemAudio:
-          "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture",
+          "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture",
         screenRecording:
-          "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture",
-        calendars: "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars",
+          "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_ScreenCapture",
+        calendars:
+          "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Calendars",
         loginItems: "x-apple.systempreferences:com.apple.LoginItems-Settings.extension",
       },
       win32: {
@@ -5060,6 +5169,13 @@ class IPCHandlers {
 
       try {
         await shell.openExternal(url);
+        if (
+          settingType === "accessibility" ||
+          settingType === "screenRecording" ||
+          settingType === "systemAudio"
+        ) {
+          revealHostAppInFinder();
+        }
         return { success: true };
       } catch (error) {
         debugLogger.error(`Failed to open ${settingType} settings:`, error);
@@ -5727,6 +5843,11 @@ class IPCHandlers {
 
     ipcMain.on("cloud-transcribe-cancel", (event) => {
       this._cloudTranscriptionRequests.cancelSender(event.sender.id);
+      try {
+        require("./antigravityCli").killActiveAgyTurn();
+      } catch {
+        // best-effort
+      }
     });
 
     ipcMain.handle("cloud-health-check", async () => {
@@ -5925,6 +6046,30 @@ class IPCHandlers {
             apiKey: this.environmentManager.getGeminiKey(),
           });
           if (text) result = { text, source: "gemini", model: route.model };
+        } else if (route.transport === "proxied" && route.provider === "antigravity") {
+          if (route.sizeCapBytes && buffer.byteLength > route.sizeCapBytes) {
+            throw new Error(byokSizeCapError(route.sizeCapBytes));
+          }
+          const { transcribeWithAntigravity } = require("./antigravityTranscription");
+          const { resolveAntigravityTranscriptionMode } = require("./antigravityTranscriptionPolicy");
+          let ffmpegPath;
+          try {
+            ffmpegPath = require("ffmpeg-static");
+          } catch {
+            ffmpegPath = undefined;
+          }
+          const { text, model } = await transcribeWithAntigravity({
+            audioBuffer: buffer,
+            model: route.model,
+            contentType: "audio/webm",
+            language: route.language,
+            transcriptionMode: resolveAntigravityTranscriptionMode(settings || {}),
+            keyterms: Array.isArray(settings?.customDictionary)
+              ? settings.customDictionary
+              : undefined,
+            ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+          });
+          if (text) result = { text, source: "antigravity", model };
         } else {
           // mistral/xai have no OpenAI-compatible endpoint — main talks to them
           // directly; everything else consumes the route endpoint as-is.
@@ -9239,7 +9384,27 @@ class IPCHandlers {
             return { success: true, text };
           }
 
-          if (!apiKey && route.provider !== "custom") {
+          if (route.transport === "proxied" && route.provider === "antigravity") {
+            const ext = path.extname(realByok).toLowerCase().replace(".", "");
+            const { transcribeWithAntigravity } = require("./antigravityTranscription");
+            const { resolveAntigravityTranscriptionMode } = require("./antigravityTranscriptionPolicy");
+            let ffmpegPath;
+            try {
+              ffmpegPath = require("ffmpeg-static");
+            } catch {
+              ffmpegPath = undefined;
+            }
+            const { text } = await transcribeWithAntigravity({
+              audioBuffer: fs.readFileSync(realByok),
+              model: route.model,
+              contentType: AUDIO_MIME_TYPES[ext] || "audio/mpeg",
+              transcriptionMode: resolveAntigravityTranscriptionMode(opts || {}),
+              ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+            });
+            return { success: true, text };
+          }
+
+          if (!apiKey && route.provider !== "custom" && route.provider !== "antigravity") {
             throw new Error("No API key configured. Add your key in Settings.");
           }
 

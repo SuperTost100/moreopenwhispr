@@ -6,7 +6,6 @@ import {
   GalleryVerticalEnd,
   KeyRound,
   Laptop,
-  MonitorSmartphone,
   Server,
   ShieldCheck,
   WandSparkles,
@@ -23,8 +22,8 @@ import {
 } from "../../models/ModelRegistry";
 import type { OnboardingSetupMode } from "./flow";
 import { getOnboardingSetupAvailability, hasAvailableOnboardingSetup } from "./setupEligibility";
-import { BrandMark } from "./OnboardingShell";
 import openAIIcon from "../../assets/icons/providers/openai.svg";
+import geminiIcon from "../../assets/icons/providers/gemini.svg";
 import nvidiaIcon from "../../assets/icons/providers/nvidia.webp";
 // Only the Local card opens the warning dialog now — BYOK goes
 // straight through from the "Choose your API setup" modal.
@@ -32,10 +31,7 @@ import warningBackdrop from "../../assets/onboarding-setup-warning-hero.webp";
 import apiSetupHero from "../../assets/onboarding-api-setup-hero.webp";
 
 type SetupMode = Exclude<OnboardingSetupMode, null>;
-type AdvancedSetupMode = Exclude<SetupMode, "cloud">;
-// Local opens the warning dialog; BYOK is selected directly from the
-// more-options modal, so a "byok" pending state is unreachable.
-type WarningSetupMode = Exclude<AdvancedSetupMode, "byok">;
+type WarningSetupMode = "local";
 
 const REFERENCE_LOCAL_MODEL_ID = "nemotron-3.5-asr-streaming-0.6b";
 
@@ -47,7 +43,7 @@ interface SetupChoiceStepProps {
 }
 
 interface MoreSetupOption {
-  id: "byok" | "self-hosted";
+  id: "byok" | "self-hosted" | "cloud";
   icon: typeof KeyRound;
   title: string;
   description: string;
@@ -148,8 +144,9 @@ export default function SetupChoiceStep({
     local: localAllowed,
     byok: byokAllowed,
     selfHosted: selfHostedAllowed,
+    antigravity: antigravityAllowed,
   } = availability;
-  const moreOptionsAllowed = byokAllowed || selfHostedAllowed;
+  const moreOptionsAllowed = byokAllowed || selfHostedAllowed || cloudAllowed;
 
   const chooseCloud = () => {
     if (isSignedIn) onSelect("cloud");
@@ -177,6 +174,14 @@ export default function SetupChoiceStep({
       )
     : [];
   const moreSetupOptions: MoreSetupOption[] = [];
+  if (cloudAllowed) {
+    moreSetupOptions.push({
+      id: "cloud",
+      icon: WandSparkles,
+      title: t("onboarding.rehaul.setupChoice.cloud.title"),
+      description: t("onboarding.rehaul.setupChoice.cloud.description"),
+    });
+  }
   if (byokAllowed) {
     moreSetupOptions.push({
       id: "byok",
@@ -299,24 +304,26 @@ export default function SetupChoiceStep({
           </SetupCard>
         )}
 
-        {cloudAllowed && (
+        {antigravityAllowed && (
           <SetupCard>
-            {/* "Vector 1": a 343x183 wash pinned to the bottom of the cloud card.
-                Approximated with a gradient — the Figma vector was not exported. */}
             <div
               className="pointer-events-none absolute inset-x-0 bottom-0 h-[183px] bg-gradient-to-t from-[color-mix(in_srgb,var(--onboarding-accent)_12%,transparent)] to-transparent"
               aria-hidden="true"
             />
             <div className="relative z-10 flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                {/* Frame 48: 40px mark on the brand gradient. */}
-                <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-b from-[#4079ed] to-[#244587] text-white">
-                  <BrandMark className="size-5" />
+                <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-[var(--onboarding-surface-secondary)] ring-[1.33px] ring-[var(--onboarding-surface)]">
+                  <img
+                    src={geminiIcon}
+                    alt=""
+                    aria-hidden="true"
+                    width={20}
+                    height={20}
+                    decoding="async"
+                    draggable={false}
+                    className="size-5"
+                  />
                 </span>
-                {/* Frame 49: the "Recommended" chip. Figma has white text on a
-                    glass fill over the card's background artwork ("Vector 1",
-                    which was not exported) — on plain white that would be
-                    invisible, so it takes the brand fill until the art lands. */}
                 <span className="rounded-[47px] bg-[var(--onboarding-accent)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-accent-foreground)]">
                   {t("common.recommended")}
                 </span>
@@ -325,32 +332,30 @@ export default function SetupChoiceStep({
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
                   <h2 className="onboarding-card-title text-[var(--onboarding-text-primary)]">
-                    {t("onboarding.rehaul.setupChoice.cloud.title")}
+                    {t("onboarding.rehaul.setupChoice.antigravity.title")}
                   </h2>
                   <p className="text-sm leading-[1.4] text-[var(--onboarding-text-secondary)]">
-                    {t("onboarding.rehaul.setupChoice.cloud.description")}
+                    {t("onboarding.rehaul.setupChoice.antigravity.description")}
                   </p>
                 </div>
                 <ul className="flex flex-col gap-2">
                   <Feature icon={Zap} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.fast")}
+                    {t("onboarding.rehaul.setupChoice.antigravity.features.subscription")}
+                  </Feature>
+                  <Feature icon={KeyRound} accent>
+                    {t("onboarding.rehaul.setupChoice.antigravity.features.noKey")}
                   </Feature>
                   <Feature icon={ShieldCheck} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.privacy")}
-                  </Feature>
-                  <Feature icon={MonitorSmartphone} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.sync")}
+                    {t("onboarding.rehaul.setupChoice.antigravity.features.localCli")}
                   </Feature>
                   <Feature icon={WandSparkles} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.features")}
+                    {t("onboarding.rehaul.setupChoice.antigravity.features.features")}
                   </Feature>
                 </ul>
               </div>
             </div>
-            <CardAction brand onClick={chooseCloud}>
-              {isSignedIn
-                ? t("onboarding.rehaul.setupChoice.cloud.continue")
-                : t("onboarding.rehaul.setupChoice.cloud.signIn")}
+            <CardAction brand onClick={() => onSelect("antigravity")}>
+              {t("onboarding.rehaul.setupChoice.antigravity.continue")}
             </CardAction>
           </SetupCard>
         )}
@@ -418,8 +423,11 @@ export default function SetupChoiceStep({
                   type="button"
                   onClick={() => {
                     setShowMore(false);
-                    // Both rows land on the BYOK step; self-hosted differs only in
-                    // starting it with the self-hosted field set on.
+                    if (row.id === "cloud") {
+                      if (isSignedIn) onSelect("cloud");
+                      else onRequestAuthentication();
+                      return;
+                    }
                     onSelect("byok", { selfHosted: row.id === "self-hosted" });
                   }}
                   className={`onboarding-pressable flex w-full items-center gap-[14px] text-left ${

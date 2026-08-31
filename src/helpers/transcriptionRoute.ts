@@ -73,7 +73,7 @@ export type TranscriptionRoute =
   | { transport: "local" }
   | {
       transport: "proxied";
-      provider: "tinfoil" | "mistral" | "xai" | "corti" | "gemini";
+      provider: "tinfoil" | "mistral" | "xai" | "corti" | "gemini" | "antigravity";
       model: string | null;
       language?: string;
       sizeCapBytes: number;
@@ -133,7 +133,11 @@ export function resolveByokModel(provider: string, configuredModel?: string): st
       (provider === "openai" && (trimmed.startsWith("gpt-4o") || trimmed === "whisper-1")) ||
       (provider === "mistral" && trimmed.startsWith("voxtral-")) ||
       (provider === "corti" && trimmed.startsWith("corti-")) ||
-      (provider === "gemini" && trimmed.startsWith("gemini-"));
+      (provider === "gemini" && trimmed.startsWith("gemini-")) ||
+      (provider === "antigravity" &&
+        (trimmed.startsWith("gemini-") ||
+          trimmed.startsWith("claude-") ||
+          trimmed.startsWith("gpt-")));
     if (matchesProvider) return trimmed;
   }
   if (provider === "groq") return "whisper-large-v3-turbo";
@@ -141,6 +145,7 @@ export function resolveByokModel(provider: string, configuredModel?: string): st
   if (provider === "mistral") return "voxtral-mini-latest";
   if (provider === "corti") return "corti-transcribe";
   if (provider === "gemini") return "gemini-3.5-transcribe";
+  if (provider === "antigravity") return "gemini-3.5-transcribe";
   return "gpt-4o-mini-transcribe";
 }
 
@@ -259,6 +264,15 @@ export function resolveTranscriptionRoute({
       model,
       language,
       sizeCapBytes: GEMINI_FILE_SIZE_LIMIT,
+    };
+  }
+  if (provider === "antigravity") {
+    return {
+      transport: "proxied",
+      provider,
+      model,
+      language,
+      sizeCapBytes: BYOK_FILE_SIZE_LIMIT,
     };
   }
   if (provider === "corti") {

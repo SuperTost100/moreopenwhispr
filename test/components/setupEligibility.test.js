@@ -88,6 +88,7 @@ test("availability reports no setup when policy permits no onboarding mode", asy
     local: false,
     byok: false,
     selfHosted: false,
+    antigravity: false,
   });
 });
 
@@ -110,6 +111,7 @@ test("dictation-only policies ignore LLM availability when the agent is disabled
     local: false,
     byok: false,
     selfHosted: false,
+    antigravity: false,
   });
 
   const result = await availability(policy, { agentAllowed: false });
@@ -118,5 +120,6 @@ test("dictation-only policies ignore LLM availability when the agent is disabled
     local: true,
     byok: true,
     selfHosted: true,
+    antigravity: false,
   });
 });

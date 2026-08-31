@@ -235,15 +235,19 @@ export const usePermissions = (
     const platform = getPlatform();
 
     if (platform === "darwin") {
-      // Check if already granted
       const alreadyGranted = await window.electronAPI?.checkAccessibilityPermission?.(true);
       if (alreadyGranted) {
         setAccessibilityPermissionGranted(true);
         return;
       }
 
-      // Open System Settings directly — avoids the undismissable macOS TCC dialog
-      // that isTrustedAccessibilityClient(true) would show.
+      // Registers this binary in TCC (needed for Electron.dev). Opening Settings
+      // alone never adds the app to the list.
+      const prompted = await window.electronAPI?.promptAccessibilityPermission?.();
+      if (prompted) {
+        setAccessibilityPermissionGranted(true);
+        return;
+      }
       await openSystemSettings("accessibility", window.electronAPI?.openAccessibilitySettings);
       return;
     }

@@ -26,6 +26,7 @@ export const PROVIDER_ICONS: Record<string, string> = {
   whisper: openaiIcon,
   anthropic: anthropicIcon,
   gemini: geminiIcon,
+  antigravity: geminiIcon,
   llama: llamaIcon,
   mistral: mistralIcon,
   qwen: qwenIcon,

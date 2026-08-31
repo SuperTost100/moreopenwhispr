@@ -34,6 +34,40 @@ import {
 } from "../stores/policyRules";
 import { usePolicySnapshot } from "../hooks/usePolicy";
 
+function AntigravityCliStatus() {
+  const { t } = useTranslation();
+  const [status, setStatus] = useState<"checking" | "available" | "missing">("checking");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await window.electronAPI?.checkAntigravityAvailable?.();
+        if (!cancelled) {
+          setStatus(result?.available ? "available" : "missing");
+        }
+      } catch {
+        if (!cancelled) setStatus("missing");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (status === "checking") {
+    return <p className="text-xs text-muted-foreground">{t("reasoning.antigravity.checking")}</p>;
+  }
+  if (status === "available") {
+    return <p className="text-xs text-muted-foreground">{t("reasoning.antigravity.ready")}</p>;
+  }
+  return (
+    <p className="text-xs text-destructive" role="status">
+      {t("reasoning.antigravity.missing")}
+    </p>
+  );
+}
+
 type CloudModelOption = {
   value: string;
   label: string;
@@ -51,6 +85,7 @@ const CLOUD_PROVIDER_IDS = [
   "openai",
   "anthropic",
   "gemini",
+  "antigravity",
   "groq",
   OPENROUTER_TAB,
   "tinfoil",
@@ -671,6 +706,10 @@ export default function ReasoningModelSelector({
                         helpText=""
                       />
                     </div>
+                  )}
+
+                  {displayedCloudProvider === "antigravity" && (
+                    <AntigravityCliStatus />
                   )}
 
                   <div className="pt-3 space-y-2">

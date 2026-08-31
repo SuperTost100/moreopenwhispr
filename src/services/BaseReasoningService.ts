@@ -23,6 +23,20 @@ export interface ReasoningConfig {
   requireCompleteOutput?: boolean;
   requiresAgent?: boolean;
   inferenceScope?: InferenceScope;
+  /** Antigravity chat tool loop (renderer executes tools). */
+  executeToolCall?: (
+    name: string,
+    argsJson: string
+  ) => Promise<{
+    data: string;
+    displayText: string;
+    metadata?: Record<string, unknown> | Array<Record<string, unknown>>;
+  }>;
+  antigravityToolSchemas?: Array<{
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  }>;
 }
 
 export abstract class BaseReasoningService {

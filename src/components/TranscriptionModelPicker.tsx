@@ -224,6 +224,7 @@ const CLOUD_PROVIDER_TABS = [
   { id: "xai", name: "xAI" },
   { id: "mistral", name: "Mistral" },
   { id: "gemini", name: "Gemini" },
+  { id: "antigravity", name: "Antigravity" },
   { id: "corti", name: "Corti" },
   { id: "tinfoil", name: "Tinfoil" },
   { id: "custom", name: "Custom" },
@@ -270,6 +271,10 @@ const PROVIDER_CREDENTIALS: Record<
   gemini: {
     consoleUrl: "https://aistudio.google.com/apikey",
     fields: [{ key: "geminiApiKey", input: "secret" }],
+  },
+  antigravity: {
+    consoleUrl: "",
+    fields: [],
   },
   corti: {
     consoleUrl: "https://www.corti.ai/?utm_source=referral&utm_content=&utm_campaign=openwhispr",
@@ -1268,6 +1273,11 @@ export default function TranscriptionModelPicker({
                         >
                           {t("transcription.tinfoil.docsLink")}
                         </a>
+                      </p>
+                    )}
+                    {displayedCloudProvider === "antigravity" && (
+                      <p className="text-xs text-muted-foreground/70">
+                        {t("transcription.antigravity.transportNote")}
                       </p>
                     )}
                   </div>

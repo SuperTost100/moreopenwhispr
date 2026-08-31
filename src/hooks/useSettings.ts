@@ -29,6 +29,8 @@ export interface TranscriptionSettings {
   cloudTranscriptionModel: string;
   cloudTranscriptionBaseUrl?: string;
   cloudTranscriptionMode: string;
+  antigravityDictationMode: "fast" | "polished";
+  antigravityTranscriptionMode: "smart" | "verbatim";
   transcriptionMode: InferenceMode;
   remoteTranscriptionType: SelfHostedType;
   remoteTranscriptionUrl: string;

@@ -553,6 +553,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
   proxyXaiTranscription: (data) => ipcRenderer.invoke("proxy-xai-transcription", data),
   proxyMistralTranscription: (data) => ipcRenderer.invoke("proxy-mistral-transcription", data),
   proxyGeminiTranscription: (data) => ipcRenderer.invoke("proxy-gemini-transcription", data),
+  proxyAntigravityTranscription: (data) =>
+    ipcRenderer.invoke("proxy-antigravity-transcription", data),
+  processAntigravityReasoning: (text, modelId, agentName, config) =>
+    ipcRenderer.invoke("process-antigravity-reasoning", text, modelId, agentName, config),
+  processAntigravityToolTurn: (payload) =>
+    ipcRenderer.invoke("process-antigravity-tool-turn", payload),
+  checkAntigravityAvailable: () => ipcRenderer.invoke("check-antigravity-available"),
 
   // Corti API
   getCortiClientId: () => ipcRenderer.invoke("get-corti-client-id"),

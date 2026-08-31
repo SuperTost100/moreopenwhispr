@@ -14,6 +14,7 @@ export interface OnboardingSetupAvailability {
   local: boolean;
   byok: boolean;
   selfHosted: boolean;
+  antigravity: boolean;
 }
 
 /**
@@ -52,8 +53,14 @@ export function getOnboardingSetupAvailability({
     (!agentAllowed ||
       (isModeAllowedByPolicy(policy, "llm", "self-hosted") &&
         isProviderAllowedByPolicy(policy, "llm", "custom")));
+  const antigravity =
+    isModeAllowedByPolicy(policy, "transcription", "providers") &&
+    isProviderAllowedByPolicy(policy, "transcription", "antigravity") &&
+    (!agentAllowed ||
+      (isModeAllowedByPolicy(policy, "llm", "providers") &&
+        isProviderAllowedByPolicy(policy, "llm", "antigravity")));
 
-  return { cloud, local, byok, selfHosted };
+  return { cloud, local, byok, selfHosted, antigravity };
 }
 
 export function hasAvailableOnboardingSetup(availability: OnboardingSetupAvailability): boolean {
