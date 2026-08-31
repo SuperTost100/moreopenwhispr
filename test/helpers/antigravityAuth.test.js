@@ -30,7 +30,11 @@ test("getAntigravityAccessToken refreshes expired token", async () => {
   );
 
   const originalHome = process.env.HOME;
+  const originalClientId = process.env.ANTIGRAVITY_CLIENT_ID;
+  const originalClientSecret = process.env.ANTIGRAVITY_CLIENT_SECRET;
   process.env.HOME = tmpHome;
+  process.env.ANTIGRAVITY_CLIENT_ID = "test-client-id";
+  process.env.ANTIGRAVITY_CLIENT_SECRET = "test-client-secret";
   delete require.cache[require.resolve("../../src/helpers/antigravityAuth")];
   const { getAntigravityAccessToken: getToken } = require("../../src/helpers/antigravityAuth");
 
@@ -55,6 +59,16 @@ test("getAntigravityAccessToken refreshes expired token", async () => {
     assert.equal(saved.token.access_token, "fresh-token");
   } finally {
     process.env.HOME = originalHome;
+    if (originalClientId === undefined) {
+      delete process.env.ANTIGRAVITY_CLIENT_ID;
+    } else {
+      process.env.ANTIGRAVITY_CLIENT_ID = originalClientId;
+    }
+    if (originalClientSecret === undefined) {
+      delete process.env.ANTIGRAVITY_CLIENT_SECRET;
+    } else {
+      process.env.ANTIGRAVITY_CLIENT_SECRET = originalClientSecret;
+    }
     fs.rmSync(tmpHome, { recursive: true, force: true });
   }
 });
