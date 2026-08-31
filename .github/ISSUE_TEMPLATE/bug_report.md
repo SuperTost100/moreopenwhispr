@@ -1,40 +1,31 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Something is broken in MoreOpenWhispr
 title: ""
 labels: ""
 assignees: ""
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+What happened, in one short paragraph.
 
-**To Reproduce**
-Steps to reproduce the behavior:
+**To reproduce**
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1.
+2.
+3.
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Desktop**
 
-**Desktop (please complete the following information):**
+- OS: [macOS / Windows / Linux distro + session: X11, GNOME Wayland, Hyprland, …]
+- MoreOpenWhispr version: [from Settings → System, or `package.json`]
+- Transcription path: [Antigravity / BYOK provider / local Whisper or Parakeet]
+- Install: [Release `.dmg` `.exe` AppImage / built from source]
 
-- OS: [e.g. iOS]
-- Browser [e.g. chrome, safari]
-- Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
-
-- Device: [e.g. iPhone6]
-- OS: [e.g. iOS8.1]
-- Browser [e.g. stock browser, safari]
-- Version [e.g. 22]
+**Logs**
+See [DEBUG.md](../../DEBUG.md). Redact API keys and `agy` tokens.
 
 **Additional context**
-Add any other context about the problem here.
+This is the unofficial fork (`antigravity-fork`), not official OpenWhispr. If the bug also exists upstream, say so.

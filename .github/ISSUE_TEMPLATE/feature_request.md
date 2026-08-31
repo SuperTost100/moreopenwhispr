@@ -1,19 +1,17 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest something for MoreOpenWhispr
 title: ""
 labels: ""
 assignees: ""
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**What is missing**
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Why this fork, not upstream OpenWhispr**
+Account, billing, Cloud MCP, and telemetry stay out. Features that need those belong at [OpenWhispr/openwhispr](https://github.com/OpenWhispr/openwhispr).
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**What you tried instead**
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+OS, transcription path, screenshots if they help.

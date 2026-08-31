@@ -1,91 +1,87 @@
 # Debug Mode
 
-Enable verbose logging to diagnose issues like "no audio detected" or transcription failures.
+Verbose logging for "no audio detected", failed transcription, paste, meetings, or Antigravity.
 
-## Enable Debug Logging
+## Enable
 
-### Option 1: Command Line
+### Command line
 
 ```bash
 # macOS
-/Applications/OpenWhispr.app/Contents/MacOS/OpenWhispr --log-level=debug
+/Applications/MoreOpenWhispr.app/Contents/MacOS/MoreOpenWhispr --log-level=debug
 
 # Windows
-OpenWhispr.exe --log-level=debug
+MoreOpenWhispr.exe --log-level=debug
+
+# Linux (deb/rpm binary is still named open-whispr)
+open-whispr --log-level=debug
 ```
 
-### Option 2: Environment File
+Packaged Windows builds keep logger output off stdout/stderr unless you also pass `--console-logs`.
 
-Add to your `.env` file and restart:
+### Environment file
+
+Add to `.env` in the app data directory and restart:
 
 ```
 OPENWHISPR_LOG_LEVEL=debug
 ```
 
-**Env file locations:**
+**`.env` locations:**
 
-- macOS: `~/Library/Application Support/OpenWhispr/.env`
-- Windows: `%APPDATA%\OpenWhispr\.env`
-- Linux: `~/.config/OpenWhispr/.env`
+- macOS: `~/Library/Application Support/MoreOpenWhispr/.env`
+- Windows: `%APPDATA%\MoreOpenWhispr\.env`
+- Linux: `~/.config/MoreOpenWhispr/.env`
 
-## Log File Locations
+## Log files
 
-- **macOS**: `~/Library/Application Support/OpenWhispr/logs/debug-*.log`
-- **Windows**: `%APPDATA%\OpenWhispr\logs\debug-*.log`
-- **Linux**: `~/.config/OpenWhispr/logs/debug-*.log`
+- **macOS:** `~/Library/Application Support/MoreOpenWhispr/logs/debug-*.log`
+- **Windows:** `%APPDATA%\MoreOpenWhispr\logs\debug-*.log`
+- **Linux:** `~/.config/MoreOpenWhispr/logs/debug-*.log`
 
-## What Gets Logged
+## What gets logged
 
-| Stage                 | Details                                                          |
-| --------------------- | ---------------------------------------------------------------- |
-| FFmpeg                | Path resolution, permissions, ASAR unpacking                     |
-| Audio Recording       | Permission requests, chunk sizes, audio levels                   |
-| Audio Processing      | File creation, Whisper command, process output                   |
-| IPC                   | Messages between renderer and main process                       |
-| Agent Mode            | Streaming responses, conversation management, model selection    |
-| Meeting Detection     | Process monitoring, audio activity, calendar event matching      |
-| Meeting Transcription | WebSocket connection, Realtime API session, audio buffering      |
-| Google Calendar       | OAuth flow, token refresh, event sync                            |
-| Media Control         | Pause/resume events, player detection (MediaRemote/GSMTC/MPRIS2) |
-| Audio Storage         | File retention, cleanup cycles, storage usage                    |
+| Stage | Details |
+| --- | --- |
+| FFmpeg | Path resolution, permissions, ASAR unpacking |
+| Audio recording | Permission requests, chunk sizes, audio levels |
+| Audio processing | File creation, Whisper/Parakeet/Antigravity command, process output |
+| IPC | Main ↔ renderer |
+| Agent mode | Streaming, conversation, model selection |
+| Meeting detection | Process monitoring, audio activity, calendar match |
+| Meeting transcription | Sockets, audio buffering, echo-gate verdicts |
+| Google / Microsoft Calendar | OAuth, token refresh, event sync (no event bodies at debug if we can help it) |
+| Media control | Pause/resume, player detection |
+| Audio storage | Retention, cleanup |
 
-## Common Issues
+Loggers should emit `hasScreenContext` booleans, not screenshots. Still redact API keys and `agy` tokens before you attach a file to an issue.
 
-### "No Audio Detected"
+## Common signatures
 
-Look for:
+### No audio detected
 
-- `maxLevel < 0.01` → Audio too quiet
-- `Audio appears to be silent` → Microphone issue
-- `FFmpeg not available` → Path resolution failed
+- `maxLevel < 0.01` → too quiet
+- `Audio appears to be silent` → mic or wrong device
+- `FFmpeg not available` → path / unpack / Defender quarantine
 
-### Transcription Fails
+### Transcription fails
 
-Look for:
+- `Whisper stderr:` → whisper.cpp / FFmpeg
+- `Process closed with code: [non-zero]`
+- Antigravity: auth errors, 429 quota, missing `agy`
 
-- `Whisper stderr:` → whisper.cpp/FFmpeg errors
-- `Process closed with code: [non-zero]` → Process failure
-- `Failed to parse Whisper output` → Invalid JSON
-
-### Permission Issues
-
-Look for:
+### Permissions
 
 - `Microphone Access Denied`
-- `isExecutable: false` → FFmpeg permission issue
+- `isExecutable: false` → FFmpeg not executable
 
-## Sharing Logs
+## Sharing logs
 
-When reporting issues:
+1. Enable debug, reproduce once
+2. Grab the newest `debug-*.log`
+3. Redact secrets
+4. Attach to a [GitHub issue](https://github.com/SuperTost100/openwhispr/issues)
 
-1. Enable debug mode and reproduce the issue
-2. Locate the log file
-3. Redact any sensitive information
-4. Include relevant log sections in your issue report
+## Disable
 
-## Disable Debug Mode
-
-Debug mode is off by default. To ensure it's disabled:
-
-- Remove `--log-level=debug` from command
-- Remove `OPENWHISPR_LOG_LEVEL` from `.env`
+Remove `--log-level=debug` and `OPENWHISPR_LOG_LEVEL` from `.env`. Off by default.

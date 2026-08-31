@@ -26,7 +26,7 @@ describe("mowProfile", () => {
   });
 
   it("mowRepoUrl joins repo base and path", () => {
-    assert.equal(mowRepoUrl(), MOW_PROFILE.repoUrl);
+    assert.equal(mowRepoUrl(), "https://github.com/SuperTost100/openwhispr");
     assert.match(mowRepoUrl("issues"), /\/issues$/);
   });
 });
