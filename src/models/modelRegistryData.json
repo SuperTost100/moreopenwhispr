@@ -294,14 +294,15 @@
         {
           "id": "gemini-3.5-transcribe",
           "name": "Gemini 3.5 Transcribe",
-          "description": "Fast dedicated speech-to-text via Antigravity subscription",
+          "description": "Fast cloud transcription via your Antigravity subscription",
           "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe"
         },
         {
           "id": "gemini-3.5-transcribe-live",
           "name": "Gemini 3.5 Transcribe Live",
-          "description": "Streaming speech-to-text (coming soon)",
-          "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe_live"
+          "description": "Live preview while you speak via Antigravity subscription",
+          "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe_live",
+          "streaming": true
         }
       ]
     },

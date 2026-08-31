@@ -249,18 +249,19 @@ async function transcribeWithAntigravity({
     );
   };
 
-  if (useLegacyAgent || resolvedModel === "gemini-3.5-transcribe-live") {
-    if (resolvedModel === "gemini-3.5-transcribe-live") {
-      const error = new Error(
-        "Live Antigravity transcription streaming is not enabled yet. Choose Gemini 3.5 Transcribe."
-      );
-      error.code = "AGY_LIVE_NOT_IMPLEMENTED";
-      throw error;
-    }
+  if (useLegacyAgent) {
     logStage("agy-legacy-direct");
     const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
     logStage("agy-legacy-done", { transport: "agy-write-file" });
     return result;
+  }
+
+  if (resolvedModel === "gemini-3.5-transcribe-live") {
+    const error = new Error(
+      "Antigravity live transcription must use the live preview stream during recording."
+    );
+    error.code = "AGY_LIVE_REQUIRES_PREVIEW";
+    throw error;
   }
 
   const preparedPromise = prepareAudioBuffer({

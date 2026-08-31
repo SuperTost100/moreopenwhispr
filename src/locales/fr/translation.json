@@ -2528,6 +2528,20 @@
             "info": "Audio prolongé d'un segment au suivant pour éviter les coupures brusques lors de la concaténation."
           }
         }
+      },
+      "antigravity": {
+        "dictationStyle": {
+          "label": "Dictation style",
+          "description": "Fast skips the cleanup pass after transcription. Polished runs an extra AI cleanup step.",
+          "fast": "Fast",
+          "polished": "Polished"
+        },
+        "transcriptionFidelity": {
+          "label": "Transcription fidelity",
+          "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
+          "smart": "Smart",
+          "verbatim": "Verbatim"
+        }
       }
     },
     "intelligence": {

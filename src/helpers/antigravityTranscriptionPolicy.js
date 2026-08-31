@@ -36,10 +36,15 @@ function shouldSkipAntigravityDictationCleanup(settings) {
   return resolveAntigravityTranscriptionMode(settings) === "SMART";
 }
 
+function isAntigravityLiveModel(model) {
+  return String(model || "").trim() === "gemini-3.5-transcribe-live";
+}
+
 module.exports = {
   DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL,
   TRANSCRIBE_MODEL_IDS,
   isAntigravityTranscribeModel,
+  isAntigravityLiveModel,
   resolveAntigravityTranscriptionMode,
   resolveAntigravityDictationMode,
   shouldSkipAntigravityDictationCleanup,

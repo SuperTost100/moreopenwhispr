@@ -91,6 +91,7 @@ import DictationAgentSettings from "./settings/DictationAgentSettings";
 import DictationTranslationSettings from "./settings/DictationTranslationSettings";
 import InferenceConfigEditor from "./settings/InferenceConfigEditor";
 import { MeetingTranscriptionPanel } from "./settings/MeetingSettings";
+import { AntigravitySettingsPanel } from "./settings/AntigravitySettingsPanel";
 import { UploadTranscriptionPanel } from "./settings/UploadSettings";
 import LanguageSelector from "./ui/LanguageSelector";
 import { Skeleton } from "./ui/skeleton";
@@ -505,6 +506,10 @@ interface TranscriptionSectionProps {
   setRemoteTranscriptionModel: (model: string) => void;
   showTranscriptionPreview: boolean;
   setShowTranscriptionPreview: (value: boolean) => void;
+  antigravityDictationMode: "fast" | "polished";
+  setAntigravityDictationMode: (mode: "fast" | "polished") => void;
+  antigravityTranscriptionMode: "smart" | "verbatim";
+  setAntigravityTranscriptionMode: (mode: "smart" | "verbatim") => void;
   toast: (opts: {
     title: string;
     description: string;
@@ -543,6 +548,10 @@ function TranscriptionSection({
   setRemoteTranscriptionModel,
   showTranscriptionPreview,
   setShowTranscriptionPreview,
+  antigravityDictationMode,
+  setAntigravityDictationMode,
+  antigravityTranscriptionMode,
+  setAntigravityTranscriptionMode,
   toast,
 }: TranscriptionSectionProps) {
   const { t } = useTranslation();
@@ -688,6 +697,15 @@ function TranscriptionSection({
       />
 
       {effectiveTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
+      {effectiveTranscriptionMode === "providers" &&
+        cloudTranscriptionProvider === "antigravity" && (
+          <AntigravitySettingsPanel
+            dictationMode={antigravityDictationMode}
+            setDictationMode={setAntigravityDictationMode}
+            transcriptionMode={antigravityTranscriptionMode}
+            setTranscriptionMode={setAntigravityTranscriptionMode}
+          />
+        )}
       {effectiveTranscriptionMode === "local" && renderTranscriptionPicker("local")}
       {previewAvailable && renderPreviewToggle()}
 
@@ -1126,6 +1144,10 @@ export default function SettingsPage({
     setPauseMediaOnDictation,
     showTranscriptionPreview,
     setShowTranscriptionPreview,
+    antigravityDictationMode,
+    setAntigravityDictationMode,
+    antigravityTranscriptionMode,
+    setAntigravityTranscriptionMode,
     autoPasteEnabled,
     setAutoPasteEnabled,
     keepTranscriptionInClipboard,
@@ -4674,6 +4696,10 @@ EOF`,
                   setRemoteTranscriptionModel={setRemoteTranscriptionModel}
                   showTranscriptionPreview={showTranscriptionPreview}
                   setShowTranscriptionPreview={setShowTranscriptionPreview}
+                  antigravityDictationMode={antigravityDictationMode}
+                  setAntigravityDictationMode={setAntigravityDictationMode}
+                  antigravityTranscriptionMode={antigravityTranscriptionMode}
+                  setAntigravityTranscriptionMode={setAntigravityTranscriptionMode}
                   toast={toast}
                 />
                 {transcriptionMode === "local" &&

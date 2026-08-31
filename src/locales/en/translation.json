@@ -2485,6 +2485,20 @@
       },
       "transcriptionPreview": "Live Transcription Preview",
       "transcriptionPreviewDescription": "Show transcription in a floating window before cleanup",
+      "antigravity": {
+        "dictationStyle": {
+          "label": "Dictation style",
+          "description": "Fast skips the cleanup pass after transcription. Polished runs an extra AI cleanup step.",
+          "fast": "Fast",
+          "polished": "Polished"
+        },
+        "transcriptionFidelity": {
+          "label": "Transcription fidelity",
+          "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
+          "smart": "Smart",
+          "verbatim": "Verbatim"
+        }
+      },
       "vad": {
         "title": "Voice Activity Detection",
         "description": "Configure how Silero VAD detects and segments speech for local Whisper transcription",
@@ -2603,8 +2617,8 @@
         "groq_whisper_large_v3_turbo": "216x real-time speed",
         "mistral_voxtral_mini_latest": "Fast multilingual transcription",
         "gemini_3_5_transcribe": "Google's Gemini speech-to-text",
-        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
-        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)",
+        "antigravity_gemini_3_5_transcribe": "Fast cloud transcription via Antigravity subscription",
+        "antigravity_gemini_3_5_transcribe_live": "Live preview while you speak via Antigravity subscription",
         "corti_transcribe": "Clinical-grade medical transcription",
         "xai_grok_stt": "High-accuracy speech recognition by xAI",
         "tinfoil_voxtral": "Verifiably private transcription"

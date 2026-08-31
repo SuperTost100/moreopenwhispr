@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   isAntigravityTranscribeModel,
+  isAntigravityLiveModel,
   shouldSkipAntigravityDictationCleanup,
   resolveAntigravityTranscriptionMode,
 } = require("../../src/helpers/antigravityTranscriptionPolicy");
@@ -10,6 +11,11 @@ test("isAntigravityTranscribeModel recognizes transcribe ids", () => {
   assert.equal(isAntigravityTranscribeModel("gemini-3.5-transcribe"), true);
   assert.equal(isAntigravityTranscribeModel("gemini-3.5-transcribe-live"), true);
   assert.equal(isAntigravityTranscribeModel("gemini-3.5-flash-low"), false);
+});
+
+test("isAntigravityLiveModel recognizes live id only", () => {
+  assert.equal(isAntigravityLiveModel("gemini-3.5-transcribe-live"), true);
+  assert.equal(isAntigravityLiveModel("gemini-3.5-transcribe"), false);
 });
 
 test("shouldSkipAntigravityDictationCleanup in fast smart mode", () => {

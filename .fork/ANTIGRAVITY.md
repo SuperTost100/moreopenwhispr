@@ -11,11 +11,15 @@ Dictation STT uses the same **daily Cloud Code gateway** as the `agy` CLI (`dail
 | Daily gateway stream + flash-low multimodal | ~1–3s | **Default** dictation STT |
 | Gateway + `gemini-3.5-flash-low` text | ~1–2s | Optional cleanup when Polished mode |
 | `agy --print` agent | ~10–30s+ | Emergency fallback only if gateway fails |
-| `gemini-3.5-transcribe-live` | Sub-second (planned) | Phase 2 streaming — not wired yet |
+| `gemini-3.5-transcribe-live` | Live rolling chunks (~2s) | Live preview + stream commit at stop |
 
 **Fast mode (default):** SMART transcribe skips the separate cleanup pass (`shouldSkipAntigravityDictationCleanup`).
 
-**Polished mode:** SMART transcribe + optional flash-low cleanup via gateway.
+**Polished mode:** SMART transcribe + optional flash-low cleanup via daily gateway.
+
+## Live STT (2026-08-31)
+
+Spike: dedicated `gemini-3.5-transcribe-live` returns 404 on daily gateway. Implemented **rolling PCM buffer** — every ~2s of audio, cumulative WAV goes through the same daily `streamGenerateContent` path; preview updates via existing dictation-preview IPC.
 
 ## Owned files (safe to keep on rebase)
 
@@ -79,5 +83,5 @@ Text-only cleanup uses gateway HTTP when no screen context is attached.
 
 ## Follow-ups
 
-- Live streaming via `gemini-3.5-transcribe-live` during recording
-- Settings UI for Fast/Polished and Smart/Verbatim toggles
+- Tune live chunk interval / overlap for lower preview latency
+- Settings UI wired for Fast/Polished and Smart/Verbatim (Speech → Dictation when Antigravity selected)

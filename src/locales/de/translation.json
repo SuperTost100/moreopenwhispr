@@ -2528,6 +2528,20 @@
             "info": "Audio, das von einem Segment ins nächste übertragen wird, um abrupte Schnitte beim Zusammenfügen zu vermeiden."
           }
         }
+      },
+      "antigravity": {
+        "dictationStyle": {
+          "label": "Dictation style",
+          "description": "Fast skips the cleanup pass after transcription. Polished runs an extra AI cleanup step.",
+          "fast": "Fast",
+          "polished": "Polished"
+        },
+        "transcriptionFidelity": {
+          "label": "Transcription fidelity",
+          "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
+          "smart": "Smart",
+          "verbatim": "Verbatim"
+        }
       }
     },
     "intelligence": {

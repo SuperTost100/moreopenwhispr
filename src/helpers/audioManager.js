@@ -1288,12 +1288,19 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         whisperModel,
         parakeetModel,
         cohereModel,
+        cloudTranscriptionProvider,
+        cloudTranscriptionModel,
       } = getSettings();
       const isNvidia = localTranscriptionProvider === "nvidia";
+      const isAntigravityLive =
+        !useLocalWhisper &&
+        cloudTranscriptionProvider === "antigravity" &&
+        cloudTranscriptionModel === "gemini-3.5-transcribe-live";
       // Online models stream+commit during capture, so PCM runs even with preview off.
-      const streamingCommit = useLocalWhisper && isNvidia && isOnlineParakeetModel(parakeetModel);
+      const streamingCommit =
+        (useLocalWhisper && isNvidia && isOnlineParakeetModel(parakeetModel)) || isAntigravityLive;
       this._streamingCommitActive = false;
-      if (useLocalWhisper && (showTranscriptionPreview || streamingCommit)) {
+      if ((useLocalWhisper && (showTranscriptionPreview || streamingCommit)) || isAntigravityLive) {
         try {
           this._previewAudioContext = new AudioContext({ sampleRate: 16000 });
           this._previewSource = this._previewAudioContext.createMediaStreamSource(micStream);
@@ -1312,20 +1319,32 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           };
           this._previewSource.connect(this._previewProcessor);
 
-          const model = isNvidia
-            ? parakeetModel
-            : localTranscriptionProvider === "cohere"
-              ? cohereModel
-              : whisperModel;
+          const model = isAntigravityLive
+            ? cloudTranscriptionModel
+            : isNvidia
+              ? parakeetModel
+              : localTranscriptionProvider === "cohere"
+                ? cohereModel
+                : whisperModel;
           const language = getBaseLanguageCode(getSettings().preferredLanguage);
+          const previewSettings = getSettings();
           window.electronAPI?.startDictationPreview?.({
-            provider: localTranscriptionProvider,
+            provider: isAntigravityLive ? "antigravity" : localTranscriptionProvider,
             model,
             language,
             display: shouldDisplayDictationPreview(
               showTranscriptionPreview,
               this.voiceAgentRequested
             ),
+            ...(isAntigravityLive
+              ? {
+                  transcriptionMode: previewSettings.antigravityTranscriptionMode,
+                  keyterms: this.getKeyterms()
+                    .map((term) => term.trim().slice(0, 50))
+                    .filter(Boolean)
+                    .slice(0, 100),
+                }
+              : {}),
           });
           this._streamingCommitActive = streamingCommit;
         } catch (e) {
@@ -1913,7 +1932,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     } catch (error) {
       const errorAtMs = Math.round(performance.now() - pipelineStart);
 
-      if (wasCancelled()) {
+      if (wasCancelled() || error?.code === "AGY_CANCELLED") {
         // The user cancelled mid-pipeline; the aborted request's rejection is
         // the expected outcome, not a failure to report or persist.
         logger.info("Transcription cancelled by user", { errorAtMs }, "performance");
@@ -3287,6 +3306,16 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       // the key). Self-hosted wins, so a leftover proxied provider isn't diverted here.
       const proxySpec = PROXY_TRANSCRIPTION_PROVIDERS[provider];
       if (proxySpec && !isSelfHostedTranscription(apiSettings)) {
+        const streamedText =
+          typeof metadata.streamedText === "string" ? metadata.streamedText.trim() : "";
+        if (streamedText) {
+          timings.transcriptionProcessingDurationMs = 0;
+          const reasoningStart = performance.now();
+          const text = await this.processTranscription(streamedText, provider, wasCancelled);
+          timings.reasoningProcessingDurationMs = Math.round(performance.now() - reasoningStart);
+          const source = (await this.isReasoningAvailable()) ? `${provider}-reasoned` : provider;
+          return { success: true, text, rawText: streamedText, source, timings };
+        }
         const call = proxySpec.ipc();
         if (!call) {
           throw new Error(`${proxySpec.displayName} transcription is unavailable in this window`);

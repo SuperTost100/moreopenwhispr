@@ -2245,6 +2245,20 @@
             "info": "Звук, продлеваемый из одного сегмента в следующий, чтобы избежать резких обрывов при склейке."
           }
         }
+      },
+      "antigravity": {
+        "dictationStyle": {
+          "label": "Dictation style",
+          "description": "Fast skips the cleanup pass after transcription. Polished runs an extra AI cleanup step.",
+          "fast": "Fast",
+          "polished": "Polished"
+        },
+        "transcriptionFidelity": {
+          "label": "Transcription fidelity",
+          "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
+          "smart": "Smart",
+          "verbatim": "Verbatim"
+        }
       }
     },
     "intelligence": {
