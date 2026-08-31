@@ -3,7 +3,6 @@
 const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 const {
-  MOW_PROFILE,
   MOW_ACCOUNT_MODES,
   isMowBuild,
   withoutAccountModes,

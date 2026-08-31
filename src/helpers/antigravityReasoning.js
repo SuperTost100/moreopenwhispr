@@ -59,7 +59,8 @@ function coerceToolLoopPayload(parsed) {
               type: "tool_call",
               tool_call: {
                 name: inner.name,
-                arguments: inner.arguments && typeof inner.arguments === "object" ? inner.arguments : {},
+                arguments:
+                  inner.arguments && typeof inner.arguments === "object" ? inner.arguments : {},
               },
             };
           }

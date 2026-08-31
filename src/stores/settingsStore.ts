@@ -3066,7 +3066,9 @@ export async function initializeSettings(): Promise<void> {
           const usesOpenRouterViaCustom = (Object.keys(INFERENCE_SCOPES) as InferenceScope[]).some(
             (scope) => {
               const cfg = selectResolvedLLMConfig(hydrated, scope);
-              return cfg.provider === "custom" && (cfg.cloudBaseUrl || "").includes("openrouter.ai");
+              return (
+                cfg.provider === "custom" && (cfg.cloudBaseUrl || "").includes("openrouter.ai")
+              );
             }
           );
           if (usesOpenRouterViaCustom) {

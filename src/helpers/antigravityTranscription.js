@@ -9,10 +9,7 @@ const {
   DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL,
   isAntigravityTranscribeModel,
 } = require("./antigravityTranscriptionPolicy");
-const {
-  ensureWritableDir,
-  runAgyTurn,
-} = require("./antigravityCli");
+const { ensureWritableDir, runAgyTurn } = require("./antigravityCli");
 
 const GEMINI_MIME_TYPES = {
   "audio/mpeg": "audio/mp3",
@@ -130,7 +127,10 @@ async function prepareAudioBuffer({
   const wavPath = path.join(tmpDir, "input.wav");
 
   ensureWritableDir(tmpDir);
-  fs.writeFileSync(inputPath, Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer));
+  fs.writeFileSync(
+    inputPath,
+    Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer)
+  );
 
   let readPath = inputPath;
   let mimeType = mimeTypeForGateway(contentType, extension);
@@ -164,7 +164,10 @@ async function transcribeWithAntigravityLegacyAgent({
 
   try {
     ensureWritableDir(tmpDir);
-    fs.writeFileSync(inputPath, Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer));
+    fs.writeFileSync(
+      inputPath,
+      Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer)
+    );
 
     let audioPath = path.basename(inputPath);
     if (ffmpegPath && extension !== ".wav") {
@@ -273,10 +276,7 @@ async function transcribeWithAntigravity({
   const authPromise = getAccessToken({ fetchImpl });
 
   try {
-    const [{ buffer, mimeType }, accessToken] = await Promise.all([
-      preparedPromise,
-      authPromise,
-    ]);
+    const [{ buffer, mimeType }, accessToken] = await Promise.all([preparedPromise, authPromise]);
     logStage("gateway-request", { bytes: buffer.length, mimeType });
     const gatewayResult = await transcribeAudioViaGateway({
       accessToken,

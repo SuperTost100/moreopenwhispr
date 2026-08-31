@@ -2616,8 +2616,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     }
 
     const s = getSettings();
-    const cleanupActive =
-      !!s.useCleanupModel && !shouldSkipAntigravityDictationCleanup(s);
+    const cleanupActive = !!s.useCleanupModel && !shouldSkipAntigravityDictationCleanup(s);
     const useReasoning =
       cleanupActive || dictationAgentReachable(s) || translationChainReachable(s);
     const now = Date.now();

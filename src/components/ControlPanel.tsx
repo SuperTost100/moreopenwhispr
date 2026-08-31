@@ -235,17 +235,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     hideAlertDialog,
   } = useDialogs();
 
-  const loadTranscriptions = useCallback(
-    async (includeDiscarded?: boolean) => {
-      setIsLoading(true);
-      try {
-        await initializeTranscriptions(undefined, includeDiscarded);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+  const loadTranscriptions = useCallback(async (includeDiscarded?: boolean) => {
+    setIsLoading(true);
+    try {
+      await initializeTranscriptions(undefined, includeDiscarded);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadTranscriptions();

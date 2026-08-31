@@ -778,9 +778,8 @@ class ReasoningService extends BaseReasoningService {
             ? Object.entries(tools).map(([name, tool]) => ({
                 name,
                 description: tool.description ?? "",
-                parameters:
-                  (tool as { inputSchema?: { jsonSchema?: Record<string, unknown> } }).inputSchema
-                    ?.jsonSchema ?? { type: "object" },
+                parameters: (tool as { inputSchema?: { jsonSchema?: Record<string, unknown> } })
+                  .inputSchema?.jsonSchema ?? { type: "object" },
               }))
             : []);
         const stream = runAntigravityChatStream({

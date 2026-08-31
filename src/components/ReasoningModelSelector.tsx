@@ -708,9 +708,7 @@ export default function ReasoningModelSelector({
                     </div>
                   )}
 
-                  {displayedCloudProvider === "antigravity" && (
-                    <AntigravityCliStatus />
-                  )}
+                  {displayedCloudProvider === "antigravity" && <AntigravityCliStatus />}
 
                   <div className="pt-3 space-y-2">
                     <h4 className="text-sm font-medium text-foreground">

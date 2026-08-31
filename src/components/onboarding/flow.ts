@@ -61,11 +61,13 @@ const ACCOUNT_ROUTE: OnboardingStepId[] = [
   "dictation-demo",
 ];
 
-const SETUP_ROUTES: Record<Exclude<OnboardingSetupMode, null | "cloud" | "antigravity">, OnboardingStepId[]> =
-  {
-    byok: ["byok-dictation", "byok-assistant"],
-    local: ["local-dictation", "local-assistant"],
-  };
+const SETUP_ROUTES: Record<
+  Exclude<OnboardingSetupMode, null | "cloud" | "antigravity">,
+  OnboardingStepId[]
+> = {
+  byok: ["byok-dictation", "byok-assistant"],
+  local: ["local-dictation", "local-assistant"],
+};
 
 // Canonical flow order, independent of any one route. reconcileStepWithRoute uses
 // it to clamp backwards instead of jumping to the end of the route.
@@ -160,11 +162,7 @@ export function getOnboardingRoute(context: OnboardingRouteContext): OnboardingS
       "activation-mode",
       "setup-choice",
     ];
-    if (
-      context.setupMode &&
-      context.setupMode !== "cloud" &&
-      context.setupMode !== "antigravity"
-    ) {
+    if (context.setupMode && context.setupMode !== "cloud" && context.setupMode !== "antigravity") {
       route.push(
         ...SETUP_ROUTES[context.setupMode].filter(
           (stepId) => context.agentAllowed || !stepId.endsWith("assistant")

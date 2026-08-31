@@ -4291,24 +4291,26 @@ class IPCHandlers {
 
     ipcMain.handle(
       "proxy-antigravity-transcription",
-      serializeIpcError(async (event, { audioBuffer, model, language, keyterms, transcriptionMode }) => {
-        const { transcribeWithAntigravity } = require("./antigravityTranscription");
-        let ffmpegPath;
-        try {
-          ffmpegPath = require("ffmpeg-static");
-        } catch {
-          ffmpegPath = undefined;
+      serializeIpcError(
+        async (event, { audioBuffer, model, language, keyterms, transcriptionMode }) => {
+          const { transcribeWithAntigravity } = require("./antigravityTranscription");
+          let ffmpegPath;
+          try {
+            ffmpegPath = require("ffmpeg-static");
+          } catch {
+            ffmpegPath = undefined;
+          }
+          return await transcribeWithAntigravity({
+            audioBuffer: Buffer.from(audioBuffer),
+            model,
+            contentType: "audio/webm",
+            language,
+            keyterms,
+            transcriptionMode,
+            ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+          });
         }
-        return await transcribeWithAntigravity({
-          audioBuffer: Buffer.from(audioBuffer),
-          model,
-          contentType: "audio/webm",
-          language,
-          keyterms,
-          transcriptionMode,
-          ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
-        });
-      })
+      )
     );
 
     ipcMain.handle(
@@ -6056,7 +6058,9 @@ class IPCHandlers {
             throw new Error(byokSizeCapError(route.sizeCapBytes));
           }
           const { transcribeWithAntigravity } = require("./antigravityTranscription");
-          const { resolveAntigravityTranscriptionMode } = require("./antigravityTranscriptionPolicy");
+          const {
+            resolveAntigravityTranscriptionMode,
+          } = require("./antigravityTranscriptionPolicy");
           let ffmpegPath;
           try {
             ffmpegPath = require("ffmpeg-static");
@@ -8511,7 +8515,10 @@ class IPCHandlers {
 
     ipcMain.handle(
       "start-dictation-preview",
-      async (_event, { provider, model, language, display = true, transcriptionMode, keyterms }) => {
+      async (
+        _event,
+        { provider, model, language, display = true, transcriptionMode, keyterms }
+      ) => {
         resetDictationPreviewState();
         const gen = dictationPreviewGen;
         dictationPreviewMode = true;
@@ -8562,9 +8569,10 @@ class IPCHandlers {
         }
 
         if (provider === "antigravity") {
-          const { isAntigravityLiveModel, resolveAntigravityTranscriptionMode } = require(
-            "./antigravityTranscriptionPolicy"
-          );
+          const {
+            isAntigravityLiveModel,
+            resolveAntigravityTranscriptionMode,
+          } = require("./antigravityTranscriptionPolicy");
           if (isAntigravityLiveModel(model)) {
             try {
               const { createAntigravityLiveStream } = require("./antigravityLiveTranscription");
@@ -9438,7 +9446,9 @@ class IPCHandlers {
           if (route.transport === "proxied" && route.provider === "antigravity") {
             const ext = path.extname(realByok).toLowerCase().replace(".", "");
             const { transcribeWithAntigravity } = require("./antigravityTranscription");
-            const { resolveAntigravityTranscriptionMode } = require("./antigravityTranscriptionPolicy");
+            const {
+              resolveAntigravityTranscriptionMode,
+            } = require("./antigravityTranscriptionPolicy");
             let ffmpegPath;
             try {
               ffmpegPath = require("ffmpeg-static");

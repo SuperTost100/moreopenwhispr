@@ -77,7 +77,9 @@ export function AntigravitySettingsPanel({
       <SettingsPanelRow>
         <SettingsRow
           label={t("settingsPage.transcription.antigravity.transcriptionFidelity.label")}
-          description={t("settingsPage.transcription.antigravity.transcriptionFidelity.description")}
+          description={t(
+            "settingsPage.transcription.antigravity.transcriptionFidelity.description"
+          )}
         >
           <TwoOptionSelector
             value={transcriptionMode}
