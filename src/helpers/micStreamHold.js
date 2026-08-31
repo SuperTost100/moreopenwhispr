@@ -92,7 +92,7 @@ export class MicStreamHold {
   }
 
   _isLive(track) {
-    return !!track && track.readyState === "live" && !track.muted;
+    return !!track && track.readyState === "live";
   }
 
   _clearReleaseTimer() {

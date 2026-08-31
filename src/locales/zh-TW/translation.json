@@ -357,6 +357,17 @@
             "title": "自架",
             "description": "連接你自己託管的模型。"
           }
+        },
+        "antigravity": {
+          "title": "Antigravity",
+          "description": "Use your Google Antigravity subscription through the local agy CLI. No extra API keys.",
+          "continue": "Use Antigravity",
+          "features": {
+            "subscription": "Uses the Antigravity plan you already have",
+            "noKey": "No Gemini or OpenAI API key",
+            "localCli": "Talks to agy on this Mac",
+            "features": "Dictation, cleanup, and assistant on the same subscription"
+          }
         }
       },
       "provider": {
@@ -399,8 +410,10 @@
           "modelNotFound": "所選模型無法從此服務商取得。",
           "providerStatus": "服務商回傳了狀態碼 {{status}}。",
           "timeout": "連線測試逾時。",
-          "network": "無法連上服務商。"
-        }
+          "network": "無法連上服務商。",
+          "agyMissing": "Antigravity CLI (agy) was not found. Install it and sign in with agy."
+        },
+        "antigravityNote": "Uses the local Antigravity CLI (agy). No API key — sign in with agy if a test fails."
       },
       "local": {
         "title": "設定本機模型",
@@ -455,7 +468,8 @@
       "systemAudioDescription": "讓會議錄音機聽到通話另一方的聲音 — 會議、講座、Podcast。你可以稍後在「設定」中開啟。",
       "optional": "可選",
       "recommended": "建議",
-      "accessibilityTroubleshooting": "在系統設定 → 輔助使用中，將 OpenWhispr 的開關關閉再重新開啟。如果清單中根本沒有 OpenWhispr，請點按 + 並從「應用程式」資料夾加入。還是不行？請寄信至 support@openwhispr.com。"
+      "accessibilityTroubleshooting": "在系統設定 → 輔助使用中，將 OpenWhispr 的開關關閉再重新開啟。如果清單中根本沒有 OpenWhispr，請點按 + 並從「應用程式」資料夾加入。還是不行？請寄信至 support@openwhispr.com。",
+      "electronDevHint": "This is a development build. Click Enable: Finder will highlight Electron.app. In System Settings click +, choose that highlighted app, and turn the toggle on. After Screen Recording, quit and reopen Electron."
     },
     "transcription": {
       "title": "轉錄設定",
@@ -796,6 +810,11 @@
     },
     "corti": {
       "euOnly": "Corti 模型僅在歐盟地區可用。"
+    },
+    "antigravity": {
+      "checking": "Checking Antigravity CLI…",
+      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
+      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
     }
   },
   "transcription": {
@@ -829,6 +848,9 @@
     "tinfoil": {
       "transportNote": "Tinfoil 串流轉錄使用 Voxtral Mini 4B，批次轉錄使用 Voxtral Small 24B。",
       "docsLink": "查看文件"
+    },
+    "antigravity": {
+      "transportNote": "Uses your local Antigravity CLI (agy) and Google subscription. No API key. Run agy once to sign in if prompts fail."
     }
   },
   "hooks": {
@@ -839,7 +861,8 @@
         "agentUnavailable": "助理無法使用",
         "screenContextSkipped": "已略過螢幕內容",
         "dailyLimitReached": "已達每日上限",
-        "providerRateLimited": "服務商速率限制"
+        "providerRateLimited": "服務商速率限制",
+        "antigravityQuotaExceeded": "Antigravity 配額已用盡"
       },
       "fallback": {
         "title": "備援模式",
@@ -870,6 +893,7 @@
         "offline": "你目前離線。雲端轉錄需要網際網路連線。",
         "dailyLimitReached": "已達今日的轉錄上限。請明天再試或升級你的方案。",
         "providerRateLimited": "你的轉錄服務商限制了請求頻率。請稍候再試。",
+        "antigravityQuotaExceeded": "Antigravity 訂閱配額已用盡。OpenWhispr 會盡可能透過 agy 重試，否則請稍等幾分鐘後再試。",
         "chunkLoss": "網路問題導致錄音大部分遺失。請從歷史記錄中重新轉錄。",
         "agentReasoningFailed": "語音助理無法處理該指令，已改為插入原始逐字稿。",
         "screenContextSkipped": "截圖無法傳送，因此已在沒有螢幕內容的情況下執行你的指令。",
@@ -2488,7 +2512,9 @@
         "gemini_3_5_transcribe": "Google Gemini 語音轉文字",
         "corti_transcribe": "臨床級醫療轉錄",
         "xai_grok_stt": "xAI 高精度語音辨識",
-        "tinfoil_voxtral": "可驗證的私密轉錄"
+        "tinfoil_voxtral": "可驗證的私密轉錄",
+        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
+        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)"
       },
       "cloud": {
         "openai_gpt_5_2": "強大的推理模型",
@@ -2531,7 +2557,14 @@
         "corti_corti_s1_instant": "快速醫療模型，無推理過程",
         "corti_corti_s1": "功能最強的臨床模型，帶推理",
         "corti_corti_s1_mini_instant": "精簡型醫療模型，最快且成本最低",
-        "corti_corti_s1_mini": "精簡型臨床模型，半價提供推理"
+        "corti_corti_s1_mini": "精簡型臨床模型，半價提供推理",
+        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
+        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
+        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
+        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
+        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
+        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
+        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "最強大的 Claude 模型。最適合最具挑戰性的智慧助手模式任務。",

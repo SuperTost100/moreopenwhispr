@@ -79,6 +79,10 @@ test("setup choice appends the selected two-stage route", async () => {
     getOnboardingRoute({ authPath: "account", setupMode: "local", agentAllowed: false }).slice(-2),
     ["setup-choice", "local-dictation"]
   );
+  assert.equal(
+    getOnboardingRoute({ authPath: "guest", setupMode: "antigravity", agentAllowed: true }).at(-1),
+    "setup-choice"
+  );
 });
 
 test("a confirmed enterprise workspace ends the account route at notes", async () => {
@@ -140,6 +144,9 @@ test("versioned sessions reject malformed or old data", async () => {
 
   const session = createOnboardingSession();
   assert.deepEqual(parseOnboardingSession(JSON.stringify(session)), session);
+
+  const antigravitySession = { ...session, setupMode: "antigravity" };
+  assert.deepEqual(parseOnboardingSession(JSON.stringify(antigravitySession)), antigravitySession);
 
   const legacyV2 = { ...session };
   delete legacyV2.selfHostedRequested;

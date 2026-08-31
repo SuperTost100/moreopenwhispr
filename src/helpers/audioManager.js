@@ -47,6 +47,7 @@ import {
 } from "../stores/policyRules";
 import { usePolicyStore } from "../stores/policyStore";
 import { recordCleanupFailure } from "../stores/cleanupFailureStore";
+import { shouldSkipAntigravityDictationCleanup } from "./dictationRouting";
 import {
   getBatchTranscriptionModel,
   getCloudModel,
@@ -159,7 +160,9 @@ function resolveReasoningRoute(
 ) {
   const cleanup = selectResolvedLLMConfig(settings, "dictationCleanup");
   const cleanupReachable =
-    !!settings.useCleanupModel && (!!cleanup.model?.trim() || isCloudCleanupMode());
+    !!settings.useCleanupModel &&
+    (!!cleanup.model?.trim() || isCloudCleanupMode()) &&
+    !shouldSkipAntigravityDictationCleanup(settings);
   const agent = resolveDictationAgentInference(settings, {
     isCloudAgent: isCloudDictationAgentMode(),
   });
@@ -383,6 +386,18 @@ const PROXY_TRANSCRIPTION_PROVIDERS = {
       model,
       language,
       keyterms: keyterms.length > 0 ? keyterms : undefined,
+    }),
+  },
+  antigravity: {
+    displayName: "Antigravity",
+    ipc: () => window.electronAPI?.proxyAntigravityTranscription,
+    buildPayload: ({ audioBuffer, model, language, keyterms, apiSettings }) => ({
+      audioBuffer,
+      model,
+      language,
+      keyterms: keyterms.length > 0 ? keyterms : undefined,
+      transcriptionMode:
+        apiSettings?.antigravityTranscriptionMode === "verbatim" ? "VERBATIM" : "SMART",
     }),
   },
   xai: {
@@ -2285,6 +2300,16 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         err.code = "API_KEY_MISSING";
         throw err;
       }
+    } else if (provider === "antigravity") {
+      const check = await window.electronAPI.checkAntigravityAvailable?.();
+      if (!check?.available) {
+        const err = new Error(
+          check?.error || "Antigravity CLI (agy) not found. Install it and run agy auth login."
+        );
+        err.code = "AGY_NOT_FOUND";
+        throw err;
+      }
+      apiKey = null;
     } else if (provider === "groq") {
       // Prefer store value (user-entered via UI) over main process (.env)
       apiKey = s.groqApiKey;
@@ -2572,8 +2597,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     }
 
     const s = getSettings();
+    const cleanupActive =
+      !!s.useCleanupModel && !shouldSkipAntigravityDictationCleanup(s);
     const useReasoning =
-      !!s.useCleanupModel || dictationAgentReachable(s) || translationChainReachable(s);
+      cleanupActive || dictationAgentReachable(s) || translationChainReachable(s);
     const now = Date.now();
     const cacheValid =
       this.reasoningAvailabilityCache &&
@@ -2746,7 +2773,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     const isCloud = isCloudCleanupMode();
     const settings = getSettings();
     const cleanupProvider = settings.cleanupProvider || "auto";
-    const cleanupReachable = !!settings.useCleanupModel && (!!cleanupModel || isCloud);
+    const cleanupReachable =
+      !!settings.useCleanupModel &&
+      (!!cleanupModel || isCloud) &&
+      !shouldSkipAntigravityDictationCleanup(settings);
     const agentReachable = dictationAgentReachable(settings);
     const agentName =
       typeof window !== "undefined" && window.localStorage

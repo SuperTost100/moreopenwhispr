@@ -12,6 +12,7 @@ import AssistantHotkeyPreview from "./onboarding/AssistantHotkeyPreview";
 import DemoStep from "./onboarding/DemoStep";
 import CalendarConnectionsStep from "./onboarding/CalendarConnectionsStep";
 import SetupChoiceStep from "./onboarding/SetupChoiceStep";
+import { applyAntigravityOnboarding } from "./onboarding/antigravitySetup";
 import { ByokProviderStep, LocalModelSetupStep } from "./onboarding/ProviderSetupStep";
 import { RequiredModelDownloadStep } from "./onboarding/RequiredModelDownloadStep";
 import { AlertDialog } from "./ui/dialog";
@@ -471,6 +472,11 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     async (mode: Exclude<OnboardingSetupMode, null>, options?: { selfHosted?: boolean }) => {
       setSetupMode(mode);
       setSelfHostedRequested(!!options?.selfHosted);
+      if (mode === "antigravity") {
+        applyAntigravityOnboarding(settingsStore, agentAllowed);
+        await finalizeOnboarding("antigravity");
+        return;
+      }
       if (mode === "cloud") {
         settingsStore.setCloudTranscriptionForAllScopes({
           useLocalWhisper: false,

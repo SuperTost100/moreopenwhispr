@@ -1619,6 +1619,36 @@ declare global {
         config: any
       ) => Promise<{ success: boolean; text?: string; error?: string }>;
 
+      // Antigravity (agy) subscription reasoning / STT
+      processAntigravityReasoning?: (
+        text: string,
+        modelId: string,
+        agentName: string | null,
+        config: any
+      ) => Promise<{ success: boolean; text?: string; error?: string; code?: string }>;
+      processAntigravityToolTurn?: (payload: {
+        systemPrompt?: string;
+        messages?: Array<{ role?: string; content?: string }>;
+        tools?: Array<{ name?: string; description?: string }>;
+        model?: string;
+        conversationId?: string;
+        timeoutMs?: number;
+      }) => Promise<{
+        success: boolean;
+        result?: any;
+        conversationId?: string | null;
+        error?: string;
+        code?: string;
+      }>;
+      checkAntigravityAvailable?: () => Promise<{ available: boolean; error?: string }>;
+      proxyAntigravityTranscription?: (data: {
+        audioBuffer: ArrayBuffer;
+        model?: string;
+        language?: string;
+        keyterms?: string[];
+        transcriptionMode?: "SMART" | "VERBATIM";
+      }) => Promise<ProxyTranscriptionResult>;
+
       // Enterprise reasoning (Bedrock, Azure, Vertex)
       processEnterpriseReasoning: (
         text: string,

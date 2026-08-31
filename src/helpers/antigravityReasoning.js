@@ -1,0 +1,248 @@
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { DEFAULT_ANTIGRAVITY_MODEL, ensureWritableDir, runAgyTurn } = require("./antigravityCli");
+const { getAntigravityAccessToken, getAntigravityProjectId } = require("./antigravityAuth");
+const { generateTextViaGateway } = require("./antigravityGateway");
+
+const TOOL_LOOP_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    type: { enum: ["tool_call", "final"] },
+    tool_call: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        arguments: { type: "object" },
+      },
+    },
+    content: { type: "string" },
+  },
+  required: ["type"],
+};
+
+function buildReasoningPrompt({ systemPrompt, userText }) {
+  return [
+    "SYSTEM:",
+    systemPrompt,
+    "",
+    "USER:",
+    userText,
+    "",
+    "Follow the OUTPUT RULES in the system prompt above. Output only the answer.",
+  ].join("\n");
+}
+
+function extensionForMediaType(mediaType) {
+  if (mediaType === "image/png") {
+    return ".png";
+  }
+  return ".jpg";
+}
+
+function stripMarkdownFences(text) {
+  const trimmed = String(text || "").trim();
+  const fenced = trimmed.match(/^```(?:json|text)?\s*([\s\S]*?)```$/i);
+  return (fenced ? fenced[1] : trimmed).trim();
+}
+
+function coerceToolLoopPayload(parsed) {
+  if (parsed?.type === "tool_call" || parsed?.type === "final") {
+    // Spike quirk: model sometimes marks type=final but puts the tool call JSON in content.
+    if (parsed.type === "final" && typeof parsed.content === "string") {
+      const nested = stripMarkdownFences(parsed.content);
+      if (nested.startsWith("{")) {
+        try {
+          const inner = JSON.parse(nested);
+          if (typeof inner?.name === "string") {
+            return {
+              type: "tool_call",
+              tool_call: {
+                name: inner.name,
+                arguments: inner.arguments && typeof inner.arguments === "object" ? inner.arguments : {},
+              },
+            };
+          }
+        } catch {
+          // keep as final
+        }
+      }
+    }
+    return parsed;
+  }
+  if (typeof parsed?.name === "string") {
+    return {
+      type: "tool_call",
+      tool_call: {
+        name: parsed.name,
+        arguments: parsed.arguments && typeof parsed.arguments === "object" ? parsed.arguments : {},
+      },
+    };
+  }
+  throw new Error("Invalid tool loop response type");
+}
+
+function parseToolLoopResponse(text) {
+  const cleaned = stripMarkdownFences(text);
+  let parsed = JSON.parse(cleaned);
+  // Unwrap agy --output-format json envelope if present.
+  if (parsed?.structured_output != null && parsed.type !== "tool_call" && parsed.type !== "final") {
+    parsed =
+      typeof parsed.structured_output === "string"
+        ? JSON.parse(stripMarkdownFences(parsed.structured_output))
+        : parsed.structured_output;
+  }
+  return coerceToolLoopPayload(parsed);
+}
+
+function formatMessagesForPrompt(messages = []) {
+  return messages
+    .map((message, index) => {
+      const role = message?.role || "user";
+      const content = message?.content || "";
+      return `[${index + 1}] ${role.toUpperCase()}:\n${content}`;
+    })
+    .join("\n\n");
+}
+
+function formatToolsForPrompt(tools = []) {
+  return tools
+    .map((tool) => {
+      const name = tool?.name || tool?.function?.name || "unknown_tool";
+      const description = tool?.description || tool?.function?.description || "";
+      return `- ${name}: ${description}`.trim();
+    })
+    .join("\n");
+}
+
+function buildToolLoopPrompt({ systemPrompt, messages, tools }) {
+  return [
+    "SYSTEM:",
+    systemPrompt,
+    "",
+    "Available tools:",
+    formatToolsForPrompt(tools),
+    "",
+    "Conversation:",
+    formatMessagesForPrompt(messages),
+    "",
+    "Respond with JSON matching the provided schema.",
+    'Use type "tool_call" with tool_call.name/arguments, or type "final" with content.',
+  ].join("\n");
+}
+
+async function reasonWithAntigravity({
+  text,
+  model,
+  systemPrompt,
+  screenContext,
+  command,
+  runTurn = runAgyTurn,
+  tmpRoot = os.tmpdir(),
+  fetchImpl = fetch,
+  getAccessToken = getAntigravityAccessToken,
+  getProjectId = getAntigravityProjectId,
+}) {
+  const resolvedModel = model || DEFAULT_ANTIGRAVITY_MODEL;
+
+  if (screenContext?.data) {
+    let userText = text;
+    const tmpDir = fs.mkdtempSync(path.join(tmpRoot, "openwhispr-antigravity-llm-"));
+    ensureWritableDir(tmpDir);
+    const addDirs = [tmpDir];
+    const mediaType = screenContext.mediaType || "image/jpeg";
+    const imagePath = path.join(tmpDir, `screen${extensionForMediaType(mediaType)}`);
+    fs.writeFileSync(imagePath, Buffer.from(screenContext.data, "base64"));
+    userText = `${text}\n\nAttached screenshot path: ${path.basename(imagePath)}`;
+    try {
+      const prompt = buildReasoningPrompt({ systemPrompt, userText });
+      const turn = await runTurn({
+        prompt,
+        model: resolvedModel,
+        addDirs,
+        cwd: tmpDir,
+        command,
+        printTimeout: "120s",
+        timeoutMs: 180_000,
+        extraArgs: ["--sandbox", "--effort", "low"],
+      });
+      return turn.text.trim();
+    } finally {
+      try {
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      } catch {
+        // best-effort cleanup
+      }
+    }
+  }
+
+  const accessToken = await getAccessToken({ fetchImpl });
+  const projectId = await getProjectId({ fetchImpl });
+  try {
+    return await generateTextViaGateway({
+      accessToken,
+      projectId,
+      model: resolvedModel,
+      systemPrompt,
+      userText: text,
+      fetchImpl,
+    });
+  } catch (error) {
+    if (error?.code !== "QUOTA_EXCEEDED") {
+      throw error;
+    }
+    const prompt = buildReasoningPrompt({ systemPrompt, userText: text });
+    const turn = await runTurn({
+      prompt,
+      model: resolvedModel,
+      cwd: process.cwd(),
+      command,
+      printTimeout: "60s",
+      timeoutMs: 90_000,
+      extraArgs: ["--sandbox", "--effort", "low"],
+    });
+    return turn.text.trim();
+  }
+}
+
+async function runToolLoopTurn({
+  systemPrompt,
+  messages,
+  tools,
+  model,
+  command,
+  runTurn = runAgyTurn,
+  cwd = process.cwd(),
+  timeoutMs,
+  conversationId,
+  extraArgs = ["--sandbox"],
+  printTimeout = "120s",
+}) {
+  const prompt = buildToolLoopPrompt({ systemPrompt, messages, tools });
+  const turn = await runTurn({
+    prompt,
+    model: model || DEFAULT_ANTIGRAVITY_MODEL,
+    cwd,
+    command,
+    timeoutMs,
+    conversationId,
+    jsonSchema: TOOL_LOOP_JSON_SCHEMA,
+    outputFormat: "json",
+    printTimeout,
+    extraArgs,
+  });
+  const result = parseToolLoopResponse(turn.text);
+  const nextConversationId =
+    typeof turn.envelope?.conversation_id === "string" && turn.envelope.conversation_id.trim()
+      ? turn.envelope.conversation_id.trim()
+      : conversationId || null;
+  return { result, conversationId: nextConversationId };
+}
+
+module.exports = {
+  buildReasoningPrompt,
+  reasonWithAntigravity,
+  runToolLoopTurn,
+  parseToolLoopResponse,
+  TOOL_LOOP_JSON_SCHEMA,
+};

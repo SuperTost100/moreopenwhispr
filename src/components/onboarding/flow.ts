@@ -23,7 +23,7 @@ export type OnboardingStepId =
   | "local-assistant";
 
 export type OnboardingAuthPath = "account" | "guest" | null;
-export type OnboardingSetupMode = "cloud" | "byok" | "local" | null;
+export type OnboardingSetupMode = "cloud" | "byok" | "local" | "antigravity" | null;
 
 export interface OnboardingSession {
   version: typeof ONBOARDING_FLOW_VERSION;
@@ -59,10 +59,11 @@ const ACCOUNT_ROUTE: OnboardingStepId[] = [
   "dictation-demo",
 ];
 
-const SETUP_ROUTES: Record<Exclude<OnboardingSetupMode, null | "cloud">, OnboardingStepId[]> = {
-  byok: ["byok-dictation", "byok-assistant"],
-  local: ["local-dictation", "local-assistant"],
-};
+const SETUP_ROUTES: Record<Exclude<OnboardingSetupMode, null | "cloud" | "antigravity">, OnboardingStepId[]> =
+  {
+    byok: ["byok-dictation", "byok-assistant"],
+    local: ["local-dictation", "local-assistant"],
+  };
 
 // Canonical flow order, independent of any one route. reconcileStepWithRoute uses
 // it to clamp backwards instead of jumping to the end of the route.
@@ -164,7 +165,7 @@ export function getOnboardingRoute(context: OnboardingRouteContext): OnboardingS
     route.splice(route.indexOf("auth") + 1, 0, "required-models");
   }
 
-  if (context.setupMode && context.setupMode !== "cloud") {
+  if (context.setupMode && context.setupMode !== "cloud" && context.setupMode !== "antigravity") {
     route.push(
       ...SETUP_ROUTES[context.setupMode].filter(
         (stepId) => context.agentAllowed || !stepId.endsWith("assistant")
@@ -199,7 +200,8 @@ export function parseOnboardingSession(value: string | null): OnboardingSession 
       setupMode !== null &&
       setupMode !== "cloud" &&
       setupMode !== "byok" &&
-      setupMode !== "local"
+      setupMode !== "local" &&
+      setupMode !== "antigravity"
     ) {
       return null;
     }

@@ -309,6 +309,7 @@ export function ByokProviderStep({
     [onConnectionChange]
   );
 
+  const isAntigravity = !selfHosted && selectedProvider === "antigravity";
   const testingProvider = selfHosted ? "custom" : selectedProvider;
   const testingKey = draftApiKey;
   const testingBaseUrl = selfHosted ? draftBaseUrl : undefined;
@@ -317,7 +318,9 @@ export function ByokProviderStep({
     ? Boolean(draftBaseUrl.trim() && draftCustomModel.trim())
     : isCortiTranscription
       ? Boolean(draftCortiClientId.trim() && draftCortiClientSecret.trim() && selectedModel)
-      : Boolean(selectedProvider && selectedModel && testingKey.trim());
+      : isAntigravity
+        ? Boolean(selectedProvider && selectedModel)
+        : Boolean(selectedProvider && selectedModel && testingKey.trim());
 
   const commitAndProceed = () => {
     if (selfHosted) {
@@ -341,7 +344,7 @@ export function ByokProviderStep({
         store.setCloudTranscriptionMode("byok");
       }
     } else if (assistant) {
-      knownCredential.set(draftApiKey);
+      if (!isAntigravity) knownCredential.set(draftApiKey);
       store.setChatAgentMode("providers");
       store.switchReasoningProvider("chatIntelligence", selectedProvider, selectedModel);
       store.setChatAgentModel(selectedModel);
@@ -349,7 +352,7 @@ export function ByokProviderStep({
       if (isCortiTranscription) {
         store.setCortiClientId(draftCortiClientId);
         store.setCortiClientSecret(draftCortiClientSecret);
-      } else {
+      } else if (!isAntigravity) {
         knownCredential.set(draftApiKey);
       }
       store.setCloudTranscriptionMode("byok");
@@ -515,6 +518,10 @@ export function ByokProviderStep({
                   />
                 </label>
               </div>
+            ) : isAntigravity ? (
+              <p className="text-xs text-[var(--onboarding-text-secondary)]">
+                {t("onboarding.rehaul.provider.antigravityNote")}
+              </p>
             ) : (
               <label className="block">
                 <FieldLabel>{t("onboarding.rehaul.provider.apiKey")}</FieldLabel>

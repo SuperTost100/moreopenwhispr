@@ -69,6 +69,8 @@ export function getTranscriptionApiKey(provider: string, keys: TranscriptionApiK
       return keys.mistralApiKey;
     case "gemini":
       return keys.geminiApiKey;
+    case "antigravity":
+      return "";
     case "tinfoil":
       return keys.tinfoilApiKey;
     case "custom":

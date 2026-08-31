@@ -287,6 +287,25 @@
       ]
     },
     {
+      "id": "antigravity",
+      "name": "Antigravity",
+      "baseUrl": "",
+      "models": [
+        {
+          "id": "gemini-3.5-transcribe",
+          "name": "Gemini 3.5 Transcribe",
+          "description": "Fast dedicated speech-to-text via Antigravity subscription",
+          "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe"
+        },
+        {
+          "id": "gemini-3.5-transcribe-live",
+          "name": "Gemini 3.5 Transcribe Live",
+          "description": "Streaming speech-to-text (coming soon)",
+          "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe_live"
+        }
+      ]
+    },
+    {
       "id": "corti",
       "name": "Corti",
       "baseUrl": "https://api.us.corti.app/v2",
@@ -560,6 +579,64 @@
           "name": "Gemma 4 26B MoE",
           "description": "Google's Gemma 4 MoE, 4B active params, 256K context",
           "descriptionKey": "models.descriptions.cloud.gemini_gemma_4_26b_a4b_it"
+        }
+      ]
+    },
+    {
+      "id": "antigravity",
+      "name": "Antigravity",
+      "models": [
+        {
+          "id": "gemini-3.5-flash-low",
+          "name": "Gemini 3.5 Flash (Low)",
+          "description": "Fast cleanup via Antigravity subscription",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_5_flash_low",
+          "supportsVision": true
+        },
+        {
+          "id": "gemini-3.5-flash-medium",
+          "name": "Gemini 3.5 Flash (Medium)",
+          "description": "Balanced via Antigravity",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_5_flash_medium",
+          "supportsVision": true
+        },
+        {
+          "id": "gemini-3.5-flash-high",
+          "name": "Gemini 3.5 Flash (High)",
+          "description": "Higher quality via Antigravity",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_5_flash_high",
+          "supportsVision": true
+        },
+        {
+          "id": "gemini-3.7-flash-high",
+          "name": "Gemini 3.7 Flash (High)",
+          "description": "Latest Flash via Antigravity",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_7_flash_high",
+          "supportsVision": true
+        },
+        {
+          "id": "gemini-3.1-pro-high",
+          "name": "Gemini 3.1 Pro (High)",
+          "description": "Frontier Pro via Antigravity",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_1_pro_high",
+          "supportsVision": true,
+          "supportsThinking": true
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "name": "Claude Sonnet 4.6",
+          "description": "Claude via Antigravity subscription",
+          "descriptionKey": "models.descriptions.cloud.antigravity_claude_sonnet_4_6",
+          "supportsVision": true,
+          "supportsThinking": true
+        },
+        {
+          "id": "claude-opus-4-6-thinking",
+          "name": "Claude Opus 4.6",
+          "description": "Opus via Antigravity subscription",
+          "descriptionKey": "models.descriptions.cloud.antigravity_claude_opus_4_6",
+          "supportsVision": true,
+          "supportsThinking": true
         }
       ]
     },

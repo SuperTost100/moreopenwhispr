@@ -273,6 +273,7 @@ export function useChatStreaming({
           "tinfoil",
           "openrouter",
           "corti",
+          "antigravity",
         ].includes(chatConfig.provider);
       const localModelCanUseTool =
         isLocalProvider && estimateModelSizeB(chatConfig.model) >= LOCAL_TOOL_MIN_PARAMS_B;
@@ -420,7 +421,45 @@ export function useChatStreaming({
             ...(cloudScreenContext ? { screenContext: cloudScreenContext } : {}),
           });
         } else {
-          const aiTools = registry?.toAISDKFormat();
+          const executeToolCall = registry
+            ? async (name: string, argsJson: string) => {
+                const tool = registry.get(name);
+                if (!tool)
+                  return {
+                    data: `Unknown tool: ${name}`,
+                    displayText: t("agentMode.tools.unknownTool", { name }),
+                  };
+                let args: Record<string, unknown>;
+                try {
+                  args = JSON.parse(argsJson);
+                } catch {
+                  return {
+                    data: `Invalid tool arguments for ${name}`,
+                    displayText: t("agentMode.tools.invalidArgs", { name }),
+                  };
+                }
+                const result = await tool.execute(args);
+                const data = result.success
+                  ? typeof result.data === "string"
+                    ? result.data
+                    : JSON.stringify(result.data)
+                  : result.displayText;
+                const metadata =
+                  result.success && result.data && typeof result.data === "object"
+                    ? (result.data as Record<string, unknown> | Array<Record<string, unknown>>)
+                    : undefined;
+                return { data, displayText: result.displayText, metadata };
+              }
+            : undefined;
+          const isAntigravityAgent = chatConfig.provider === "antigravity";
+          const antigravityToolSchemas = isAntigravityAgent
+            ? registry?.getAll().map((tool) => ({
+                name: tool.name,
+                description: tool.description,
+                parameters: tool.parameters,
+              }))
+            : undefined;
+          const aiTools = isAntigravityAgent ? undefined : registry?.toAISDKFormat();
           stream = ReasoningService.processTextStreamingAI(
             llmMessages,
             chatConfig.model,
@@ -433,6 +472,16 @@ export function useChatStreaming({
               customApiKey:
                 isCustomAgent || isLanAgent ? chatConfig.customApiKey || undefined : undefined,
               disableThinking: chatConfig.disableThinking,
+              ...(executeToolCall ? { executeToolCall } : {}),
+              ...(antigravityToolSchemas ? { antigravityToolSchemas } : {}),
+              ...(isAntigravityAgent && options?.attachment
+                ? {
+                    screenContext: {
+                      data: options.attachment.image,
+                      mediaType: options.attachment.mediaType,
+                    },
+                  }
+                : {}),
             },
             aiTools
           );
