@@ -1,6 +1,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const { execFileSync } = require("child_process");
 
 const TOKEN_REL = path.join(".gemini", "antigravity-cli", "antigravity-oauth-token");
 
@@ -10,13 +11,7 @@ function getTokenFilePath() {
 const OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const TOKEN_REFRESH_SKEW_SEC = 120;
 
-// Embedded in every Antigravity CLI build — not user secrets (see antigravity_proxy).
-const DEFAULT_CLIENT_ID =
-  process.env.ANTIGRAVITY_CLIENT_ID ||
-  "REDACTED_ANTIGRAVITY_CLIENT_ID";
-const DEFAULT_CLIENT_SECRET =
-  process.env.ANTIGRAVITY_CLIENT_SECRET || "REDACTED_ANTIGRAVITY_CLIENT_SECRET";
-
+let cachedOAuthClient = null;
 let cachedProjectId = null;
 let cachedProjectBase = null;
 
@@ -71,13 +66,84 @@ function authError(message, code) {
   return error;
 }
 
+function resolveAgyBinaryPath() {
+  const candidate = process.env.ANTIGRAVITY_CLI || "agy";
+  if (path.isAbsolute(candidate) || candidate.includes("/") || candidate.includes("\\")) {
+    return fs.existsSync(candidate) ? candidate : null;
+  }
+  try {
+    return execFileSync("which", [candidate], { encoding: "utf8" }).trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+// ponytail: public Antigravity OAuth app creds live inside the agy binary; scrape at runtime so git never stores them.
+function tryExtractOAuthFromAgyBinary() {
+  const agyPath = resolveAgyBinaryPath();
+  if (!agyPath) {
+    return null;
+  }
+
+  let blob = "";
+  try {
+    blob = execFileSync("strings", [agyPath], {
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+    });
+  } catch {
+    try {
+      blob = fs.readFileSync(agyPath, "latin1");
+    } catch {
+      return null;
+    }
+  }
+
+  const authIdx = blob.indexOf("auth.cloud.google");
+  if (authIdx < 0) {
+    return null;
+  }
+  const window = blob.slice(Math.max(0, authIdx - 800), authIdx + 800);
+  const clientId = window.match(/(\d+-[\w-]+\.apps\.googleusercontent\.com)/)?.[1];
+  const clientSecret = window.match(/(GOCSPX-[A-Za-z0-9_-]+)/)?.[1];
+  if (!clientId || !clientSecret) {
+    return null;
+  }
+  return { clientId, clientSecret };
+}
+
+function resolveOAuthClientCredentials() {
+  if (cachedOAuthClient) {
+    return cachedOAuthClient;
+  }
+
+  const envId = process.env.ANTIGRAVITY_CLIENT_ID?.trim();
+  const envSecret = process.env.ANTIGRAVITY_CLIENT_SECRET?.trim();
+  if (envId && envSecret) {
+    cachedOAuthClient = { clientId: envId, clientSecret: envSecret };
+    return cachedOAuthClient;
+  }
+
+  const fromAgy = tryExtractOAuthFromAgyBinary();
+  if (fromAgy) {
+    cachedOAuthClient = fromAgy;
+    return cachedOAuthClient;
+  }
+
+  throw authError(
+    "Antigravity OAuth client credentials unavailable. Install `agy` on PATH or set ANTIGRAVITY_CLIENT_ID and ANTIGRAVITY_CLIENT_SECRET.",
+    "AGY_OAUTH_CONFIG_MISSING"
+  );
+}
+
 async function refreshAccessToken(refreshToken, fetchImpl = fetch) {
+  const { clientId, clientSecret } = resolveOAuthClientCredentials();
   const response = await fetchImpl(OAUTH_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      client_id: DEFAULT_CLIENT_ID,
-      client_secret: DEFAULT_CLIENT_SECRET,
+      client_id: clientId,
+      client_secret: clientSecret,
       refresh_token: refreshToken,
       grant_type: "refresh_token",
     }),
@@ -168,4 +234,6 @@ module.exports = {
   parseExpiryTimestamp,
   readTokenFile,
   refreshAccessToken,
+  resolveOAuthClientCredentials,
+  tryExtractOAuthFromAgyBinary,
 };
