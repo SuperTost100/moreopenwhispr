@@ -34,7 +34,7 @@ Dedicated `gemini-3.5-transcribe-live` returned 404 on the daily gateway. Implem
 - `src/services/ai/inferenceProviders/antigravity.ts`
 - `src/services/ai/antigravityChat.ts`
 - `src/components/onboarding/antigravitySetup.ts`
-- `src/config/mowProfile.ts` / `mowProfile.js`
+- `src/config/mowProfile.ts` / `mowProfile.cjs`
 - `test/helpers/antigravity*.test.js`
 - `test/components/antigravitySetup.test.js`
 - `.fork/ANTIGRAVITY.md` (this file)

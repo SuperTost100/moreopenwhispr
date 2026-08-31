@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const debugLogger = require("./debugLogger");
 const secretCrypto = require("./secretCrypto");
-const { isMowBuild } = require("../config/mowProfile.js");
+const { isMowBuild } = require("../config/mowProfile.cjs");
 
 const tokenFile = () => path.join(app.getPath("userData"), "auth-token.bin");
 

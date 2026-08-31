@@ -1,6 +1,7 @@
 "use strict";
 
-// ponytail: mirror of mowProfile.ts for Electron main / node --test require().
+// ponytail: CJS mirror of mowProfile.ts for Electron main / node --test require().
+// Named .cjs so Vite SSR prefers mowProfile.ts (its resolve order ranks .js before .ts).
 const MOW_PROFILE = {
   enabled: true,
   productName: "MoreOpenWhispr",

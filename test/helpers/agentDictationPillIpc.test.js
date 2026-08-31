@@ -24,6 +24,7 @@ const electronStub = {
     handle: (channel, fn) => handlers.set(channel, fn),
     on: (channel, fn) => onHandlers.set(channel, fn),
     removeHandler: () => {},
+    removeAllListeners: () => {},
   },
   net: {
     fetch: async () => ({

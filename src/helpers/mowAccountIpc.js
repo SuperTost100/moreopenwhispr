@@ -1,7 +1,7 @@
 "use strict";
 
 const { ipcMain } = require("electron");
-const { isMowBuild } = require("../config/mowProfile.js");
+const { isMowBuild } = require("../config/mowProfile.cjs");
 
 const DISABLED = Object.freeze({
   success: false,
@@ -49,7 +49,8 @@ function registerMowAccountIpcOverrides() {
     ipcMain.handle(channel, async () => DISABLED);
   }
   for (const channel of MOW_DISABLED_ON_CHANNELS) {
-    ipcMain.removeAllListeners(channel);
+    // ponytail: tests stub ipcMain without EventEmitter. Electron always has this.
+    ipcMain.removeAllListeners?.(channel);
     ipcMain.on(channel, () => {});
   }
 }

@@ -8,7 +8,7 @@ const {
   withoutAccountModes,
   coerceInferenceMode,
   mowRepoUrl,
-} = require("../../src/config/mowProfile.js");
+} = require("../../src/config/mowProfile.cjs");
 
 describe("mowProfile", () => {
   it("MOW build strips account cloud modes", () => {

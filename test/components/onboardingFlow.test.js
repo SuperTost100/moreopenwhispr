@@ -28,7 +28,6 @@ test("guest flow keeps permissions and the hotkey before setup choice", async ()
   // finalizeOnboarding registers the dictation hotkey on every path, so guests
   // must still grant the mic and see the key they are getting.
   assert.deepEqual(getOnboardingRoute({ authPath: "guest", setupMode: null, agentAllowed: true }), [
-    "auth",
     "permissions",
     "dictation-hotkey",
     "activation-mode",
@@ -66,7 +65,6 @@ test("setup choice appends the selected two-stage route", async () => {
   assert.deepEqual(
     getOnboardingRoute({ authPath: "guest", setupMode: "byok", agentAllowed: true }),
     [
-      "auth",
       "permissions",
       "dictation-hotkey",
       "activation-mode",
@@ -157,7 +155,7 @@ test("versioned sessions reject malformed or old data", async () => {
   );
 });
 
-test("an explicit restart clears every persisted route choice and returns to auth", async () => {
+test("an explicit restart clears every persisted route choice and keeps guest auth skipped", async () => {
   const { resetOnboardingProgress } = await load();
   const values = new Map([
     ["onboardingSessionV2", '{"currentStepId":"permissions"}'],
@@ -175,8 +173,8 @@ test("an explicit restart clears every persisted route choice and returns to aut
   assert.equal(values.get("onboardingCurrentStep"), "0");
   assert.equal(values.has("onboardingSessionV2"), false);
   assert.equal(values.has("onboardingCompleted"), false);
-  assert.equal(values.has("authenticationSkipped"), false);
-  assert.equal(values.has("skipAuth"), false);
+  assert.equal(values.get("authenticationSkipped"), "true");
+  assert.equal(values.get("skipAuth"), "true");
 });
 
 test("legacy numeric steps migrate conservatively", async () => {

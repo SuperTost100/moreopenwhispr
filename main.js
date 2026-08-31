@@ -1,7 +1,7 @@
 // Chromium picks the display backend before JS runs, so appendSwitch is too
 // late — the flag has to come from a relaunch.
 const { XWAYLAND_FLAG, shouldForceXWayland } = require("./src/helpers/xwayland");
-const { isMowBuild, MOW_PROFILE } = require("./src/config/mowProfile.js");
+const { isMowBuild, MOW_PROFILE } = require("./src/config/mowProfile.cjs");
 
 if (shouldForceXWayland(process.argv)) {
   const { spawn } = require("child_process");

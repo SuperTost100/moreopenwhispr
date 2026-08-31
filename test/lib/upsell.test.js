@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 
 const { decideUpsell, decideProPlanCardCta } = require("../../src/lib/upsell.ts");
 
-test("the upgrade CTA survives sign-out and is withheld while entitlement is unknown", () => {
+test("MOW never shows the OpenWhispr Cloud upgrade CTA", () => {
   const decide = (overrides) =>
     decideUpsell({
       authLoaded: true,
@@ -13,12 +13,12 @@ test("the upgrade CTA survives sign-out and is withheld while entitlement is unk
       ...overrides,
     });
 
-  assert.equal(decide({ isSignedIn: false }), "show");
-  assert.equal(decide({ authLoaded: false, isSignedIn: false }), "unknown");
-  assert.equal(decide({ hasPaidAccess: null }), "unknown");
+  assert.equal(decide({ isSignedIn: false }), "hide");
+  assert.equal(decide({ authLoaded: false, isSignedIn: false }), "hide");
+  assert.equal(decide({ hasPaidAccess: null }), "hide");
   assert.equal(decide({ hasPaidAccess: true }), "hide");
   assert.equal(decide({ isPastDue: true }), "hide");
-  assert.equal(decide({}), "show");
+  assert.equal(decide({}), "hide");
 });
 
 test("a workspace-covered member is never offered a personal Pro checkout", () => {
