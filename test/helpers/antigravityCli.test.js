@@ -9,6 +9,7 @@ const {
   buildAgyArgs,
   classifyAgyError,
   recoverTranscriptFromDisk,
+  resolveAgyBinary,
   runAgyTurn,
 } = require("../../src/helpers/antigravityCli");
 
@@ -90,6 +91,31 @@ test("classifyAgyError detects auth, quota, and generic failures", () => {
   });
 });
 
+test("resolveAgyBinary finds agy in ~/.local/bin when PATH is empty", () => {
+  const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-home-"));
+  const bin = path.join(homedir, ".local", "bin");
+  fs.mkdirSync(bin, { recursive: true });
+  const agy = path.join(bin, "agy");
+  fs.writeFileSync(agy, "#!/bin/sh\n");
+  fs.chmodSync(agy, 0o755);
+  try {
+    assert.equal(resolveAgyBinary("agy", { homedir, env: { PATH: "" } }), agy);
+  } finally {
+    fs.rmSync(homedir, { recursive: true, force: true });
+  }
+});
+
+test("resolveAgyBinary throws AGY_NOT_FOUND when the CLI is missing", () => {
+  assert.throws(
+    () =>
+      resolveAgyBinary("agy", {
+        homedir: path.join(os.tmpdir(), "no-agy-home"),
+        env: { PATH: "" },
+      }),
+    (error) => error.code === "AGY_NOT_FOUND"
+  );
+});
+
 test("recoverTranscriptFromDisk reads the latest model line from transcript.jsonl", (t) => {
   const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-home-"));
   const cwd = path.join(homedir, "project");
@@ -103,13 +129,7 @@ test("recoverTranscriptFromDisk reads the latest model line from transcript.json
     JSON.stringify({ [cwd]: conversationId })
   );
 
-  const transcriptDir = path.join(
-    agyRoot,
-    "brain",
-    conversationId,
-    ".system_generated",
-    "logs"
-  );
+  const transcriptDir = path.join(agyRoot, "brain", conversationId, ".system_generated", "logs");
   fs.mkdirSync(transcriptDir, { recursive: true });
   fs.writeFileSync(
     path.join(transcriptDir, "transcript.jsonl"),
@@ -134,6 +154,7 @@ test("runAgyTurn returns stdout on success", async () => {
   const result = await runAgyTurn({
     prompt: "hello",
     model: "gemini-3.5-flash-low",
+    command: process.execPath,
     spawnImpl: (_command, args, options) => {
       assert.equal(args[0], "--print");
       assert.equal(args[1], "hello");
@@ -152,6 +173,7 @@ test("runAgyTurn prefers writeFilePath over noisy stdout", async (t) => {
 
   const result = await runAgyTurn({
     prompt: "transcribe",
+    command: process.execPath,
     spawnImpl: () => makeChild({ stdout: "I will now explore the workspace...\n" }),
     writeFilePath,
   });
@@ -167,6 +189,7 @@ test("runAgyTurn falls back to writeFilePath when stdout is empty", async (t) =>
 
   const result = await runAgyTurn({
     prompt: "transcribe",
+    command: process.execPath,
     spawnImpl: () => makeChild({ stdout: "" }),
     writeFilePath,
   });
@@ -179,6 +202,7 @@ test("runAgyTurn throws AUTH_REQUIRED on non-zero auth exit", async () => {
   await assert.rejects(
     runAgyTurn({
       prompt: "hello",
+      command: process.execPath,
       spawnImpl: () => makeChild({ stderr: "please authenticate\n", exitCode: 1 }),
     }),
     (error) => error.code === "AUTH_REQUIRED"

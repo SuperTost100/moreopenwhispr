@@ -6,7 +6,7 @@ This is **your** Google/Antigravity subscription. The app is a local client. It 
 
 ## Install the CLI
 
-`agy` must be on PATH in the same environment that launches the desktop app.
+`agy` must be installed. The desktop app looks on PATH plus `~/.local/bin` and Homebrew, because a Finder/Dock launch does not inherit your Terminal PATH.
 
 ```bash
 agy --version
@@ -33,22 +33,22 @@ Onboarding offers Antigravity when `agy` is signed in. Fresh settings default to
 
 Settings → Speech → Dictation (with Antigravity selected):
 
-| Control | Meaning |
-| --- | --- |
-| Fast | One gateway round trip. Default. |
-| Polished | Same transcribe, then an optional flash-low cleanup |
-| Smart / Verbatim | How aggressive the transcribe prompt is |
+| Control          | Meaning                                             |
+| ---------------- | --------------------------------------------------- |
+| Fast             | One gateway round trip. Default.                    |
+| Polished         | Same transcribe, then an optional flash-low cleanup |
+| Smart / Verbatim | How aggressive the transcribe prompt is             |
 
 Live preview uses rolling PCM (about every 2 seconds) on the same daily Cloud Code gateway. A dedicated `gemini-3.5-transcribe-live` endpoint is not used.
 
 ## What actually runs
 
-| Path | Typical latency | When |
-| --- | --- | --- |
-| Daily Cloud Code stream + flash-low audio | ~1–3s | Default dictation STT |
-| Gateway text flash-low | ~1–2s | Polished cleanup |
-| `agy --print` subprocess | ~10–30s | Emergency fallback if the gateway fails |
-| Gateway + rolling WAV | ~2s updates | Live preview |
+| Path                                      | Typical latency | When                                    |
+| ----------------------------------------- | --------------- | --------------------------------------- |
+| Daily Cloud Code stream + flash-low audio | ~1–3s           | Default dictation STT                   |
+| Gateway text flash-low                    | ~1–2s           | Polished cleanup                        |
+| `agy --print` subprocess                  | ~10–30s         | Emergency fallback if the gateway fails |
+| Gateway + rolling WAV                     | ~2s updates     | Live preview                            |
 
 Chat tool loops and reasoning with a screen-context screenshot still shell out to `agy`. Plain text cleanup stays on HTTP.
 
