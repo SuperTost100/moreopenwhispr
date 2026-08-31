@@ -12,7 +12,8 @@ const AUTH_RE =
   /(?:not\s+authenticated|please\s+authenticate|api[_ ]?key\s+(?:required|missing|invalid)|authentication\s+required|unauthorized|invalid\s+credentials|not\s+logged\s+in|login\s+required|run\s+`?agy\s+auth(?:\s+login)?`?\s+first)/i;
 const QUOTA_RE =
   /(?:resource_exhausted|quota|rate[-\s]?limit|too many requests|\b429\b|billing details|g1 credits)/i;
-const TIER_RE = /(?:ineligible|not available on (?:your|this) tier|upgrade (?:your|to)|tier restriction)/i;
+const TIER_RE =
+  /(?:ineligible|not available on (?:your|this) tier|upgrade (?:your|to)|tier restriction)/i;
 
 function resolveAgyBinary(command) {
   const candidate = command || process.env.ANTIGRAVITY_CLI || "agy";

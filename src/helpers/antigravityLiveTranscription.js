@@ -9,13 +9,7 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function transcribePcmBuffer({
-  pcmBuffer,
-  language,
-  keyterms,
-  mode,
-  fetchImpl,
-}) {
+async function transcribePcmBuffer({ pcmBuffer, language, keyterms, mode, fetchImpl }) {
   const wav = pcm16ToWav(pcmBuffer);
   const accessToken = await getAntigravityAccessToken({ fetchImpl });
   const { text } = await transcribeAudioViaGateway({

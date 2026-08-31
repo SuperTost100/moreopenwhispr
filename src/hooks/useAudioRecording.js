@@ -401,7 +401,12 @@ export const useAudioRecording = (toast, options = {}) => {
       onError: (error) => {
         setIsPreparing(false);
         setIsStopping(false);
-        if (error?.code === "TRANSCRIPTION_CANCELLED" || error?.code === "REASON_CANCELLED" || error?.code === "AGY_CANCELLED") return;
+        if (
+          error?.code === "TRANSCRIPTION_CANCELLED" ||
+          error?.code === "REASON_CANCELLED" ||
+          error?.code === "AGY_CANCELLED"
+        )
+          return;
         onDemoEventRef.current?.({
           kind: demoKindRef.current,
           status: "error",

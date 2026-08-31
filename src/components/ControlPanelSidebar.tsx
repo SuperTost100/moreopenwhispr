@@ -282,7 +282,10 @@ export default function ControlPanelSidebar({
             {userImage ? (
               <img src={userImage} alt="" className="w-6 h-6 rounded-full shrink-0 object-cover" />
             ) : (
-              <UserCircle size={18} className="shrink-0 text-foreground/50 dark:text-foreground/45" />
+              <UserCircle
+                size={18}
+                className="shrink-0 text-foreground/50 dark:text-foreground/45"
+              />
             )}
             <div className="flex-1 min-w-0">
               {isSignedIn && (userName || userEmail) ? (
