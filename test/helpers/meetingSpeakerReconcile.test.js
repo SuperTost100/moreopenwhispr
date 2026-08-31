@@ -15,7 +15,12 @@ const electronStub = {
     on: () => {},
     requestSingleInstanceLock: () => true,
   },
-  ipcMain: { handle: () => {}, on: () => {}, removeHandler: () => {} },
+  ipcMain: {
+    handle: () => {},
+    on: () => {},
+    removeHandler: () => {},
+    removeAllListeners: () => {},
+  },
   BrowserWindow: class BrowserWindow {
     static getAllWindows() {
       return [];

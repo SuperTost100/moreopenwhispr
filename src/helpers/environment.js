@@ -5,7 +5,7 @@ const { app } = require("electron");
 const debugLogger = require("./debugLogger");
 const { normalizeUiLanguage } = require("./i18nMain");
 const secretCrypto = require("./secretCrypto");
-const { isMowBuild } = require("../config/mowProfile.js");
+const { isMowBuild } = require("../config/mowProfile.cjs");
 const { BYOK_API_KEYS } = require("../config/secretKeys");
 
 const SECRET_KEYS = [

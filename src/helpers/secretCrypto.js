@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { app, safeStorage } = require("electron");
 const debugLogger = require("./debugLogger");
-const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.js");
+const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.cjs");
 
 const LEGACY_SERVICE = "OpenWhispr";
 const SERVICE = isMowBuild() ? MOW_PROFILE.productName : LEGACY_SERVICE;

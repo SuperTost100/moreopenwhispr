@@ -1,4 +1,4 @@
-import { isMowBuild } from "../../config/mowProfile.js";
+import { isMowBuild } from "../../config/mowProfile";
 
 export const ONBOARDING_SESSION_KEY = "onboardingSessionV2";
 export const LEGACY_ONBOARDING_STEP_KEY = "onboardingCurrentStep";
