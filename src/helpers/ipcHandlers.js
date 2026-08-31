@@ -8506,7 +8506,7 @@ class IPCHandlers {
 
     ipcMain.handle(
       "start-dictation-preview",
-      async (_event, { provider, model, language, display = true }) => {
+      async (_event, { provider, model, language, display = true, transcriptionMode, keyterms }) => {
         resetDictationPreviewState();
         const gen = dictationPreviewGen;
         dictationPreviewMode = true;
@@ -8553,6 +8553,52 @@ class IPCHandlers {
               model,
               error: error.message,
             });
+          }
+        }
+
+        if (provider === "antigravity") {
+          const { isAntigravityLiveModel, resolveAntigravityTranscriptionMode } = require(
+            "./antigravityTranscriptionPolicy"
+          );
+          if (isAntigravityLiveModel(model)) {
+            try {
+              const { createAntigravityLiveStream } = require("./antigravityLiveTranscription");
+              const stream = createAntigravityLiveStream({
+                language: dictationPreviewLanguage,
+                keyterms,
+                mode: resolveAntigravityTranscriptionMode({
+                  antigravityTranscriptionMode: transcriptionMode,
+                }),
+                onUpdate: (text) => {
+                  if (gen === dictationPreviewGen && text && dictationPreviewDisplay) {
+                    this.windowManager.showTranscriptionPreview(text);
+                  }
+                },
+                onError: (error) => {
+                  if (gen !== dictationPreviewGen || dictationPreviewStream !== stream) return;
+                  debugLogger.warn("Antigravity live preview failed mid-session", {
+                    model,
+                    error: error.message,
+                  });
+                  dictationPreviewStream = null;
+                },
+              });
+              if (gen !== dictationPreviewGen) {
+                stream.abort();
+                return { success: true };
+              }
+              dictationPreviewStream = stream;
+              for (const chunk of dictationPreviewBuffer) {
+                stream.sendPcm16(chunk);
+              }
+              dictationPreviewBuffer = [];
+              return { success: true };
+            } catch (error) {
+              debugLogger.warn("Antigravity live preview unavailable", {
+                model,
+                error: error.message,
+              });
+            }
           }
         }
 

@@ -2239,6 +2239,20 @@
             "info": "將每個片段延伸到下一個片段的音訊量，避免拼接時出現突兀截斷。"
           }
         }
+      },
+      "antigravity": {
+        "dictationStyle": {
+          "label": "Dictation style",
+          "description": "Fast skips the cleanup pass after transcription. Polished runs an extra AI cleanup step.",
+          "fast": "Fast",
+          "polished": "Polished"
+        },
+        "transcriptionFidelity": {
+          "label": "Transcription fidelity",
+          "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
+          "smart": "Smart",
+          "verbatim": "Verbatim"
+        }
       }
     },
     "intelligence": {

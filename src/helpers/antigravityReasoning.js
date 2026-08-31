@@ -3,7 +3,7 @@ const os = require("os");
 const path = require("path");
 const { DEFAULT_ANTIGRAVITY_MODEL, ensureWritableDir, runAgyTurn } = require("./antigravityCli");
 const { getAntigravityAccessToken, getAntigravityProjectId } = require("./antigravityAuth");
-const { generateTextViaGateway } = require("./antigravityGateway");
+const { generateTextViaGateway, DAILY_CLOUDCODE_BASE } = require("./antigravityGateway");
 
 const TOOL_LOOP_JSON_SCHEMA = {
   type: "object",
@@ -178,31 +178,15 @@ async function reasonWithAntigravity({
 
   const accessToken = await getAccessToken({ fetchImpl });
   const projectId = await getProjectId({ fetchImpl });
-  try {
-    return await generateTextViaGateway({
-      accessToken,
-      projectId,
-      model: resolvedModel,
-      systemPrompt,
-      userText: text,
-      fetchImpl,
-    });
-  } catch (error) {
-    if (error?.code !== "QUOTA_EXCEEDED") {
-      throw error;
-    }
-    const prompt = buildReasoningPrompt({ systemPrompt, userText: text });
-    const turn = await runTurn({
-      prompt,
-      model: resolvedModel,
-      cwd: process.cwd(),
-      command,
-      printTimeout: "60s",
-      timeoutMs: 90_000,
-      extraArgs: ["--sandbox", "--effort", "low"],
-    });
-    return turn.text.trim();
-  }
+  return generateTextViaGateway({
+    accessToken,
+    projectId,
+    model: resolvedModel,
+    systemPrompt,
+    userText: text,
+    fetchImpl,
+    gatewayBase: DAILY_CLOUDCODE_BASE,
+  });
 }
 
 async function runToolLoopTurn({
