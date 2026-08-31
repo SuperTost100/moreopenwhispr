@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#eef1ef">
+  <meta name="description" content="UI redesign plan for the MoreOpenWhispr desktop app.">
+  <title>MoreOpenWhispr UI redesign plan</title>
+  <style>
+    :root {
+      --page: #eef1ef;
+      --panel: #ffffff;
+      --panel-alt: #f6f8f7;
+      --ink: #18201d;
+      --muted: #59645f;
+      --line: #cdd5d1;
+      --line-strong: #9eaaa4;
+      --local: #2f6f5e;
+      --local-bg: #e8f3ee;
+      --antigravity: #5b57b7;
+      --antigravity-bg: #eeedfa;
+      --warning: #a34c42;
+      --warning-bg: #f8ecea;
+      --focus: #37329a;
+      --radius: 12px;
+      --content: 1180px;
+      --font: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--page);
+      color: var(--ink);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    a, button { touch-action: manipulation; }
+    a { color: inherit; }
+    button { font: inherit; }
+
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 20;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      transform: translateY(-150%);
+    }
+
+    .skip-link:focus { transform: translateY(0); }
+
+    .page-header,
+    main,
+    footer {
+      width: min(calc(100% - 32px), var(--content));
+      margin-inline: auto;
+    }
+
+    .page-header {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wordmark {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      font-weight: 720;
+      letter-spacing: -0.02em;
+    }
+
+    .wordmark small {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .page-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .page-nav a {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      text-decoration: none;
+      transition: color 140ms ease-out, background-color 140ms ease-out;
+    }
+
+    .page-nav a:hover {
+      background: var(--panel);
+      color: var(--ink);
+    }
+
+    section { scroll-margin-top: 24px; }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+      gap: 64px;
+      padding: 72px 0 48px;
+      align-items: end;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1, h2, h3 {
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin-bottom: 20px;
+      font-size: clamp(40px, 6vw, 68px);
+      line-height: 1.02;
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+    }
+
+    h3 {
+      margin-bottom: 6px;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .intro-copy {
+      max-width: 760px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1.55;
+    }
+
+    .scope-note {
+      padding-left: 20px;
+      border-left: 3px solid var(--antigravity);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .scope-note strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .concept {
+      margin-bottom: 88px;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .concept-bar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 16px 10px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-alt);
+    }
+
+    .concept-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 3px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+
+    .tab {
+      min-height: 44px;
+      padding: 7px 14px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 140ms ease-out, background-color 140ms ease-out;
+    }
+
+    .tab:hover { background: var(--panel-alt); color: var(--ink); }
+    .tab:focus-visible { outline-offset: -3px; }
+    .tab:active { background: #e8ecea; }
+    .tab[aria-selected="true"] { background: var(--ink); color: white; }
+
+    .app-layout {
+      min-height: 680px;
+      display: grid;
+      grid-template-columns: 224px minmax(0, 1fr);
+    }
+
+    .app-sidebar {
+      display: flex;
+      flex-direction: column;
+      padding: 24px 14px 16px;
+      border-right: 1px solid var(--line);
+      background: #f1f4f2;
+    }
+
+    .app-name {
+      margin: 0 10px 22px;
+      font-weight: 720;
+      letter-spacing: -0.02em;
+    }
+
+    .app-nav {
+      display: grid;
+      gap: 3px;
+    }
+
+    .app-nav-item {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .app-nav-item.active {
+      background: var(--panel);
+      color: var(--ink);
+      box-shadow: inset 3px 0 0 var(--antigravity);
+    }
+
+    .app-sidebar-footer {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .fork-note {
+      margin: 14px 10px 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .mobile-app-nav {
+      display: none;
+      border-bottom: 1px solid var(--line);
+      background: #f1f4f2;
+    }
+
+    .mobile-app-nav summary {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 14px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .mobile-app-nav summary::-webkit-details-marker { display: none; }
+    .mobile-app-nav summary span { color: var(--muted); font-size: 13px; }
+
+    .mobile-nav-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      padding: 0 14px 14px;
+    }
+
+    .mobile-nav-list span {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .view {
+      min-width: 0;
+      padding: 36px 40px 44px;
+    }
+
+    .view[hidden] { display: none; }
+
+    .view-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .view-header h2 {
+      margin-bottom: 4px;
+      font-size: 30px;
+    }
+
+    .view-header p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .preview-control {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      align-self: start;
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .route-panel {
+      margin-bottom: 22px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-alt);
+    }
+
+    .route-panel-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .route-panel-head p { margin-bottom: 0; }
+
+    .route-status {
+      color: var(--antigravity);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .route-stages {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      overflow: hidden;
+    }
+
+    .route-stage {
+      min-width: 0;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+    }
+
+    .route-stage:last-child { border-right: 0; }
+
+    .route-stage.external {
+      border-top: 4px solid var(--antigravity);
+      background: var(--antigravity-bg);
+    }
+
+    .route-stage.local { border-top: 4px solid var(--local); }
+
+    .route-place {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.35;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .route-stage strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .route-stage small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .summary-row {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .summary-row span {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .summary-row strong { font-size: 15px; }
+
+    .list-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .list-heading h3 { margin: 0; font-size: 13px; letter-spacing: 0; }
+
+    .data-row {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .data-row time,
+    .data-row span:last-child { color: var(--muted); }
+
+    .provider-list,
+    .settings-list {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .provider-row,
+    .setting-row {
+      min-height: 76px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(130px, auto);
+      gap: 20px;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .provider-row:last-child,
+    .setting-row:last-child { border-bottom: 0; }
+
+    .provider-row.selected { background: var(--antigravity-bg); }
+
+    .provider-row strong,
+    .setting-row strong { display: block; font-size: 14px; }
+
+    .provider-row small,
+    .setting-row small { color: var(--muted); }
+
+    .provider-state,
+    .setting-value {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    .group-title {
+      margin: 24px 0 8px;
+      font-size: 13px;
+      font-weight: 720;
+    }
+
+    .group-title:first-of-type { margin-top: 0; }
+
+    .doc-section {
+      padding: 64px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.38fr) minmax(0, 1fr);
+      gap: 48px;
+      margin-bottom: 32px;
+    }
+
+    .section-head p {
+      max-width: 720px;
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .plain-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 48px;
+      margin: 0 0 40px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .plain-list li {
+      padding-top: 14px;
+      border-top: 2px solid var(--line-strong);
+    }
+
+    .plain-list strong { display: block; margin-bottom: 5px; }
+    .plain-list span { color: var(--muted); }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    th {
+      background: var(--panel-alt);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 720;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    td:first-child { font-weight: 680; }
+
+    .decision-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.6fr);
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .route-example,
+    .visual-notes {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .route-example h3,
+    .visual-notes h3 { margin-bottom: 14px; }
+
+    .boundary-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .boundary-list li {
+      display: grid;
+      grid-template-columns: 148px minmax(0, 1fr);
+      gap: 16px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .boundary-list li:first-child { border-top: 0; }
+    .boundary-list strong { font-size: 13px; }
+    .boundary-list span { color: var(--muted); font-size: 14px; }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 16px 0 20px;
+    }
+
+    .color {
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--sample);
+      color: var(--sample-text);
+      font-size: 11px;
+    }
+
+    .color strong,
+    .color code { display: block; }
+    .color code { margin-top: 2px; font-family: var(--mono); }
+
+    .visual-notes p {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .visual-notes p:last-child { margin-bottom: 0; }
+
+    .roadmap {
+      margin: 0 0 40px;
+      padding: 0;
+      list-style: none;
+      counter-reset: phase;
+      border-top: 1px solid var(--line);
+    }
+
+    .roadmap li {
+      counter-increment: phase;
+      display: grid;
+      grid-template-columns: 56px minmax(200px, 0.36fr) minmax(0, 1fr);
+      gap: 24px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .roadmap li::before {
+      content: counter(phase, decimal-leading-zero);
+      color: var(--antigravity);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .roadmap h3 { margin: 0; }
+    .roadmap p { margin: 0; color: var(--muted); }
+
+    .file-list {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+
+    .release-checks {
+      columns: 2;
+      column-gap: 48px;
+      margin: 0 0 40px;
+      padding: 20px 20px 20px 42px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    .release-checks li {
+      break-inside: avoid;
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 28px 0 48px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    footer code { font-family: var(--mono); }
+
+    @media (max-width: 900px) {
+      .intro,
+      .section-head,
+      .decision-layout { grid-template-columns: 1fr; gap: 24px; }
+      .app-layout { grid-template-columns: 180px minmax(0, 1fr); }
+      .view { padding: 30px 24px 36px; }
+      .route-stages { grid-template-columns: 1fr 1fr; }
+      .route-stage:nth-child(2) { border-right: 0; }
+      .route-stage:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+    }
+
+    @media (max-width: 760px) {
+      .page-header { align-items: flex-start; flex-direction: column; padding: 16px 0; }
+      .page-nav { width: 100%; }
+      .intro { padding-top: 48px; }
+      .concept-bar { align-items: flex-start; flex-direction: column; }
+      .tabs { width: 100%; overflow-x: auto; }
+      .tab { flex: 1 0 auto; }
+      .app-layout { display: block; min-height: 0; }
+      .app-sidebar { display: none; }
+      .mobile-app-nav { display: block; }
+      .plain-list { grid-template-columns: 1fr; gap: 20px; }
+      .roadmap li { grid-template-columns: 40px minmax(0, 1fr); gap: 12px; }
+      .roadmap p { grid-column: 2; }
+      .release-checks { columns: 1; }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      table { min-width: 0; display: block; }
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      tbody { display: grid; gap: 12px; }
+      tr {
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+      td {
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 12px;
+        padding: 12px 14px;
+      }
+      td::before {
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 720;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+      .screen-table td:nth-child(1)::before { content: "Screen"; }
+      .screen-table td:nth-child(2)::before { content: "Change"; }
+      .screen-table td:nth-child(3)::before { content: "Preserve"; }
+      .decision-table td:nth-child(1)::before { content: "Question"; }
+      .decision-table td:nth-child(2)::before { content: "Current evidence"; }
+      .decision-table td:nth-child(3)::before { content: "Decision needed"; }
+    }
+
+    @media (max-width: 520px) {
+      .page-header, main, footer { width: min(calc(100% - 24px), var(--content)); }
+      h1 { font-size: 38px; }
+      .view { padding: 24px 14px 30px; }
+      .view-header { align-items: flex-start; flex-direction: column; }
+      .route-panel { padding: 14px; }
+      .route-panel-head { align-items: flex-start; flex-direction: column; }
+      .route-stages { grid-template-columns: 1fr; }
+      .route-stage { border-right: 0; border-bottom: 1px solid var(--line); }
+      .route-stage:last-child { border-bottom: 0; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .data-row { grid-template-columns: 56px minmax(0, 1fr); padding: 8px 0; }
+      .data-row span:last-child { grid-column: 2; font-size: 11px; }
+      .provider-row, .setting-row { grid-template-columns: 1fr; gap: 6px; }
+      .provider-state, .setting-value { text-align: left; }
+      .palette { grid-template-columns: 1fr 1fr; }
+      .boundary-list li { grid-template-columns: 1fr; gap: 4px; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to the plan</a>
+
+  <header class="page-header">
+    <div class="wordmark">MoreOpenWhispr <small>UI redesign plan</small></div>
+    <nav class="page-nav" aria-label="Plan sections">
+      <a href="#concept">Concept</a>
+      <a href="#product">Product changes</a>
+      <a href="#decisions">Design decisions</a>
+      <a href="#rollout">Rollout</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">Make the desktop app easier to scan and easier to trust</h1>
+        <p class="intro-copy">Keep the parts of Wispr Flow that work: stable navigation, clear settings rows, and enough space to read a page. Do not copy its account, billing, referral, or gamification UI. MoreOpenWhispr should show which provider handles the audio, which credential it uses, and when data leaves the computer.</p>
+      </div>
+      <aside class="scope-note">
+        <strong>First implementation group</strong>
+        Start with shared CSS variables, the control panel, Dictation history, and Settings. Leave Notes, onboarding, and the floating dictation pill until those screens are stable.
+      </aside>
+    </section>
+
+    <section class="concept" id="concept" aria-label="Interactive control panel concept">
+      <div class="concept-bar">
+        <span class="concept-label">Control panel concept. The controls below are a visual example.</span>
+        <div class="tabs" role="tablist" aria-label="Concept screens">
+          <button class="tab" id="tab-dictation" type="button" role="tab" aria-selected="true" aria-controls="view-dictation" data-view="dictation">Dictation</button>
+          <button class="tab" id="tab-routing" type="button" role="tab" tabindex="-1" aria-selected="false" aria-controls="view-routing" data-view="routing">Routing</button>
+          <button class="tab" id="tab-settings" type="button" role="tab" tabindex="-1" aria-selected="false" aria-controls="view-settings" data-view="settings">Settings</button>
+        </div>
+      </div>
+
+      <div class="app-layout">
+        <aside class="app-sidebar" aria-label="Proposed app navigation">
+          <div class="app-name">MoreOpenWhispr</div>
+          <div class="app-nav">
+            <div class="app-nav-item active">Dictation</div>
+            <div class="app-nav-item">Assistant</div>
+            <div class="app-nav-item">Notes</div>
+            <div class="app-nav-item">Upload audio</div>
+            <div class="app-nav-item">Dictionary</div>
+            <div class="app-nav-item">Integrations</div>
+          </div>
+          <div class="app-sidebar-footer">
+            <div class="app-nav-item">Settings</div>
+            <p class="fork-note">No account required.<br>Unofficial OpenWhispr fork.<br>Not affiliated with Google.</p>
+          </div>
+        </aside>
+
+        <details class="mobile-app-nav">
+          <summary><strong>Dictation</strong><span>Menu</span></summary>
+          <div class="mobile-nav-list" aria-label="Proposed compact navigation">
+            <span>Assistant</span><span>Notes</span><span>Upload audio</span><span>Dictionary</span><span>Integrations</span><span>Settings</span>
+          </div>
+        </details>
+
+        <section class="view" id="view-dictation" role="tabpanel" aria-labelledby="tab-dictation">
+          <div class="view-header">
+            <div>
+              <h2>Dictation</h2>
+              <p>Current microphone, provider, cleanup mode, and output.</p>
+            </div>
+            <span class="preview-control">Start dictating</span>
+          </div>
+
+          <div class="route-panel">
+            <div class="route-panel-head">
+              <div>
+                <h3>Current processing route</h3>
+                <p>Each stage names its location and credential.</p>
+              </div>
+              <span class="route-status">Antigravity is ready</span>
+            </div>
+            <div class="route-stages" role="group" aria-label="Current Antigravity processing route">
+              <div class="route-stage local">
+                <span class="route-place">On this device</span>
+                <strong>Capture</strong>
+                <small>Elgato Wave:3</small>
+              </div>
+              <div class="route-stage external">
+                <span class="route-place">Audio leaves device</span>
+                <strong>Transcribe</strong>
+                <small>Antigravity via agy OAuth</small>
+              </div>
+              <div class="route-stage external">
+                <span class="route-place">Provider request</span>
+                <strong>Cleanup</strong>
+                <small>Fast mode. Second pass skipped.</small>
+              </div>
+              <div class="route-stage local">
+                <span class="route-place">On this device</span>
+                <strong>Deliver</strong>
+                <small>Paste into the focused app</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-row"><span>Dictation profile</span><strong>Smart, Fast</strong></div>
+            <div class="summary-row"><span>Live preview</span><strong>Rolling upload about every 2 seconds</strong></div>
+          </div>
+
+          <div class="list-heading"><h3>Recent dictations</h3><span>Search</span></div>
+          <div class="data-row"><time>10:42</time><span>Send the final proposal after the visual review.</span><span>Notes</span></div>
+          <div class="data-row"><time>09:18</time><span>Move the meeting summary into the project folder.</span><span>Calendar</span></div>
+        </section>
+
+        <section class="view" id="view-routing" role="tabpanel" aria-labelledby="tab-routing" hidden>
+          <div class="view-header">
+            <div>
+              <h2>Routing</h2>
+              <p>Compare provider choices by location and credential.</p>
+            </div>
+          </div>
+          <div class="provider-list">
+            <div class="provider-row">
+              <div><strong>On-device models</strong><small>Audio stays on this computer.</small></div>
+              <span class="provider-state">Local</span>
+            </div>
+            <div class="provider-row selected">
+              <div><strong>Antigravity</strong><small>Uses the local agy OAuth session and the user's subscription.</small></div>
+              <span class="provider-state">Selected</span>
+            </div>
+            <div class="provider-row">
+              <div><strong>API providers</strong><small>Uses the user's API key. Provider billing applies.</small></div>
+              <span class="provider-state">BYOK</span>
+            </div>
+            <div class="provider-row">
+              <div><strong>Self-hosted and enterprise</strong><small>Uses the configured endpoint and organization policy.</small></div>
+              <span class="provider-state">When allowed</span>
+            </div>
+          </div>
+          <h3 class="group-title">Current Antigravity settings</h3>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>Transcription</strong><small>Smart adds punctuation and structure.</small></div><span class="setting-value">Smart</span></div>
+            <div class="setting-row"><div><strong>Cleanup</strong><small>Fast skips the second cleanup request.</small></div><span class="setting-value">Fast</span></div>
+            <div class="setting-row"><div><strong>Live preview</strong><small>Rolling uploads. This is not a streaming endpoint.</small></div><span class="setting-value">On</span></div>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+          <div class="view-header">
+            <div>
+              <h2>Settings</h2>
+              <p>Use the control panel instead of opening a second sidebar inside a modal.</p>
+            </div>
+          </div>
+          <h3 class="group-title">Speech and shortcuts</h3>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>Microphone</strong><small>Automatic device selection</small></div><span class="setting-value">Wave:3</span></div>
+            <div class="setting-row"><div><strong>Dictation shortcut</strong><small>Hold to speak</small></div><span class="setting-value">fn</span></div>
+            <div class="setting-row"><div><strong>Language</strong><small>Automatic detection</small></div><span class="setting-value">English</span></div>
+          </div>
+          <h3 class="group-title">Privacy and storage</h3>
+          <div class="settings-list">
+            <div class="setting-row"><div><strong>History retention</strong><small>Stored on this device</small></div><span class="setting-value">30 days</span></div>
+            <div class="setting-row"><div><strong>Telemetry</strong><small>Disabled by the MOW profile</small></div><span class="setting-value">Off</span></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="doc-section" id="product" aria-labelledby="product-title">
+      <div class="section-head">
+        <h2 id="product-title">Product constraints and screen changes</h2>
+        <p>The screenshots are useful because Flow repeats the same navigation, row, list, and empty-state patterns. The redesign should borrow those patterns without importing Flow's account model or its promotional UI.</p>
+      </div>
+
+      <ul class="plain-list">
+        <li><strong>Keep the provider choices.</strong><span>Antigravity is the recommended setup. Local, BYOK, enterprise, and self-hosted routes remain available when policy allows them.</span></li>
+        <li><strong>Keep the fork account-free.</strong><span>Do not add OpenWhispr Cloud, plans, billing, teams, workspaces, referrals, usage limits, or upgrade prompts.</span></li>
+        <li><strong>Keep existing behavior.</strong><span>Do not rewrite IPC, recording, note persistence, policy checks, downloads, or onboarding routes during the visual work.</span></li>
+        <li><strong>Keep the desktop constraints.</strong><span>Respect the 1200×800 control panel, compact onboarding window, native traffic lights, drag regions, overlays, and content protection.</span></li>
+      </ul>
+
+      <div class="table-wrap screen-table" role="region" aria-label="Screen change plan" tabindex="0">
+        <table>
+          <thead><tr><th>Screen</th><th>Change</th><th>Preserve</th></tr></thead>
+          <tbody>
+            <tr><td>Dictation and history</td><td>Add the processing route, simplify the transcript list, and keep upcoming meetings visible.</td><td>Search, transcript actions, meeting links, and grouped history.</td></tr>
+            <tr><td>Assistant</td><td>Give the conversation and composer more room. Show which tools ran.</td><td>Cancel behavior, conversation history, voice follow-ups, and policy checks.</td></tr>
+            <tr><td>Notes and meetings</td><td>Restyle the tree, overview, editor, transcript, chat, and bottom bar one component at a time.</td><td>Saving, recording, meeting mode, narrow layouts, and conflict handling.</td></tr>
+            <tr><td>Dictionary and upload</td><td>Use one list pattern with search, add, upload, useful empty states, and model selection.</td><td>Current storage, transcription options, and upload flow.</td></tr>
+            <tr><td>Integrations</td><td>Group Calendar, CLI, MCP, and API key connections by task.</td><td>Permission checks, localhost CLI, and fork-disabled hosted services.</td></tr>
+            <tr><td>Onboarding</td><td>Apply the same spacing, type, and controls after the control panel is stable.</td><td>Permissions first, hotkey setup, setup eligibility, Antigravity recommendation, local, and BYOK.</td></tr>
+            <tr><td>Dictation pill</td><td>Restyle it last so the small window follows proven controls and colors.</td><td>Window sizing, live transcript, assistant panel, error states, and content protection.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="doc-section" id="decisions" aria-labelledby="decisions-title">
+      <div class="section-head">
+        <h2 id="decisions-title">Routing and visual decisions</h2>
+        <p>The app should use plain labels for processing location. Color can help people scan the route, but it cannot carry the meaning by itself.</p>
+      </div>
+
+      <div class="decision-layout">
+        <article class="route-example">
+          <h3>Route labels</h3>
+          <ul class="boundary-list">
+            <li><strong>On this device</strong><span>Microphone capture, local model work, storage, and paste.</span></li>
+            <li><strong>Audio leaves device</strong><span>Antigravity transcription through the local agy OAuth session.</span></li>
+            <li><strong>Uses your API key</strong><span>BYOK requests. The named provider's billing and terms apply.</span></li>
+            <li><strong>Custom route</strong><span>Enterprise, LAN, and self-hosted endpoints. Show the endpoint name.</span></li>
+          </ul>
+        </article>
+
+        <article class="visual-notes">
+          <h3>Color and type</h3>
+          <div class="palette" aria-label="Proposed app colors">
+            <div class="color" style="--sample:#eef1ef;--sample-text:#18201d"><strong>App</strong><code>#EEF1EF</code></div>
+            <div class="color" style="--sample:#18201d;--sample-text:#ffffff"><strong>Text</strong><code>#18201D</code></div>
+            <div class="color" style="--sample:#cdd5d1;--sample-text:#18201d"><strong>Border</strong><code>#CDD5D1</code></div>
+            <div class="color" style="--sample:#2f6f5e;--sample-text:#ffffff"><strong>Local</strong><code>#2F6F5E</code></div>
+            <div class="color" style="--sample:#5b57b7;--sample-text:#ffffff"><strong>Antigravity</strong><code>#5B57B7</code></div>
+            <div class="color" style="--sample:#a34c42;--sample-text:#ffffff"><strong>Error</strong><code>#A34C42</code></div>
+          </div>
+          <p>Keep Noto Sans for the first implementation. The app already bundles it and it covers every supported language.</p>
+          <p>Use an 8px spacing base, 10 to 12px component radii, 44px controls, visible focus, and complete light and dark color mappings.</p>
+          <p>Animate only state changes. The route may update once when the user changes provider. Nothing should pulse while idle.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="doc-section" id="rollout" aria-labelledby="rollout-title">
+      <div class="section-head">
+        <h2 id="rollout-title">Rollout, checks, and open decisions</h2>
+        <p>Use the branch as the rollback point. Keep each phase small enough to compare against the current app before moving to the next screen.</p>
+      </div>
+
+      <ol class="roadmap">
+        <li><h3>Resolve fork identity</h3><p>Reconcile MoreOpenWhispr in the current build with Whispr Antigravity in the fork docs. Check bundle ID, signing identity, publisher, release target, docs URL, and no-endorsement copy.<span class="file-list">mowProfile.ts, electron-builder.json, .fork/COMPLIANCE.md</span></p></li>
+        <li><h3>Set shared CSS variables</h3><p>Add the colors, spacing, radii, focus style, row height, and dark mappings to the existing Tailwind v4 variables. Consolidate duplicate setting-row components.<span class="file-list">src/index.css, ui/SettingsSection.tsx, ui/button.tsx, ui/card.tsx</span></p></li>
+        <li><h3>Update the control panel</h3><p>Keep activeView, lazy imports, policy filtering, and collapse behavior. Change the sidebar and Dictation history first. Add the processing route with a pure view model.<span class="file-list">ControlPanel.tsx, ControlPanelSidebar.tsx, HistoryView.tsx</span></p></li>
+        <li><h3>Move Settings into the control panel</h3><p>Keep every legacy section and subtab alias. Reuse the current SettingsPage logic and replace only its outer layout and repeated rows.<span class="file-list">SettingsModal.tsx, SettingsPage.tsx, settings/*</span></p></li>
+        <li><h3>Update the remaining screens</h3><p>Work through Integrations, Dictionary, Upload, Assistant, and then the Notes components. Do not move feature state while changing layout.<span class="file-list">IntegrationsView.tsx, UploadAudioView.tsx, notes/*, chat/*</span></p></li>
+        <li><h3>Update onboarding and small windows</h3><p>Reuse the established controls and colors. Keep the route machine, drag regions, window sizing, and content protection unchanged.<span class="file-list">OnboardingShell.tsx, OnboardingFlow.tsx, App.jsx, dictation/*</span></p></li>
+        <li><h3>Run release checks</h3><p>Test keyboard use, long translations, reduced motion, every provider route, window sizes, and packaged Electron builds. Remove temporary migration code before merge.<span class="file-list">locales/*, test/components/*, test/helpers/*</span></p></li>
+      </ol>
+
+      <h3>Release checklist</h3>
+      <ul class="release-checks">
+        <li>Local, Antigravity, BYOK, enterprise, and self-hosted routes still work when eligible.</li>
+        <li>No account, plan, workspace, referral, or upgrade control appears in the accessibility tree.</li>
+        <li>Missing agy, expired OAuth, quota errors, provider errors, and fallback states tell the user what to do.</li>
+        <li>Settings shortcuts, IPC links, and old section IDs still open the correct section.</li>
+        <li>Notes, meeting recording, Assistant, Dictionary, Upload, Integrations, CLI, and onboarding pass their current smoke flows.</li>
+        <li>The control panel works at 1200×800 and below the 800px sidebar breakpoint.</li>
+        <li>Compact and expanded onboarding windows do not clip content.</li>
+        <li>Keyboard order, focus, contrast, labels, and reduced motion meet the current accessibility requirements.</li>
+        <li>Every new app string has a key in all supported locale files.</li>
+        <li>Tests, typecheck, i18n checks, formatting, and the renderer build pass on Node 24.</li>
+        <li>Settings, Notes, Assistant, and Upload remain lazy-loaded.</li>
+        <li>The redesign adds no runtime dependency unless a measured need justifies it.</li>
+      </ul>
+
+      <h3>Open decisions</h3>
+      <div class="table-wrap decision-table" role="region" aria-label="Open redesign decisions" tabindex="0">
+        <table>
+          <thead><tr><th>Question</th><th>Current evidence</th><th>Decision needed</th></tr></thead>
+          <tbody>
+            <tr><td>What is the final product name?</td><td>The current code and build use MoreOpenWhispr and MOW. Fork docs still use Whispr Antigravity and different distribution metadata.</td><td>Choose one name and update the build, docs, signing, publishing, and no-endorsement text together.</td></tr>
+            <tr><td>Should Settings stop using a modal?</td><td>The current modal adds a second sidebar. Many links already open a section by ID.</td><td>Approve Settings as a normal control-panel view while keeping every existing section alias.</td></tr>
+            <tr><td>How much ships in the first pass?</td><td>ControlPanel and Settings provide most of the visual change. Notes and the dictation pill have more state and window constraints.</td><td>Approve CSS variables, control panel, Dictation history, and Settings as the first group.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Plan file only. No app UI has been implemented.</span>
+    <span><code>moreopenwhispr-ui-refresh</code> based on <code>antigravity-fork</code></span>
+  </footer>
+
+  <script>
+    (() => {
+      const tabs = Array.from(document.querySelectorAll('.tab'));
+      const views = Array.from(document.querySelectorAll('.view'));
+
+      const selectTab = (tab, updateUrl = true) => {
+        tabs.forEach((item) => {
+          const active = item === tab;
+          item.setAttribute('aria-selected', String(active));
+          item.tabIndex = active ? 0 : -1;
+        });
+        views.forEach((view) => {
+          view.hidden = view.id !== `view-${tab.dataset.view}`;
+        });
+        if (updateUrl) history.replaceState(null, '', `#${tab.id}`);
+      };
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => selectTab(tab));
+        tab.addEventListener('keydown', (event) => {
+          const current = tabs.indexOf(tab);
+          let next = null;
+          if (event.key === 'Home') next = tabs[0];
+          if (event.key === 'End') next = tabs[tabs.length - 1];
+          if (event.key === 'ArrowLeft') next = tabs[(current - 1 + tabs.length) % tabs.length];
+          if (event.key === 'ArrowRight') next = tabs[(current + 1) % tabs.length];
+          if (!next) return;
+          event.preventDefault();
+          next.focus();
+          selectTab(next);
+        });
+      });
+
+      const initialTab = tabs.find((tab) => `#${tab.id}` === window.location.hash);
+      if (initialTab) selectTab(initialTab, false);
+    })();
+  </script>
+</body>
+</html>
