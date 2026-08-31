@@ -28,6 +28,7 @@ const {
 } = require("./policyResponseError");
 const { classifyAndLog } = require("./networkErrors");
 const { resolveSystemDefaultMicrophone } = require("./systemDefaultMicrophone");
+const { registerMowAccountIpcOverrides } = require("./mowAccountIpc");
 // The renderer's ModelRegistry is not main-loadable; the raw registry data is
 // packaged, and the route resolver only needs {id, baseUrl} per provider.
 const transcriptionProviderBaseUrls = () =>
@@ -52,8 +53,12 @@ function hostAppBundlePath() {
 
 function revealHostAppInFinder() {
   if (process.platform !== "darwin") return;
+  // Packaged MoreOpenWhispr registers in TCC under its own name; Finder reveal
+  // is only for dev Electron.app where users hunt the bundle with +.
+  const bundle = hostAppBundlePath();
+  if (!bundle.endsWith("Electron.app")) return;
   try {
-    shell.showItemInFolder(hostAppBundlePath());
+    shell.showItemInFolder(bundle);
   } catch (error) {
     debugLogger.debug("Failed to reveal host app", { error: error.message });
   }
@@ -11158,6 +11163,8 @@ class IPCHandlers {
       this._tryAutoLabelOneOnOne(noteId);
       return { success: true };
     });
+
+    registerMowAccountIpcOverrides();
   }
 
   _retroactiveMapping(profile) {

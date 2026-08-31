@@ -5,6 +5,7 @@ const { app } = require("electron");
 const debugLogger = require("./debugLogger");
 const { normalizeUiLanguage } = require("./i18nMain");
 const secretCrypto = require("./secretCrypto");
+const { isMowBuild } = require("../config/mowProfile.js");
 const { BYOK_API_KEYS } = require("../config/secretKeys");
 
 const SECRET_KEYS = [
@@ -101,6 +102,8 @@ class EnvironmentManager {
   // both no-ops on fresh installs, so neither path triggers Keychain until
   // the user actually saves their first secret.
   async init() {
+    // MOW: defer secure-keys until a get/save-*-key IPC (Antigravity needs no vault at launch).
+    if (isMowBuild()) return;
     if (!fs.existsSync(this._getMigrationSentinelPath())) {
       await this._migrateToSecureStorage();
     }
@@ -244,7 +247,35 @@ class EnvironmentManager {
     await fsPromises.rename(tmpPath, envPath);
   }
 
+  _loadSecretKeySync(envVarName) {
+    const filePath = this._getSecretFilePath(envVarName);
+    try {
+      const buffer = fs.readFileSync(filePath);
+      const { value, needsReencrypt } = secretCrypto.decrypt(buffer);
+      process.env[envVarName] = value;
+      if (needsReencrypt) {
+        this._saveSecretKey(envVarName, value).catch((error) => {
+          debugLogger.error(
+            "Failed to re-encrypt secret",
+            { key: envVarName, error: error.message },
+            "environment"
+          );
+        });
+      }
+    } catch (error) {
+      if (error.code === "ENOENT") return;
+      debugLogger.error(
+        "Failed to decrypt secret — user must re-enter",
+        { key: envVarName, code: error.code, error: error.message },
+        "environment"
+      );
+    }
+  }
+
   _getKey(envVarName) {
+    if (isMowBuild() && SECRET_KEY_SET.has(envVarName) && !process.env[envVarName]) {
+      this._loadSecretKeySync(envVarName);
+    }
     return process.env[envVarName] || "";
   }
 

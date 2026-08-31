@@ -3,8 +3,10 @@ const fs = require("fs");
 const path = require("path");
 const { app, safeStorage } = require("electron");
 const debugLogger = require("./debugLogger");
+const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.js");
 
-const SERVICE = "OpenWhispr";
+const LEGACY_SERVICE = "OpenWhispr";
+const SERVICE = isMowBuild() ? MOW_PROFILE.productName : LEGACY_SERVICE;
 const ACCOUNT = "secrets-master-key";
 const ALGO = "aes-256-gcm";
 const IV_LEN = 12;
@@ -62,6 +64,15 @@ function _initKeychain() {
     try {
       stored = entry.getPassword();
     } catch {}
+    if (!stored && SERVICE !== LEGACY_SERVICE) {
+      try {
+        const legacy = new Entry(LEGACY_SERVICE, ACCOUNT).getPassword();
+        if (legacy) {
+          stored = legacy;
+          entry.setPassword(legacy);
+        }
+      } catch {}
+    }
     if (stored) {
       const key = Buffer.from(stored, "base64");
       if (key.length !== KEY_LEN) throw new Error("stored key length invalid");

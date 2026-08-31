@@ -10,23 +10,30 @@ import {
   prepareAuthRequest,
 } from "./authRequestContext";
 
-export const AUTH_URL = import.meta.env.VITE_AUTH_URL || "https://auth.openwhispr.com";
-export const authClient = createAuthClient({
-  baseURL: AUTH_URL,
-  plugins: [ssoClient()],
-  fetchOptions: {
-    credentials: "omit",
-    customFetchImpl: authContextFetch,
-    headers: { "x-openwhispr-source": "desktop" },
-    onRequest: prepareAuthRequest,
-    onResponse: handleAuthRequestResponse,
-    onSuccess: handleAuthRequestSuccess,
-    onError: handleAuthRequestError,
-  },
-});
+import { isMowBuild } from "../config/mowProfile";
+
+export const AUTH_URL = isMowBuild()
+  ? ""
+  : import.meta.env.VITE_AUTH_URL || "https://auth.openwhispr.com";
+export const authClient = AUTH_URL
+  ? createAuthClient({
+      baseURL: AUTH_URL,
+      plugins: [ssoClient()],
+      fetchOptions: {
+        credentials: "omit",
+        customFetchImpl: authContextFetch,
+        headers: { "x-openwhispr-source": "desktop" },
+        onRequest: prepareAuthRequest,
+        onResponse: handleAuthRequestResponse,
+        onSuccess: handleAuthRequestSuccess,
+        onError: handleAuthRequestError,
+      },
+    })
+  : null;
 
 let authRefetchTimer: ReturnType<typeof setTimeout> | null = null;
 window.electronAPI?.onAuthTokenStateChanged?.((state) => {
+  if (!authClient) return;
   observeAuthTokenStateEvent(state);
   // Main broadcasts a successful compare-and-set rotation before the IPC
   // invocation resolves. Deferring avoids aborting the exact session request

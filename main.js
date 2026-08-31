@@ -1,6 +1,7 @@
 // Chromium picks the display backend before JS runs, so appendSwitch is too
 // late — the flag has to come from a relaunch.
 const { XWAYLAND_FLAG, shouldForceXWayland } = require("./src/helpers/xwayland");
+const { isMowBuild, MOW_PROFILE } = require("./src/config/mowProfile.js");
 
 if (shouldForceXWayland(process.argv)) {
   const { spawn } = require("child_process");
@@ -229,7 +230,9 @@ function registerOpenWhisprProtocol() {
 // fall back to probing the system MIME database for an actual handler. This keeps
 // OAuth enabled where the callback can resolve (deb/rpm/flatpak/AUR) and correctly
 // gated where it can't (AppImage/tar.gz with no scheme registration).
-const protocolRegistered = registerOpenWhisprProtocol() || isOAuthSchemeRegistered();
+const protocolRegistered = isMowBuild()
+  ? false
+  : registerOpenWhisprProtocol() || isOAuthSchemeRegistered();
 if (!protocolRegistered) {
   console.warn(`[Auth] Failed to register ${OAUTH_PROTOCOL}:// protocol handler`);
 }
@@ -243,8 +246,9 @@ if (!gotSingleInstanceLock) {
 const isLiveWindow = (window) => window && !window.isDestroyed();
 
 // Ensure macOS menus use the proper casing for the app name
-if (process.platform === "darwin" && app.getName() !== "OpenWhispr") {
-  app.setName("OpenWhispr");
+if (process.platform === "darwin") {
+  const appName = isMowBuild() ? MOW_PROFILE.productName : "OpenWhispr";
+  if (app.getName() !== appName) app.setName(appName);
 }
 
 // Add global error handling for uncaught exceptions
@@ -436,11 +440,13 @@ function initializeCoreManagers() {
   // account's data visible; a stale or rotated credential fails the hash
   // check and restores nothing.
   const accountScopeBinding = require("./src/helpers/accountScopeBinding");
-  const bootAccountId = accountScopeBinding.resolveBootAccountScope({
-    token: require("./src/helpers/tokenStore").get(),
-    binding: accountScopeBinding.read(),
-  });
-  if (bootAccountId) databaseManager.setActiveAccountId(bootAccountId);
+  if (!isMowBuild()) {
+    const bootAccountId = accountScopeBinding.resolveBootAccountScope({
+      token: require("./src/helpers/tokenStore").get(),
+      binding: accountScopeBinding.read(),
+    });
+    if (bootAccountId) databaseManager.setActiveAccountId(bootAccountId);
+  }
   clipboardManager = new ClipboardManager();
   whisperManager = new WhisperManager();
   if (process.platform !== "darwin") {
@@ -805,6 +811,7 @@ async function exchangeSignedTokenForRawBearer(signedToken) {
 // token, store it, and remove the cookie. Non-fatal — failures fall through
 // to the normal sign-in flow.
 async function migrateCookieToBearerToken() {
+  if (isMowBuild()) return;
   const tokenStore = require("./src/helpers/tokenStore");
   if (tokenStore.get()) return;
 
@@ -917,6 +924,7 @@ function writeCorsHeaders(res) {
 }
 
 function startAuthBridgeServer() {
+  if (isMowBuild()) return;
   if (APP_CHANNEL !== "development" || authBridgeServer) {
     return;
   }

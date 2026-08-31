@@ -1,5 +1,6 @@
 import React from "react";
 import i18n from "../i18n";
+import { isDictationPanelWindow } from "../utils/windowContext";
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -30,6 +31,30 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
 
   render() {
     if (this.state.hasError) {
+      const compact = isDictationPanelWindow();
+      if (compact) {
+        return (
+          <div className="h-full w-full flex items-center justify-center p-2 bg-background">
+            <div className="text-center space-y-1 max-w-full">
+              <p className="text-[10px] font-medium text-destructive leading-tight">
+                {i18n.t("errorBoundary.title")}
+              </p>
+              {this.state.error?.message && (
+                <p className="text-[9px] text-muted-foreground line-clamp-3 leading-tight">
+                  {this.state.error.message}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={this.handleReload}
+                className="text-[9px] text-primary underline"
+              >
+                {i18n.t("errorBoundary.reload")}
+              </button>
+            </div>
+          </div>
+        );
+      }
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
           <div className="max-w-md text-center space-y-4">

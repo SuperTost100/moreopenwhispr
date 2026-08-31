@@ -37,6 +37,7 @@ import {
   type TranscriptionPolicyContext,
 } from "./policyRules";
 import { usePolicyStore } from "./policyStore";
+import { coerceCloudMode, coerceInferenceMode, isMowBuild } from "../config/mowProfile";
 import type {
   TranscriptionSettings,
   CleanupSettings,
@@ -175,6 +176,20 @@ function readBoolean(key: string, fallback: boolean): boolean {
   if (stored === null) return fallback;
   if (fallback === true) return stored !== "false";
   return stored === "true";
+}
+
+function readInferenceMode(
+  key: string,
+  fallback: InferenceMode,
+  allowed: readonly InferenceMode[]
+): InferenceMode {
+  const v = readString(key, fallback);
+  const mode = (allowed.includes(v as InferenceMode) ? v : fallback) as InferenceMode;
+  return coerceInferenceMode(mode);
+}
+
+function readCloudMode(key: string, fallback: string): string {
+  return coerceCloudMode(readString(key, fallback));
 }
 
 function readNumber(key: string, fallback: number): number {
@@ -1261,8 +1276,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   reasoningModelByProvider: readModelMemory("reasoningModelByProvider"),
   // Secrets aren't hydrated yet at construction; the BYOK default is set
   // post-hydration in initializeSettings.
-  cloudTranscriptionMode: readString("cloudTranscriptionMode", "providers"),
-  cleanupCloudMode: readString("cleanupCloudMode", "providers"),
+  cloudTranscriptionMode: readCloudMode("cloudTranscriptionMode", "providers"),
+  cleanupCloudMode: readCloudMode("cleanupCloudMode", "providers"),
   cleanupCloudBaseUrl: readString("cleanupCloudBaseUrl", API_ENDPOINTS.OPENAI_BASE),
   cortiEnvironment: readString("cortiEnvironment", "us"),
   cortiTenant: readString("cortiTenant", "base"),
@@ -1350,7 +1365,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     return "auto" as const;
   })(),
   cloudBackupEnabled: readBoolean("cloudBackupEnabled", false),
-  telemetryEnabled: readBoolean("telemetryEnabled", false),
+  telemetryEnabled: isMowBuild() ? false : readBoolean("telemetryEnabled", false),
   audioRetentionDays: readNumber("audioRetentionDays", 30),
   transcriptRetentionDays: readNumber("transcriptRetentionDays", 0),
   dataRetentionEnabled: readBoolean("dataRetentionEnabled", true),
@@ -1428,38 +1443,35 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   keepTranscriptionInClipboard: readBoolean("keepTranscriptionInClipboard", false),
   noteFilesEnabled: readBoolean("noteFilesEnabled", false),
   noteFilesPath: readString("noteFilesPath", ""),
-  isSignedIn: readBoolean("isSignedIn", false),
+  isSignedIn: isMowBuild() ? false : readBoolean("isSignedIn", false),
 
-  transcriptionMode: (() => {
-    const v = readString("transcriptionMode", "providers");
-    if (v === "openwhispr" || v === "providers" || v === "local" || v === "self-hosted") return v;
-    return "providers" as InferenceMode;
-  })(),
+  transcriptionMode: readInferenceMode("transcriptionMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+  ]),
   remoteTranscriptionType: (() => {
     const v = readString("remoteTranscriptionType", "lan");
     return v === "openai-compatible" ? "openai-compatible" : ("lan" as SelfHostedType);
   })(),
   remoteTranscriptionUrl: readString("remoteTranscriptionUrl", ""),
   remoteTranscriptionModel: readString("remoteTranscriptionModel", ""),
-  cleanupMode: (() => {
-    const v = readString("cleanupMode", "providers");
-    if (
-      v === "openwhispr" ||
-      v === "providers" ||
-      v === "local" ||
-      v === "self-hosted" ||
-      v === "enterprise"
-    )
-      return v;
-    return "providers" as InferenceMode;
-  })(),
+  cleanupMode: readInferenceMode("cleanupMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+    "enterprise",
+  ]),
   cleanupRemoteUrl: readString("cleanupRemoteUrl", ""),
 
-  meetingTranscriptionMode: (() => {
-    const v = readString("meetingTranscriptionMode", "openwhispr");
-    if (v === "openwhispr" || v === "providers" || v === "local" || v === "self-hosted") return v;
-    return "openwhispr" as InferenceMode;
-  })(),
+  meetingTranscriptionMode: readInferenceMode("meetingTranscriptionMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+  ]),
   meetingUseLocalWhisper: readBoolean("meetingUseLocalWhisper", false),
   meetingWhisperModel: readString("meetingWhisperModel", ""),
   meetingLocalTranscriptionProvider: readLocalProvider("meetingLocalTranscriptionProvider"),
@@ -1468,18 +1480,19 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   meetingCloudTranscriptionProvider: readString("meetingCloudTranscriptionProvider", ""),
   meetingCloudTranscriptionModel: readString("meetingCloudTranscriptionModel", ""),
   meetingCloudTranscriptionBaseUrl: readString("meetingCloudTranscriptionBaseUrl", ""),
-  meetingCloudTranscriptionMode: readString("meetingCloudTranscriptionMode", ""),
+  meetingCloudTranscriptionMode: readCloudMode("meetingCloudTranscriptionMode", "byok"),
   meetingRemoteTranscriptionType: (() => {
     const v = readString("meetingRemoteTranscriptionType", "lan");
     return v === "openai-compatible" ? "openai-compatible" : ("lan" as SelfHostedType);
   })(),
   meetingRemoteTranscriptionUrl: readString("meetingRemoteTranscriptionUrl", ""),
 
-  uploadTranscriptionMode: (() => {
-    const v = readString("uploadTranscriptionMode", "openwhispr");
-    if (v === "openwhispr" || v === "providers" || v === "local" || v === "self-hosted") return v;
-    return "openwhispr" as InferenceMode;
-  })(),
+  uploadTranscriptionMode: readInferenceMode("uploadTranscriptionMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+  ]),
   uploadUseLocalWhisper: readBoolean("uploadUseLocalWhisper", false),
   uploadWhisperModel: readString("uploadWhisperModel", ""),
   uploadLocalTranscriptionProvider: readLocalProvider("uploadLocalTranscriptionProvider"),
@@ -1488,42 +1501,32 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   uploadCloudTranscriptionProvider: readString("uploadCloudTranscriptionProvider", ""),
   uploadCloudTranscriptionModel: readString("uploadCloudTranscriptionModel", ""),
   uploadCloudTranscriptionBaseUrl: readString("uploadCloudTranscriptionBaseUrl", ""),
-  uploadCloudTranscriptionMode: readString("uploadCloudTranscriptionMode", ""),
+  uploadCloudTranscriptionMode: readCloudMode("uploadCloudTranscriptionMode", "byok"),
 
-  noteFormattingMode: (() => {
-    const v = readString("noteFormattingMode", "openwhispr");
-    if (
-      v === "openwhispr" ||
-      v === "providers" ||
-      v === "local" ||
-      v === "self-hosted" ||
-      v === "enterprise"
-    )
-      return v;
-    return "openwhispr" as InferenceMode;
-  })(),
+  noteFormattingMode: readInferenceMode("noteFormattingMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+    "enterprise",
+  ]),
   noteFormattingProvider: readString("noteFormattingProvider", ""),
   noteFormattingModel: readString("noteFormattingModel", ""),
-  noteFormattingCloudMode: readString("noteFormattingCloudMode", ""),
+  noteFormattingCloudMode: readCloudMode("noteFormattingCloudMode", "byok"),
   noteFormattingCloudBaseUrl: readString("noteFormattingCloudBaseUrl", ""),
   noteFormattingRemoteUrl: readString("noteFormattingRemoteUrl", ""),
   noteFormattingCustomApiKey: readString("noteFormattingCustomApiKey", ""),
 
-  translationMode: (() => {
-    const v = readString("translationMode", "openwhispr");
-    if (
-      v === "openwhispr" ||
-      v === "providers" ||
-      v === "local" ||
-      v === "self-hosted" ||
-      v === "enterprise"
-    )
-      return v;
-    return "openwhispr" as InferenceMode;
-  })(),
+  translationMode: readInferenceMode("translationMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+    "enterprise",
+  ]),
   translationProvider: readString("translationProvider", ""),
   translationModel: readString("translationModel", ""),
-  translationCloudMode: readString("translationCloudMode", "openwhispr"),
+  translationCloudMode: readCloudMode("translationCloudMode", "byok"),
   translationCloudBaseUrl: readString("translationCloudBaseUrl", ""),
   translationRemoteUrl: readString("translationRemoteUrl", ""),
   translationCustomApiKey: readString("translationCustomApiKey", ""),
@@ -1621,52 +1624,41 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   chatAgentModel: readString("chatAgentModel", "gemini-3.5-flash-medium"),
   chatAgentProvider: readString("chatAgentProvider", "antigravity"),
-  chatAgentCloudMode: readString("chatAgentCloudMode", "byok"),
-  chatAgentMode: (() => {
-    const v = readString("chatAgentMode", "providers");
-    if (
-      v === "openwhispr" ||
-      v === "providers" ||
-      v === "local" ||
-      v === "self-hosted" ||
-      v === "enterprise"
-    )
-      return v;
-    return "providers" as InferenceMode;
-  })(),
+  chatAgentCloudMode: readCloudMode("chatAgentCloudMode", "byok"),
+  chatAgentMode: readInferenceMode("chatAgentMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+    "enterprise",
+  ]),
   chatAgentRemoteUrl: readString("chatAgentRemoteUrl", ""),
   chatAgentCloudBaseUrl: readString("chatAgentCloudBaseUrl", ""),
   chatAgentCustomApiKey: readString("chatAgentCustomApiKey", ""),
 
-  dictationAgentMode: (() => {
-    const v = readString("dictationAgentMode", "providers");
-    if (
-      v === "openwhispr" ||
-      v === "providers" ||
-      v === "local" ||
-      v === "self-hosted" ||
-      v === "enterprise"
-    )
-      return v;
-    return "providers" as InferenceMode;
-  })(),
+  dictationAgentMode: readInferenceMode("dictationAgentMode", "providers", [
+    "openwhispr",
+    "providers",
+    "local",
+    "self-hosted",
+    "enterprise",
+  ]),
   dictationAgentProvider: readString("dictationAgentProvider", "antigravity"),
   dictationAgentModel: readString("dictationAgentModel", "gemini-3.5-flash-medium"),
-  dictationAgentCloudMode: readString("dictationAgentCloudMode", "openwhispr"),
+  dictationAgentCloudMode: readCloudMode("dictationAgentCloudMode", "byok"),
   dictationAgentCloudBaseUrl: readString("dictationAgentCloudBaseUrl", ""),
   dictationAgentRemoteUrl: readString("dictationAgentRemoteUrl", ""),
   dictationAgentCustomApiKey: readString("dictationAgentCustomApiKey", ""),
 
   voiceAgentScreenContext: readBoolean("voiceAgentScreenContext", false),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
-  dictationAgentVisionMode: (() => {
-    const v = readString("dictationAgentVisionMode", "providers");
-    if (v === "openwhispr" || v === "providers") return v as InferenceMode;
-    return "providers" as InferenceMode;
-  })(),
+  dictationAgentVisionMode: readInferenceMode("dictationAgentVisionMode", "providers", [
+    "openwhispr",
+    "providers",
+  ]),
   dictationAgentVisionProvider: readString("dictationAgentVisionProvider", "antigravity"),
   dictationAgentVisionModel: readString("dictationAgentVisionModel", "gemini-3.5-flash-high"),
-  dictationAgentVisionCloudMode: readString("dictationAgentVisionCloudMode", "openwhispr"),
+  dictationAgentVisionCloudMode: readCloudMode("dictationAgentVisionCloudMode", "byok"),
   dictationAgentVisionCloudBaseUrl: readString("dictationAgentVisionCloudBaseUrl", ""),
   dictationAgentVisionCustomApiKey: readString("dictationAgentVisionCustomApiKey", ""),
 
@@ -2951,135 +2943,143 @@ export async function initializeSettings(): Promise<void> {
 
   if (!isBrowser) return;
 
+  if (isMowBuild()) {
+    const s = useSettingsStore.getState();
+    if (s.isSignedIn) s.setIsSignedIn(false);
+    if (s.telemetryEnabled) s.setTelemetryEnabled(false);
+  }
+
   const state = useSettingsStore.getState();
 
   if (window.electronAPI) {
-    try {
-      const [
-        openai,
-        anthropic,
-        gemini,
-        groq,
-        xai,
-        mistral,
-        openrouter,
-        cortiClientId,
-        cortiClientSecret,
-        cortiApiKey,
-        tinfoil,
-        customTx,
-        customRx,
-        noteFormattingCustom,
-        translationCustom,
-        dictationAgentCustom,
-        dictationAgentVisionCustom,
-        chatAgentCustom,
-        bedrockAccessKeyId,
-        bedrockSecretAccessKey,
-        bedrockSessionToken,
-        azureApiKey,
-        vertexApiKey,
-      ] = await Promise.all([
-        window.electronAPI.getOpenAIKey?.(),
-        window.electronAPI.getAnthropicKey?.(),
-        window.electronAPI.getGeminiKey?.(),
-        window.electronAPI.getGroqKey?.(),
-        window.electronAPI.getXaiKey?.(),
-        window.electronAPI.getMistralKey?.(),
-        window.electronAPI.getOpenrouterKey?.(),
-        window.electronAPI.getCortiClientId?.(),
-        window.electronAPI.getCortiClientSecret?.(),
-        window.electronAPI.getCortiKey?.(),
-        window.electronAPI.getTinfoilKey?.(),
-        window.electronAPI.getCustomTranscriptionKey?.(),
-        window.electronAPI.getCleanupCustomKey?.(),
-        window.electronAPI.getNoteFormattingCustomKey?.(),
-        window.electronAPI.getTranslationCustomKey?.(),
-        window.electronAPI.getDictationAgentCustomKey?.(),
-        window.electronAPI.getDictationAgentVisionCustomKey?.(),
-        window.electronAPI.getChatAgentCustomKey?.(),
-        window.electronAPI.getBedrockAccessKeyId?.(),
-        window.electronAPI.getBedrockSecretAccessKey?.(),
-        window.electronAPI.getBedrockSessionToken?.(),
-        window.electronAPI.getAzureApiKey?.(),
-        window.electronAPI.getVertexApiKey?.(),
-      ]);
+    if (!isMowBuild()) {
+      try {
+        const [
+          openai,
+          anthropic,
+          gemini,
+          groq,
+          xai,
+          mistral,
+          openrouter,
+          cortiClientId,
+          cortiClientSecret,
+          cortiApiKey,
+          tinfoil,
+          customTx,
+          customRx,
+          noteFormattingCustom,
+          translationCustom,
+          dictationAgentCustom,
+          dictationAgentVisionCustom,
+          chatAgentCustom,
+          bedrockAccessKeyId,
+          bedrockSecretAccessKey,
+          bedrockSessionToken,
+          azureApiKey,
+          vertexApiKey,
+        ] = await Promise.all([
+          window.electronAPI.getOpenAIKey?.(),
+          window.electronAPI.getAnthropicKey?.(),
+          window.electronAPI.getGeminiKey?.(),
+          window.electronAPI.getGroqKey?.(),
+          window.electronAPI.getXaiKey?.(),
+          window.electronAPI.getMistralKey?.(),
+          window.electronAPI.getOpenrouterKey?.(),
+          window.electronAPI.getCortiClientId?.(),
+          window.electronAPI.getCortiClientSecret?.(),
+          window.electronAPI.getCortiKey?.(),
+          window.electronAPI.getTinfoilKey?.(),
+          window.electronAPI.getCustomTranscriptionKey?.(),
+          window.electronAPI.getCleanupCustomKey?.(),
+          window.electronAPI.getNoteFormattingCustomKey?.(),
+          window.electronAPI.getTranslationCustomKey?.(),
+          window.electronAPI.getDictationAgentCustomKey?.(),
+          window.electronAPI.getDictationAgentVisionCustomKey?.(),
+          window.electronAPI.getChatAgentCustomKey?.(),
+          window.electronAPI.getBedrockAccessKeyId?.(),
+          window.electronAPI.getBedrockSecretAccessKey?.(),
+          window.electronAPI.getBedrockSessionToken?.(),
+          window.electronAPI.getAzureApiKey?.(),
+          window.electronAPI.getVertexApiKey?.(),
+        ]);
 
-      useSettingsStore.setState({
-        openaiApiKey: openai || "",
-        anthropicApiKey: anthropic || "",
-        geminiApiKey: gemini || "",
-        groqApiKey: groq || "",
-        xaiApiKey: xai || "",
-        mistralApiKey: mistral || "",
-        openrouterApiKey: openrouter || "",
-        cortiClientId: cortiClientId || "",
-        cortiClientSecret: cortiClientSecret || "",
-        cortiApiKey: cortiApiKey || "",
-        tinfoilApiKey: tinfoil || "",
-        customTranscriptionApiKey: customTx || "",
-        cleanupCustomApiKey: customRx || "",
-        bedrockAccessKeyId: bedrockAccessKeyId || "",
-        ...(await migrateScopeCustomKeys([
-          ["noteFormattingCustomApiKey", noteFormattingCustom, "saveNoteFormattingCustomKey"],
-          ["translationCustomApiKey", translationCustom, "saveTranslationCustomKey"],
-          ["dictationAgentCustomApiKey", dictationAgentCustom, "saveDictationAgentCustomKey"],
-          [
-            "dictationAgentVisionCustomApiKey",
-            dictationAgentVisionCustom,
-            "saveDictationAgentVisionCustomKey",
-          ],
-          ["chatAgentCustomApiKey", chatAgentCustom, "saveChatAgentCustomKey"],
-        ])),
-        bedrockSecretAccessKey: bedrockSecretAccessKey || "",
-        bedrockSessionToken: bedrockSessionToken || "",
-        azureApiKey: azureApiKey || "",
-        vertexApiKey: vertexApiKey || "",
-      });
+        useSettingsStore.setState({
+          openaiApiKey: openai || "",
+          anthropicApiKey: anthropic || "",
+          geminiApiKey: gemini || "",
+          groqApiKey: groq || "",
+          xaiApiKey: xai || "",
+          mistralApiKey: mistral || "",
+          openrouterApiKey: openrouter || "",
+          cortiClientId: cortiClientId || "",
+          cortiClientSecret: cortiClientSecret || "",
+          cortiApiKey: cortiApiKey || "",
+          tinfoilApiKey: tinfoil || "",
+          customTranscriptionApiKey: customTx || "",
+          cleanupCustomApiKey: customRx || "",
+          bedrockAccessKeyId: bedrockAccessKeyId || "",
+          ...(await migrateScopeCustomKeys([
+            ["noteFormattingCustomApiKey", noteFormattingCustom, "saveNoteFormattingCustomKey"],
+            ["translationCustomApiKey", translationCustom, "saveTranslationCustomKey"],
+            ["dictationAgentCustomApiKey", dictationAgentCustom, "saveDictationAgentCustomKey"],
+            [
+              "dictationAgentVisionCustomApiKey",
+              dictationAgentVisionCustom,
+              "saveDictationAgentVisionCustomKey",
+            ],
+            ["chatAgentCustomApiKey", chatAgentCustom, "saveChatAgentCustomKey"],
+          ])),
+          bedrockSecretAccessKey: bedrockSecretAccessKey || "",
+          bedrockSessionToken: bedrockSessionToken || "",
+          azureApiKey: azureApiKey || "",
+          vertexApiKey: vertexApiKey || "",
+        });
 
-      if (!localStorage.getItem("enterpriseSetupMode")) {
-        // One-time migration. "Managed by default" is meant to equip employees who never chose a
-        // provider — not to move someone who deliberately set up local, self-hosted, BYOK, or
-        // enterprise inference. Anyone with an existing choice starts on "manual" and opts in.
-        const hasChosenProvider =
-          Object.values(INFERENCE_SCOPES).some((scope) => {
-            const stored = localStorage.getItem(scope.storeKeys.mode as string);
-            return Boolean(stored) && stored !== "openwhispr";
-          }) ||
-          Boolean(
-            useSettingsStore.getState().bedrockProfile.trim() ||
-            (bedrockAccessKeyId && bedrockSecretAccessKey) ||
-            azureApiKey
-          );
-        const enterpriseSetupMode: EnterpriseSetupMode = hasChosenProvider ? "manual" : "auto";
-        localStorage.setItem("enterpriseSetupMode", enterpriseSetupMode);
-        useSettingsStore.setState({ enterpriseSetupMode });
-      }
-
-      for (const key of STALE_SECRET_LOCALSTORAGE_KEYS) {
-        localStorage.removeItem(key);
-      }
-
-      // Users who configured OpenRouter through the Custom tab keep their key
-      // in the shared custom slot — seed the dedicated slot from it once.
-      if (!openrouter && customRx) {
-        const hydrated = useSettingsStore.getState();
-        const usesOpenRouterViaCustom = (Object.keys(INFERENCE_SCOPES) as InferenceScope[]).some(
-          (scope) => {
-            const cfg = selectResolvedLLMConfig(hydrated, scope);
-            return cfg.provider === "custom" && (cfg.cloudBaseUrl || "").includes("openrouter.ai");
-          }
-        );
-        if (usesOpenRouterViaCustom) {
-          hydrated.setOpenrouterApiKey(customRx);
+        if (!localStorage.getItem("enterpriseSetupMode")) {
+          // One-time migration. "Managed by default" is meant to equip employees who never chose a
+          // provider — not to move someone who deliberately set up local, self-hosted, BYOK, or
+          // enterprise inference. Anyone with an existing choice starts on "manual" and opts in.
+          const hasChosenProvider =
+            Object.values(INFERENCE_SCOPES).some((scope) => {
+              const stored = localStorage.getItem(scope.storeKeys.mode as string);
+              return Boolean(stored) && stored !== "openwhispr";
+            }) ||
+            Boolean(
+              useSettingsStore.getState().bedrockProfile.trim() ||
+              (bedrockAccessKeyId && bedrockSecretAccessKey) ||
+              azureApiKey
+            );
+          const enterpriseSetupMode: EnterpriseSetupMode = hasChosenProvider ? "manual" : "auto";
+          localStorage.setItem("enterpriseSetupMode", enterpriseSetupMode);
+          useSettingsStore.setState({ enterpriseSetupMode });
         }
+
+        for (const key of STALE_SECRET_LOCALSTORAGE_KEYS) {
+          localStorage.removeItem(key);
+        }
+
+        // Users who configured OpenRouter through the Custom tab keep their key
+        // in the shared custom slot — seed the dedicated slot from it once.
+        if (!openrouter && customRx) {
+          const hydrated = useSettingsStore.getState();
+          const usesOpenRouterViaCustom = (Object.keys(INFERENCE_SCOPES) as InferenceScope[]).some(
+            (scope) => {
+              const cfg = selectResolvedLLMConfig(hydrated, scope);
+              return cfg.provider === "custom" && (cfg.cloudBaseUrl || "").includes("openrouter.ai");
+            }
+          );
+          if (usesOpenRouterViaCustom) {
+            hydrated.setOpenrouterApiKey(customRx);
+          }
+        }
+      } catch (err) {
+        logger.warn(
+          "Failed to hydrate secrets from main process",
+          { error: (err as Error).message },
+          "settings"
+        );
       }
-    } catch (err) {
-      logger.warn(
-        "Failed to hydrate secrets from main process",
-        { error: (err as Error).message },
-        "settings"
-      );
     }
 
     // Sync dictation key from main process.

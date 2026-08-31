@@ -2,6 +2,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { PROMPTS_BY_LOCALE } from "./locales/prompts";
 import { TRANSLATIONS_BY_LOCALE } from "./locales/translations";
+import { isMowBuild, MOW_PROFILE } from "./config/mowProfile";
 
 export const SUPPORTED_UI_LANGUAGES = [
   "en",
@@ -98,6 +99,17 @@ const storageLanguage =
 
 const initialLanguage = normalizeUiLanguage(storageLanguage || browserLanguage || "en");
 
+if (isMowBuild()) {
+  i18n.use({
+    type: "postProcessor",
+    name: "mowBrand",
+    process(value: string) {
+      if (typeof value !== "string") return value;
+      return value.replaceAll(MOW_PROFILE.upstreamName, MOW_PROFILE.productName);
+    },
+  });
+}
+
 void i18n.use(initReactI18next).init({
   resources,
   lng: initialLanguage,
@@ -109,6 +121,7 @@ void i18n.use(initReactI18next).init({
   },
   returnEmptyString: true,
   returnNull: false,
+  postProcess: isMowBuild() ? ["mowBrand"] : undefined,
 });
 
 export default i18n;

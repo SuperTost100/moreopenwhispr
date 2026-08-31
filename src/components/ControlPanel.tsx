@@ -25,6 +25,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useJoinableWorkspaces } from "../hooks/useJoinableWorkspaces";
 import { useUsage } from "../hooks/useUsage";
 import { decideUpsell } from "../lib/upsell";
+import { isMowBuild } from "../config/mowProfile";
 import { useCollapsibleSidebar } from "../hooks/useCollapsibleSidebar";
 import {
   useTranscriptions,
@@ -236,19 +237,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
 
   const loadTranscriptions = useCallback(
     async (includeDiscarded?: boolean) => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
         await initializeTranscriptions(undefined, includeDiscarded);
-      } catch {
-        showAlertDialog({
-          title: t("controlPanel.history.couldNotLoadTitle"),
-          description: t("controlPanel.history.couldNotLoadDescription"),
-        });
       } finally {
         setIsLoading(false);
       }
     },
-    [showAlertDialog, t]
+    []
   );
 
   useEffect(() => {
@@ -340,6 +336,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   }, [updateError, toast, t]);
 
   useEffect(() => {
+    if (isMowBuild()) return;
     const dispose = window.electronAPI?.onLimitReached?.(
       (data: { wordsUsed: number; limit: number }) => {
         if (!hasShownUpgradePrompt.current) {
@@ -887,7 +884,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       />
 
       <UpgradePrompt
-        open={showUpgradePrompt}
+        open={!isMowBuild() && showUpgradePrompt}
         onOpenChange={setShowUpgradePrompt}
         wordsUsed={limitData?.wordsUsed}
         limit={limitData?.limit}
@@ -912,20 +909,22 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </Suspense>
       )}
 
-      {showReferrals && (
+      {showReferrals && !isMowBuild() && (
         <Suspense fallback={null}>
           <ReferralModal open={showReferrals} onOpenChange={setShowReferrals} />
         </Suspense>
       )}
 
-      <AcceptInvitationModal
-        token={invitationToken}
-        onClose={() => setInvitationToken(null)}
-        onAccepted={(entry) => {
-          setInvitationNotesEntry(entry);
-          setActiveView("personal-notes");
-        }}
-      />
+      {!isMowBuild() && (
+        <AcceptInvitationModal
+          token={invitationToken}
+          onClose={() => setInvitationToken(null)}
+          onAccepted={(entry) => {
+            setInvitationNotesEntry(entry);
+            setActiveView("personal-notes");
+          }}
+        />
+      )}
 
       <JoinYourTeamModal
         joinable={joinable}
@@ -1068,7 +1067,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               </div>
             )}
             <RequiredModelsBanner />
-            {usage?.isPastDue && activeView === "home" && (
+            {usage?.isPastDue && !isMowBuild() && activeView === "home" && (
               <div className="max-w-3xl mx-auto w-full mb-3">
                 <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-3">
                   <div className="flex items-start gap-3">

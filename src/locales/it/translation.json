@@ -3270,7 +3270,9 @@
     "documentation": "Documentazione",
     "joinDiscord": "Unisciti a Discord",
     "contactSupport": "Contatta il supporto",
-    "submitBug": "Segnala un bug"
+    "submitBug": "Segnala un bug",
+    "forkDocumentation": "Fork setup guide",
+    "forkUpstream": "Upstream OpenWhispr"
   },
   "postMigration": {
     "title": "Bentornato su OpenWhispr",

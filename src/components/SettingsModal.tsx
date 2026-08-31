@@ -15,6 +15,7 @@ import {
 import SidebarModal, { type SidebarItem } from "./ui/SidebarModal";
 import SettingsPage, { AccountAvatar, SettingsSectionType } from "./SettingsPage";
 import { useAuth } from "../hooks/useAuth";
+import { MOW_ACCOUNT_SETTINGS_SECTIONS, isMowBuild } from "../config/mowProfile";
 
 export type { SettingsSectionType };
 
@@ -126,12 +127,19 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
         group: t("settingsModal.groups.system"),
       },
     ];
-    return isSignedIn ? items : items.filter((item) => item.id !== "workspace");
+    const visible = isMowBuild()
+      ? items.filter((item) => !MOW_ACCOUNT_SETTINGS_SECTIONS.has(item.id))
+      : isSignedIn
+        ? items
+        : items.filter((item) => item.id !== "workspace");
+    return visible;
   }, [t, isSignedIn]);
 
   const resolveSection = (section: string | undefined): SettingsSectionType => {
-    if (!section) return "account";
-    return (SECTION_ALIASES[section] ?? section) as SettingsSectionType;
+    if (!section) return isMowBuild() ? "general" : "account";
+    const resolved = (SECTION_ALIASES[section] ?? section) as SettingsSectionType;
+    if (isMowBuild() && MOW_ACCOUNT_SETTINGS_SECTIONS.has(resolved)) return "general";
+    return resolved;
   };
 
   const [activeSection, setActiveSection] = React.useState<SettingsSectionType>(() =>
@@ -165,7 +173,7 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
       activeSection={activeSection}
       onSectionChange={handleSectionChange}
       header={
-        isSignedIn && user ? (
+        !isMowBuild() && isSignedIn && user ? (
           <div className="flex flex-col items-center gap-2 pb-2 text-center">
             <AccountAvatar image={user.image} name={user.name || t("settingsPage.account.user")} />
             <div className="min-w-0 w-full">

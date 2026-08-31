@@ -1,3 +1,5 @@
+import { isMowBuild } from "../../config/mowProfile.js";
+
 export const ONBOARDING_SESSION_KEY = "onboardingSessionV2";
 export const LEGACY_ONBOARDING_STEP_KEY = "onboardingCurrentStep";
 export const ONBOARDING_FLOW_VERSION = 2;
@@ -114,6 +116,16 @@ const LEGACY_STEP_MAP: OnboardingStepId[] = [
 ];
 
 export function createOnboardingSession(): OnboardingSession {
+  if (isMowBuild()) {
+    return {
+      version: ONBOARDING_FLOW_VERSION,
+      currentStepId: "permissions",
+      history: [],
+      authPath: "guest",
+      setupMode: null,
+      selfHostedRequested: false,
+    };
+  }
   return {
     version: ONBOARDING_FLOW_VERSION,
     currentStepId: "auth",
@@ -129,6 +141,10 @@ export function resetOnboardingProgress(storage: OnboardingStorage): void {
   storage.removeItem("onboardingCompleted");
   storage.removeItem("authenticationSkipped");
   storage.removeItem("skipAuth");
+  if (isMowBuild()) {
+    storage.setItem("authenticationSkipped", "true");
+    storage.setItem("skipAuth", "true");
+  }
   // AppRouter uses this marker to distinguish an explicit restart from a
   // returning signed-in user, while useOnboardingSession migrates it to auth.
   storage.setItem(LEGACY_ONBOARDING_STEP_KEY, "0");
@@ -136,6 +152,27 @@ export function resetOnboardingProgress(storage: OnboardingStorage): void {
 
 export function getOnboardingRoute(context: OnboardingRouteContext): OnboardingStepId[] {
   if (context.authPath === null) return ["auth"];
+
+  if (isMowBuild() && context.authPath === "guest") {
+    const route: OnboardingStepId[] = [
+      "permissions",
+      "dictation-hotkey",
+      "activation-mode",
+      "setup-choice",
+    ];
+    if (
+      context.setupMode &&
+      context.setupMode !== "cloud" &&
+      context.setupMode !== "antigravity"
+    ) {
+      route.push(
+        ...SETUP_ROUTES[context.setupMode].filter(
+          (stepId) => context.agentAllowed || !stepId.endsWith("assistant")
+        )
+      );
+    }
+    return route;
+  }
 
   const setupChoice = context.skipSetupChoice ? [] : (["setup-choice"] as OnboardingStepId[]);
 

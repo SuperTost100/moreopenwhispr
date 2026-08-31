@@ -3270,7 +3270,9 @@
     "documentation": "ドキュメント",
     "joinDiscord": "Discord に参加",
     "contactSupport": "サポートに問い合わせ",
-    "submitBug": "バグを報告"
+    "submitBug": "バグを報告",
+    "forkDocumentation": "Fork setup guide",
+    "forkUpstream": "Upstream OpenWhispr"
   },
   "postMigration": {
     "title": "OpenWhispr へおかえりなさい",
