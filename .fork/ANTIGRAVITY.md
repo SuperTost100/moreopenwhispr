@@ -63,6 +63,13 @@ Spike: dedicated `gemini-3.5-transcribe-live` returns 404 on daily gateway. Impl
 - `agy` on PATH, signed in (`agy auth login`) — OAuth token file must exist
 - Optional `ffmpeg-static` for webm→wav before gateway transcribe
 
+## Distribution (fork)
+
+- GitHub Releases on `antigravity-fork`; see [README.md](../README.md) and [COMPLIANCE.md](./COMPLIANCE.md)
+- Product name: **Whispr Antigravity** (`com.openwhispr.antigravity.fork`)
+- Account / billing UI disabled via `src/config/forkProfile.ts`
+- Update `repoUrl` / `issuesUrl` in `forkProfile.ts` before publishing
+
 ## Benchmark notes (2026-08-31)
 
 Spike on `.tmp/spike-stt.wav`:

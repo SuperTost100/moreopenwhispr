@@ -3298,7 +3298,9 @@
     "documentation": "Документация",
     "joinDiscord": "Присоединиться к Discord",
     "contactSupport": "Связаться с поддержкой",
-    "submitBug": "Сообщить об ошибке"
+    "submitBug": "Сообщить об ошибке",
+    "forkDocumentation": "Fork setup guide",
+    "forkUpstream": "Upstream OpenWhispr"
   },
   "postMigration": {
     "title": "С возвращением в OpenWhispr",

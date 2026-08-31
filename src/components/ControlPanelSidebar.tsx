@@ -24,6 +24,7 @@ import { getCachedPlatform } from "../utils/platform";
 import type { UpsellDecision } from "../lib/upsell";
 import { isAgentAllowed, isPolicyActionAllowed } from "../stores/policyRules";
 import { usePolicyStore } from "../stores/policyStore";
+import { isMowBuild } from "../config/mowProfile";
 
 const platform = getCachedPlatform();
 
@@ -75,8 +76,10 @@ export default function ControlPanelSidebar({
     () => localStorage.getItem("upgradeProDismissed") === "true"
   );
 
-  const showLimitBanner = upsell === "show" && Boolean(isSignedIn) && Boolean(isOverLimit);
-  const showUpgradeBanner = upsell === "show" && !showLimitBanner && !upgradeDismissed;
+  const showLimitBanner =
+    !isMowBuild() && upsell === "show" && Boolean(isSignedIn) && Boolean(isOverLimit);
+  const showUpgradeBanner =
+    !isMowBuild() && upsell === "show" && !showLimitBanner && !upgradeDismissed;
 
   const agentAllowed = usePolicyStore(isAgentAllowed);
   const policyActionsAllowed = usePolicyStore((state) => isPolicyActionAllowed(state));
@@ -243,7 +246,7 @@ export default function ControlPanelSidebar({
           </div>
         )}
 
-        {isSignedIn && onOpenReferrals && (
+        {isSignedIn && onOpenReferrals && !isMowBuild() && (
           <button
             onClick={onOpenReferrals}
             aria-label={t("sidebar.referral")}
@@ -274,31 +277,33 @@ export default function ControlPanelSidebar({
 
         <div className="mx-1 h-px bg-border/10 dark:bg-white/6 my-1.5!" />
 
-        <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md">
-          {userImage ? (
-            <img src={userImage} alt="" className="w-6 h-6 rounded-full shrink-0 object-cover" />
-          ) : (
-            <UserCircle size={18} className="shrink-0 text-foreground/50 dark:text-foreground/45" />
-          )}
-          <div className="flex-1 min-w-0">
-            {isSignedIn && (userName || userEmail) ? (
-              <>
-                <p className="text-xs text-foreground/80 dark:text-foreground/80 truncate leading-tight">
-                  {userName || t("sidebar.defaultUser")}
-                </p>
-                {userEmail && (
-                  <p className="text-xs text-foreground/55 dark:text-foreground/55 truncate leading-tight">
-                    {userEmail}
+        {!isMowBuild() && (
+          <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md">
+            {userImage ? (
+              <img src={userImage} alt="" className="w-6 h-6 rounded-full shrink-0 object-cover" />
+            ) : (
+              <UserCircle size={18} className="shrink-0 text-foreground/50 dark:text-foreground/45" />
+            )}
+            <div className="flex-1 min-w-0">
+              {isSignedIn && (userName || userEmail) ? (
+                <>
+                  <p className="text-xs text-foreground/80 dark:text-foreground/80 truncate leading-tight">
+                    {userName || t("sidebar.defaultUser")}
                   </p>
-                )}
-              </>
-            ) : authLoaded && !isSignedIn ? (
-              <p className="text-xs text-foreground/45 dark:text-foreground/55">
-                {t("sidebar.notSignedIn")}
-              </p>
-            ) : null}
+                  {userEmail && (
+                    <p className="text-xs text-foreground/55 dark:text-foreground/55 truncate leading-tight">
+                      {userEmail}
+                    </p>
+                  )}
+                </>
+              ) : authLoaded && !isSignedIn ? (
+                <p className="text-xs text-foreground/45 dark:text-foreground/55">
+                  {t("sidebar.notSignedIn")}
+                </p>
+              ) : null}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

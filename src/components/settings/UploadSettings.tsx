@@ -9,6 +9,7 @@ import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import SelfHostedPanel from "../SelfHostedPanel";
 import type { InferenceMode } from "../../types/electron";
 import { useStartOnboarding } from "../../hooks/useStartOnboarding";
+import { withoutAccountModes } from "../../config/mowProfile";
 
 export function UploadTranscriptionPanel() {
   const { t } = useTranslation();
@@ -44,7 +45,7 @@ export function UploadTranscriptionPanel() {
     effectiveMode: effectiveTranscriptionMode,
     isModeAllowed,
   } = usePolicyModeOptions<InferenceModeOption>(
-    [
+    withoutAccountModes([
       {
         id: "openwhispr",
         label: t("settingsPage.transcription.modes.openwhispr"),
@@ -71,7 +72,7 @@ export function UploadTranscriptionPanel() {
         description: t("settingsPage.transcription.modes.selfHostedDesc"),
         icon: <Network className="w-4 h-4" />,
       },
-    ],
+    ]),
     "transcription",
     uploadTranscriptionMode,
     { byokProviders: TRANSCRIPTION_POLICY_PROVIDER_IDS }

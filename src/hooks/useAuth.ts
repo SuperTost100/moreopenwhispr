@@ -29,6 +29,7 @@ import logger from "../utils/logger";
 import { useSettingsStore } from "../stores/settingsStore";
 import { usePolicyStore } from "../stores/policyStore";
 import { useEnterpriseIdentityStore } from "../stores/enterpriseIdentityStore";
+import { isMowBuild } from "../config/mowProfile";
 
 const useStaticSession = () => ({
   data: null,
@@ -234,6 +235,17 @@ export function useAuth() {
     resolvedUserId,
     sessionResolutionFailed,
   ]);
+
+  if (isMowBuild()) {
+    return {
+      isSignedIn: false,
+      isGracePeriodOnly: false,
+      isLoaded: true,
+      session: null,
+      user: null,
+      refetch: async () => null,
+    };
+  }
 
   return {
     isSignedIn,

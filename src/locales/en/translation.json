@@ -3433,6 +3433,8 @@
   },
   "support": {
     "documentation": "Documentation",
+    "forkDocumentation": "Fork setup guide",
+    "forkUpstream": "Upstream OpenWhispr",
     "joinDiscord": "Join Discord",
     "contactSupport": "Contact Support",
     "submitBug": "Submit Bug"

@@ -10,6 +10,7 @@ import {
 } from "./dropdown-menu";
 import { cn } from "../lib/utils";
 import logger from "../../utils/logger";
+import { MOW_PROFILE, isMowBuild } from "../../config/mowProfile";
 
 function DiscordIcon({ className }: { className?: string }) {
   return (
@@ -54,31 +55,50 @@ export default function SupportDropdown({ className, trigger }: SupportDropdownP
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => openExternal("https://docs.openwhispr.com")}>
-          <BookOpen className="mr-2 h-4 w-4" />
-          {t("support.documentation")}
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => openExternal("https://discord.gg/yZWC9WTtX7")}>
-          <DiscordIcon className="mr-2 h-4 w-4" />
-          {t("support.joinDiscord")}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={async () => {
-            const result = await window.electronAPI?.openExternal("mailto:support@openwhispr.com");
-            if (!result?.success) {
-              openExternal("https://mail.google.com/mail/?view=cm&to=support@openwhispr.com");
-            }
-          }}
-        >
-          <Mail className="mr-2 h-4 w-4" />
-          {t("support.contactSupport")}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => openExternal("https://github.com/OpenWhispr/openwhispr/issues")}
-        >
-          <Bug className="mr-2 h-4 w-4" />
-          {t("support.submitBug")}
-        </DropdownMenuItem>
+        {isMowBuild() ? (
+          <>
+            <DropdownMenuItem onClick={() => openExternal(MOW_PROFILE.docsUrl)}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              {t("support.forkDocumentation")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openExternal(MOW_PROFILE.issuesUrl)}>
+              <Bug className="mr-2 h-4 w-4" />
+              {t("support.submitBug")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openExternal(MOW_PROFILE.upstreamUrl)}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              {t("support.forkUpstream")}
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem onClick={() => openExternal("https://docs.openwhispr.com")}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              {t("support.documentation")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => openExternal("https://discord.gg/yZWC9WTtX7")}>
+              <DiscordIcon className="mr-2 h-4 w-4" />
+              {t("support.joinDiscord")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                const result = await window.electronAPI?.openExternal("mailto:support@openwhispr.com");
+                if (!result?.success) {
+                  openExternal("https://mail.google.com/mail/?view=cm&to=support@openwhispr.com");
+                }
+              }}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              {t("support.contactSupport")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => openExternal("https://github.com/OpenWhispr/openwhispr/issues")}
+            >
+              <Bug className="mr-2 h-4 w-4" />
+              {t("support.submitBug")}
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -402,6 +402,8 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
           if (!cancelled) setProviderReady(route.transport !== "error");
         } else if (cloudTranscriptionProvider === "corti") {
           if (!cancelled) setProviderReady(!!(cortiClientId && cortiClientSecret));
+        } else if (cloudTranscriptionProvider === "antigravity") {
+          if (!cancelled) setProviderReady(true);
         } else {
           if (!cancelled)
             setProviderReady(

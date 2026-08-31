@@ -3318,7 +3318,9 @@
     "documentation": "Documentación",
     "joinDiscord": "Unirse a Discord",
     "contactSupport": "Contactar soporte",
-    "submitBug": "Reportar un error"
+    "submitBug": "Reportar un error",
+    "forkDocumentation": "Fork setup guide",
+    "forkUpstream": "Upstream OpenWhispr"
   },
   "postMigration": {
     "title": "Te damos la bienvenida de nuevo a OpenWhispr",

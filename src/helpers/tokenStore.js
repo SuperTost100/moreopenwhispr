@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const debugLogger = require("./debugLogger");
 const secretCrypto = require("./secretCrypto");
+const { isMowBuild } = require("../config/mowProfile.js");
 
 const tokenFile = () => path.join(app.getPath("userData"), "auth-token.bin");
 
@@ -35,6 +36,7 @@ function persist(token) {
 }
 
 function get() {
+  if (isMowBuild()) return null;
   if (cached !== null) return cached || null;
   try {
     const file = tokenFile();
@@ -64,6 +66,7 @@ function get() {
 }
 
 function set(token) {
+  if (isMowBuild()) return { success: false, ...state() };
   if (typeof token !== "string" || !token) return { success: false, ...state() };
   const current = get();
   if (current === token) return { success: true, ...state() };

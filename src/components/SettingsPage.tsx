@@ -92,6 +92,7 @@ import DictationTranslationSettings from "./settings/DictationTranslationSetting
 import InferenceConfigEditor from "./settings/InferenceConfigEditor";
 import { MeetingTranscriptionPanel } from "./settings/MeetingSettings";
 import { AntigravitySettingsPanel } from "./settings/AntigravitySettingsPanel";
+import { withoutAccountModes, isMowBuild } from "../config/mowProfile";
 import { UploadTranscriptionPanel } from "./settings/UploadSettings";
 import LanguageSelector from "./ui/LanguageSelector";
 import { Skeleton } from "./ui/skeleton";
@@ -560,7 +561,7 @@ function TranscriptionSection({
     effectiveMode: effectiveTranscriptionMode,
     isModeAllowed,
   } = usePolicyModeOptions<InferenceModeOption>(
-    [
+    withoutAccountModes([
       {
         id: "openwhispr",
         label: t("settingsPage.transcription.modes.openwhispr"),
@@ -587,7 +588,7 @@ function TranscriptionSection({
         description: t("settingsPage.transcription.modes.selfHostedDesc"),
         icon: <Network className="w-4 h-4" />,
       },
-    ],
+    ]),
     "transcription",
     transcriptionMode,
     { byokProviders: TRANSCRIPTION_POLICY_PROVIDER_IDS }
@@ -4000,7 +4001,7 @@ EOF`,
                 description={t("settingsPage.privacy.description")}
               />
 
-              {isSignedIn && (
+              {!isMowBuild() && isSignedIn && (
                 <div className="mb-4">
                   <SettingsPanel className="mb-2">
                     <SettingsPanelRow>
@@ -4091,16 +4092,18 @@ EOF`,
                 </div>
               )}
 
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <SettingsRow
-                    label={t("settingsPage.privacy.usageAnalytics")}
-                    description={t("settingsPage.privacy.usageAnalyticsDescription")}
-                  >
-                    <Toggle checked={telemetryEnabled} onChange={setTelemetryEnabled} />
-                  </SettingsRow>
-                </SettingsPanelRow>
-              </SettingsPanel>
+              {!isMowBuild() && (
+                <SettingsPanel>
+                  <SettingsPanelRow>
+                    <SettingsRow
+                      label={t("settingsPage.privacy.usageAnalytics")}
+                      description={t("settingsPage.privacy.usageAnalyticsDescription")}
+                    >
+                      <Toggle checked={telemetryEnabled} onChange={setTelemetryEnabled} />
+                    </SettingsRow>
+                  </SettingsPanelRow>
+                </SettingsPanel>
+              )}
             </div>
 
             {/* Audio Retention */}

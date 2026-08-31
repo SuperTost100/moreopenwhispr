@@ -1,7 +1,7 @@
 {
-  "appId": "com.gizmolabs.openwhispr",
+  "appId": "com.moreopenwhispr.app",
   "afterPack": "scripts/afterPack.js",
-  "productName": "OpenWhispr",
+  "productName": "MoreOpenWhispr",
   "protocols": {
     "name": "OpenWhispr Protocol",
     "schemes": ["openwhispr"]

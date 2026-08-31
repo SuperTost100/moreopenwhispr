@@ -4,6 +4,7 @@ import {
   isProviderAllowedByPolicy,
   type PolicyDecisionSnapshot,
 } from "../../stores/policyRules.ts";
+import { isMowBuild } from "../../config/mowProfile";
 
 interface ProviderOption {
   id: string;
@@ -41,6 +42,7 @@ export function getOnboardingSetupAvailability({
     filterByokProviderOptionsByPolicy(llmProviders, "llm", policy).length > 0;
 
   const cloud =
+    !isMowBuild() &&
     isModeAllowedByPolicy(policy, "transcription", "openwhispr") &&
     (!agentAllowed || isModeAllowedByPolicy(policy, "llm", "openwhispr"));
   const local =

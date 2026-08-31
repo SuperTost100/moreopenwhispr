@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { TranscriptionItem } from "../types/electron";
+import logger from "../utils/logger";
 
 interface TranscriptionState {
   transcriptions: TranscriptionItem[];
@@ -75,9 +76,16 @@ export async function initializeTranscriptions(
 ) {
   currentLimit = limit;
   ensureIpcListeners();
-  const items = await window.electronAPI.getTranscriptions(limit, { includeDiscarded });
-  useTranscriptionStore.setState({ transcriptions: items, includeDiscarded });
-  return items;
+  try {
+    const items = await window.electronAPI?.getTranscriptions?.(limit, { includeDiscarded });
+    const transcriptions = Array.isArray(items) ? items : [];
+    useTranscriptionStore.setState({ transcriptions, includeDiscarded });
+    return transcriptions;
+  } catch (error) {
+    logger.warn("Failed to load transcriptions", { error }, "history");
+    useTranscriptionStore.setState({ transcriptions: [], includeDiscarded });
+    return [];
+  }
 }
 
 export function addTranscription(item: TranscriptionItem) {

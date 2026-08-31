@@ -3270,7 +3270,9 @@
     "documentation": "文档",
     "joinDiscord": "加入 Discord",
     "contactSupport": "联系支持",
-    "submitBug": "提交 Bug"
+    "submitBug": "提交 Bug",
+    "forkDocumentation": "Fork setup guide",
+    "forkUpstream": "Upstream OpenWhispr"
   },
   "postMigration": {
     "title": "欢迎回到 OpenWhispr",

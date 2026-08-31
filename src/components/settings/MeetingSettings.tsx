@@ -10,6 +10,7 @@ import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import type { InferenceMode } from "../../types/electron";
 import { useStartOnboarding } from "../../hooks/useStartOnboarding";
 import { getStreamingTranscriptionProviders } from "../../models/ModelRegistry";
+import { withoutAccountModes } from "../../config/mowProfile";
 
 const MEETING_BYOK_PROVIDER_IDS = getStreamingTranscriptionProviders().map(
   (provider) => provider.id
@@ -62,7 +63,7 @@ export function MeetingTranscriptionPanel() {
     effectiveMode: effectiveTranscriptionMode,
     isModeAllowed,
   } = usePolicyModeOptions<InferenceModeOption>(
-    [
+    withoutAccountModes([
       {
         id: "openwhispr",
         label: t("settingsPage.transcription.modes.openwhispr"),
@@ -91,7 +92,7 @@ export function MeetingTranscriptionPanel() {
         disabled: true,
         badge: t("common.comingSoon"),
       },
-    ],
+    ]),
     "transcription",
     meetingTranscriptionMode,
     { byokProviders: MEETING_BYOK_PROVIDER_IDS }
