@@ -67,12 +67,8 @@ function authError(message, code) {
 }
 
 function resolveAgyBinaryPath() {
-  const candidate = process.env.ANTIGRAVITY_CLI || "agy";
-  if (path.isAbsolute(candidate) || candidate.includes("/") || candidate.includes("\\")) {
-    return fs.existsSync(candidate) ? candidate : null;
-  }
   try {
-    return execFileSync("which", [candidate], { encoding: "utf8" }).trim() || null;
+    return require("./antigravityCli").resolveAgyBinary();
   } catch {
     return null;
   }

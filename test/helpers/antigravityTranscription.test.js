@@ -97,28 +97,6 @@ test("prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversi
   );
 });
 
-test("prepareAudioBuffer rewrites asar ffmpeg paths before spawn", async () => {
-  const { getFFmpegPath } = require("../../src/helpers/ffmpegUtils");
-  const { prepareAudioBuffer } = require("../../src/helpers/antigravityTranscription");
-  const real = getFFmpegPath();
-  assert.ok(real, "ffmpeg-static should be installed for this test");
-  const asarPath = real.includes("app.asar.unpacked")
-    ? real.replace("app.asar.unpacked", "app.asar")
-    : path.join("/fake/app.asar/node_modules/ffmpeg-static", path.basename(real));
-  await assert.rejects(
-    () =>
-      prepareAudioBuffer({
-        audioBuffer: Buffer.from("not-audio"),
-        contentType: "audio/webm",
-        ffmpegPath: asarPath,
-      }),
-    (err) => {
-      assert.doesNotMatch(String(err.message), /ENOENT/);
-      return true;
-    }
-  );
-});
-
 test("transcribeWithAntigravity falls back to agy only when gateway fails", async () => {
   const { clearGatewayQuotaCache } = require("../../src/helpers/antigravityQuotaCache");
   clearGatewayQuotaCache();

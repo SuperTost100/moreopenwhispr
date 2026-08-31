@@ -15,18 +15,61 @@ const QUOTA_RE =
 const TIER_RE =
   /(?:ineligible|not available on (?:your|this) tier|upgrade (?:your|to)|tier restriction)/i;
 
-function resolveAgyBinary(command) {
-  const candidate = command || process.env.ANTIGRAVITY_CLI || "agy";
-  if (path.isAbsolute(candidate) || candidate.includes("/") || candidate.includes("\\")) {
-    try {
-      fs.accessSync(candidate, fs.constants.X_OK);
-    } catch {
-      const error = new Error(`Antigravity CLI not found or not executable: ${candidate}`);
-      error.code = "AGY_NOT_FOUND";
-      throw error;
-    }
+function agyNotFound(candidate) {
+  const error = new Error(
+    `Antigravity CLI not found or not executable: ${candidate}. Install agy, run agy auth login, or set ANTIGRAVITY_CLI to the full path.`
+  );
+  error.code = "AGY_NOT_FOUND";
+  return error;
+}
+
+function isExecutableFile(filePath) {
+  try {
+    fs.accessSync(filePath, fs.constants.X_OK);
+    return true;
+  } catch {
+    return false;
   }
-  return candidate;
+}
+
+function agyFileName(command) {
+  if (process.platform === "win32" && !command.toLowerCase().endsWith(".exe")) {
+    return `${command}.exe`;
+  }
+  return command;
+}
+
+function agySearchDirs(homedir) {
+  return [
+    path.join(homedir, ".local", "bin"),
+    path.join(homedir, "bin"),
+    path.join(homedir, ".antigravity", "antigravity", "bin"),
+    path.join(homedir, ".antigravity-ide", "antigravity-ide", "bin"),
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+  ];
+}
+
+// GUI Electron PATH is often /usr/bin:/bin. agy lives in ~/.local/bin or Homebrew.
+function resolveAgyBinary(command, { homedir = os.homedir(), env = process.env } = {}) {
+  const candidate = command || env.ANTIGRAVITY_CLI || "agy";
+  if (path.isAbsolute(candidate) || candidate.includes("/") || candidate.includes("\\")) {
+    if (!isExecutableFile(candidate)) throw agyNotFound(candidate);
+    return candidate;
+  }
+
+  const pathSep = process.platform === "win32" ? ";" : ":";
+  const pathDirs = String(env.PATH || "")
+    .split(pathSep)
+    .filter(Boolean);
+  const seen = new Set();
+  for (const dir of [...pathDirs, ...agySearchDirs(homedir)]) {
+    if (!dir || seen.has(dir)) continue;
+    seen.add(dir);
+    const full = path.join(dir, agyFileName(candidate));
+    if (isExecutableFile(full)) return full;
+  }
+  throw agyNotFound(candidate);
 }
 
 function buildAgyArgs({
@@ -291,6 +334,10 @@ async function runAgyTurn({
   if (model) {
     env.ANTIGRAVITY_MODEL = model;
   }
+  if (path.isAbsolute(binary)) {
+    const pathSep = process.platform === "win32" ? ";" : ":";
+    env.PATH = path.dirname(binary) + pathSep + (env.PATH || "");
+  }
 
   const child = spawnImpl(binary, args, {
     cwd,
@@ -303,7 +350,15 @@ async function runAgyTurn({
       activeAgyChild = null;
     }
   });
-  const result = await waitForClose(child, timeoutMs);
+  let result;
+  try {
+    result = await waitForClose(child, timeoutMs);
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      throw agyNotFound(binary);
+    }
+    throw error;
+  }
   const stdoutText = result.stdout.trim();
   const stderrText = result.stderr.trim();
 
