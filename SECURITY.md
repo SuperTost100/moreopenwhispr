@@ -1,58 +1,49 @@
 # Security Policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.7.x   | :white_check_mark: |
-| < 1.7   | :x:                |
+| Version | Supported |
+| --- | --- |
+| MoreOpenWhispr on `antigravity-fork` (currently 1.9.3) | yes |
+| Official OpenWhispr releases | Report to [OpenWhispr/openwhispr](https://github.com/OpenWhispr/openwhispr/security/advisories/new) |
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-**Please do not open public issues for security vulnerabilities.**
+**Do not open a public issue.**
 
-Use [GitHub's private vulnerability reporting](https://github.com/OpenWhispr/openwhispr/security/advisories/new)
-to submit a report. You can also email security@openwhispr.com.
+Use [GitHub's private vulnerability reporting](https://github.com/SuperTost100/openwhispr/security/advisories/new) on this fork.
 
-We will acknowledge your report within **48 hours** and aim to release a fix
-within **7 days** for critical issues.
+There is no `security@openwhispr.com` inbox for MoreOpenWhispr. That address is upstream's.
+
+Expect an acknowledgement when someone is actually looking at the report. There is no 48-hour SLA on a one-person fork.
 
 ## Scope
 
-The following are in scope:
+In scope:
 
-- Remote code execution via crafted audio files or transcription output
+- Remote code execution via crafted audio or transcription output
 - Privilege escalation through native binaries (key listeners, paste helpers)
-- Credential exposure (API keys, OAuth tokens, database credentials)
-- Cross-site scripting (XSS) in the Electron renderer
-- Insecure IPC between main and renderer processes
+- Credential exposure (API keys, Antigravity OAuth tokens, calendar tokens)
+- XSS in the Electron renderer
+- Insecure IPC between main and renderer
 - Supply chain attacks via dependencies or native compilation
 
 Out of scope:
 
-- Issues requiring physical access to an already-unlocked machine
-- Denial of service against the local application
+- Issues that need physical access to an unlocked machine
+- Denial of service against the local app
 - Social engineering
+- "Antigravity ToS lets me do this" product questions
+- Bugs that only exist in OpenWhispr Cloud (this fork does not run that service)
 
-## Security Model
+## Security model
 
-- **Local-first audio processing** — Audio is transcribed on-device using
-  whisper.cpp or nvidia parakeet. Recordings are not sent to external servers unless explicitly
-  configured by the user.
-- **Credential storage** — API keys provided by users (BYOK) and enterprise
-  cloud credentials (AWS, Azure, Vertex) are encrypted at rest using
-  Electron's `safeStorage` API, which delegates to the OS keychain (Keychain
-  on macOS, DPAPI on Windows, libsecret on Linux). Encrypted blobs are stored
-  under `userData/secure-keys/`. Non-secret preferences (regions, endpoints,
-  hotkeys, flags) continue to live in `.env`. On Linux systems without a
-  keyring, secrets fall back to plaintext to match Electron's default
-  behavior.
-- **Native binaries** — Platform-specific helpers (key listeners, paste
-  utilities) are compiled from source during the build process.
-- **Context isolation** — The Electron renderer runs with context isolation
-  enabled and a restricted preload bridge.
+- **Local-first audio.** Whisper and Parakeet stay on-device. Antigravity and BYOK send audio or text because you chose those providers.
+- **Credential storage.** BYOK keys and enterprise cloud creds use Electron `safeStorage` (Keychain / DPAPI / libsecret) under `userData/secure-keys/`. Linux without a keyring falls back to plaintext. Antigravity tokens live in `~/.gemini/antigravity-cli/` as the `agy` CLI wrote them.
+- **Native binaries.** Platform helpers are compiled or downloaded during build.
+- **Context isolation.** Renderer is isolated; preload is a fixed IPC bridge.
+- **No OpenWhispr Cloud.** Account, billing, and hosted MCP are disabled. Leftover IPC from upstream is not a supported API.
 
-## Disclosure Policy
+## Disclosure
 
-We follow coordinated disclosure. Once a fix is released, we will credit
-reporters in the changelog (unless they prefer to remain anonymous).
+Coordinated disclosure. Fixes land on `antigravity-fork`. Credit in the changelog if you want it.

@@ -1,116 +1,96 @@
-# Network Allowlist
+# Network allowlist
 
-Outbound hosts the OpenWhispr desktop app contacts. For firewall, proxy, and
-DNS filter configuration.
+Outbound hosts MoreOpenWhispr may contact. For firewall, proxy, and DNS filters.
 
-All connections are client-initiated over TLS. No inbound ports.
+All connections are client-initiated over TLS. No inbound ports. There is **no** OpenWhispr Cloud API in this fork.
 
-## Required by default
+## Auto-update and GitHub
 
-Contacted by every install using OpenWhispr Cloud (the default after
-onboarding).
+| Host | Protocol | Port | Purpose |
+| --- | --- | --- | --- |
+| `github.com`, `objects.githubusercontent.com` | HTTPS | 443 | Release artifacts (electron-updater) and sidecar binaries (whisper.cpp, sherpa-onnx, llama.cpp, Qdrant) |
 
-| Host                                          | Protocol | Port | Purpose                                                                            |
-| --------------------------------------------- | -------- | ---- | ---------------------------------------------------------------------------------- |
-| `api.openwhispr.com`                          | HTTPS    | 443  | Cloud API: transcription, sync, agent reasoning, settings, usage.                  |
-| `auth.openwhispr.com`                         | HTTPS    | 443  | Account sign-in and session refresh (Better Auth).                                 |
-| `github.com`, `objects.githubusercontent.com` | HTTPS    | 443  | Application auto-update (release artifacts via electron-updater, GitHub provider). |
+## Antigravity (default cloud path)
 
-## Required for streaming transcription
+Only if you pick Antigravity. Uses **your** `agy` OAuth session. [antigravity.md](antigravity.md).
 
-OpenWhispr Cloud routes streaming sessions through one of three providers.
-Allowlist all three unless a specific provider is pinned in configuration.
+| Host | Protocol | Port | Purpose |
+| --- | --- | --- | --- |
+| `oauth2.googleapis.com` | HTTPS | 443 | Token refresh |
+| `daily-cloudcode-pa.googleapis.com` | HTTPS | 443 | Default dictation STT and text cleanup |
+| `cloudcode-pa.googleapis.com` | HTTPS | 443 | Production Cloud Code fallback |
 
-| Host                       | Protocol   | Port | Purpose                                                                           |
-| -------------------------- | ---------- | ---- | --------------------------------------------------------------------------------- |
-| `api.deepgram.com`         | WSS        | 443  | Deepgram streaming transcription.                                                 |
-| `api.openai.com`           | WSS, HTTPS | 443  | OpenAI Realtime streaming transcription.                                          |
-| `streaming.assemblyai.com` | WSS, HTTPS | 443  | AssemblyAI streaming transcription. Token endpoint is HTTPS; live session is WSS. |
+The `agy` CLI itself may talk to other Google endpoints during `agy auth login`. That is outside this app.
 
-## Required for local model downloads
+## Local model downloads
 
-Contacted only when a user opts into a local model (Whisper, Parakeet, or a
-local GGUF reasoning model). Not required for cloud-only installs.
+Only when you opt into Whisper, Parakeet, Cohere Transcribe, diarization, embeddings, or a local GGUF.
 
-| Host                                                    | Protocol | Port | Purpose                                                                     |
-| ------------------------------------------------------- | -------- | ---- | --------------------------------------------------------------------------- |
-| `huggingface.co`                                        | HTTPS    | 443  | Whisper GGML, Parakeet, GGUF, and embedding model downloads.                |
-| `cdn-lfs.huggingface.co`, `cdn-lfs-us-1.huggingface.co` | HTTPS    | 443  | HuggingFace large-file CDN (LFS-backed model files).                        |
-| `github.com`, `objects.githubusercontent.com`           | HTTPS    | 443  | sherpa-onnx, llama.cpp, whisper.cpp, and Qdrant binaries (GitHub releases). |
+| Host | Protocol | Port | Purpose |
+| --- | --- | --- | --- |
+| `huggingface.co` | HTTPS | 443 | GGML, Parakeet, GGUF, embedding weights |
+| `cdn-lfs.huggingface.co`, `cdn-lfs-us-1.huggingface.co` | HTTPS | 443 | Hugging Face LFS |
+| `github.com`, `objects.githubusercontent.com` | HTTPS | 443 | Runtime binaries |
 
-## Required for Google Calendar (optional feature)
+## Google / Microsoft / Apple Calendar
 
-Contacted only if the user connects Google Calendar in settings.
+Only if you connect a calendar. Apple Calendar on macOS is local EventKit (no extra hosts).
 
-| Host                    | Protocol | Port | Purpose                                                     |
-| ----------------------- | -------- | ---- | ----------------------------------------------------------- |
-| `accounts.google.com`   | HTTPS    | 443  | OAuth authorization.                                        |
-| `oauth2.googleapis.com` | HTTPS    | 443  | OAuth token exchange and revoke.                            |
-| `www.googleapis.com`    | HTTPS    | 443  | Calendar event and calendar list reads.                     |
-| `openwhispr.com`        | HTTPS    | 443  | OAuth desktop callback redirect (`/auth/desktop-callback`). |
+| Host | Protocol | Port | Purpose |
+| --- | --- | --- | --- |
+| `accounts.google.com` | HTTPS | 443 | Google OAuth |
+| `oauth2.googleapis.com` | HTTPS | 443 | Google token exchange |
+| `www.googleapis.com` | HTTPS | 443 | Calendar reads |
+| `login.microsoftonline.com` | HTTPS | 443 | Microsoft OAuth |
+| `graph.microsoft.com` | HTTPS | 443 | Microsoft Calendar |
 
-## Required for URL audio import (optional feature)
+Upstream OpenWhispr also used `openwhispr.com` as an OAuth desktop callback. This fork uses a localhost loopback server (`oauthLoopbackFlow.js`). You should not need `openwhispr.com` for calendar.
 
-Contacted only when a user pastes a URL into the Upload view to download and
-transcribe its audio. Downloads are HTTPS-only and hosts resolving to
-private/internal addresses are rejected.
+## URL audio import
 
-| Host                                | Protocol | Port | Purpose                                                                    |
-| ----------------------------------- | -------- | ---- | -------------------------------------------------------------------------- |
-| `www.youtube.com`, `youtube.com`, `youtu.be`, `m.youtube.com`, `music.youtube.com` | HTTPS | 443 | YouTube page/metadata fetch for pasted YouTube links (bundled yt-dlp).     |
-| `*.googlevideo.com`                 | HTTPS    | 443  | YouTube media CDN — the actual audio stream download.                      |
-| _User-pasted hosts_                 | HTTPS    | 443  | Direct audio/video URL imports contact whatever public host the user pastes. |
+Only when you paste a URL in Upload.
 
-## BYOK provider hosts (only if configured)
+| Host | Protocol | Port | Purpose |
+| --- | --- | --- | --- |
+| `www.youtube.com`, `youtube.com`, `youtu.be`, `m.youtube.com`, `music.youtube.com` | HTTPS | 443 | YouTube metadata (bundled yt-dlp) |
+| `*.googlevideo.com` | HTTPS | 443 | YouTube media CDN |
+| _User-pasted hosts_ | HTTPS | 443 | Direct audio/video URLs |
 
-Required only when a user configures their own API key for the corresponding
-provider. Skip any provider not in use.
+Private/internal resolved addresses are rejected.
 
-| Host                                                                             | Protocol   | Port | Used when                                                                                                                                                                                                                                                                                                                                                |
-| -------------------------------------------------------------------------------- | ---------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `api.openai.com`                                                                 | HTTPS      | 443  | OpenAI API key configured (transcription or reasoning).                                                                                                                                                                                                                                                                                                  |
-| `*.cognitiveservices.azure.com`, `*.openai.azure.com`, `*.services.ai.azure.com` | HTTPS      | 443  | Azure AI Foundry / Azure OpenAI speech-to-text configured (custom transcription provider pointed at your own Azure resource endpoint).                                                                                                                                                                                                                   |
-| `api.anthropic.com`                                                              | HTTPS      | 443  | Anthropic API key configured.                                                                                                                                                                                                                                                                                                                            |
-| `generativelanguage.googleapis.com`                                              | HTTPS      | 443  | Gemini API key configured.                                                                                                                                                                                                                                                                                                                               |
-| `api.groq.com`                                                                   | HTTPS      | 443  | Groq API key configured.                                                                                                                                                                                                                                                                                                                                 |
-| `atc.tinfoil.sh`, `*.tinfoil.sh`                                                 | WSS, HTTPS | 443  | Tinfoil API key configured. `atc.tinfoil.sh` serves the enclave attestation bundle (verified locally against an embedded sigstore root). Inference and realtime transcription connect to an enclave host assigned dynamically at runtime (e.g. `inference.tinfoil.sh`, `router.infN.tinfoil.sh`), so allowlist `*.tinfoil.sh` rather than pinning hosts. |
-| `api.mistral.ai`                                                                 | HTTPS      | 443  | Mistral API key configured.                                                                                                                                                                                                                                                                                                                              |
-| `openrouter.ai`                                                                  | HTTPS      | 443  | OpenRouter selected as a reasoning provider (`/api/v1/models` is fetched even without a key).                                                                                                                                                                                                                                                            |
+## BYOK provider hosts
+
+Only for keys you actually saved.
+
+| Host | Protocol | Port | Used when |
+| --- | --- | --- | --- |
+| `api.openai.com` | HTTPS / WSS | 443 | OpenAI transcription or reasoning |
+| `*.cognitiveservices.azure.com`, `*.openai.azure.com`, `*.services.ai.azure.com` | HTTPS | 443 | Azure speech |
+| `api.anthropic.com` | HTTPS | 443 | Anthropic |
+| `generativelanguage.googleapis.com` | HTTPS | 443 | Gemini API key (not Antigravity) |
+| `api.groq.com` | HTTPS | 443 | Groq |
+| `atc.tinfoil.sh`, `*.tinfoil.sh` | WSS, HTTPS | 443 | Tinfoil |
+| `api.mistral.ai` | HTTPS | 443 | Mistral |
+| `openrouter.ai` | HTTPS | 443 | OpenRouter (`/api/v1/models` even without a key) |
+
+## Not contacted
+
+- `api.openwhispr.com`
+- `auth.openwhispr.com`
+- `mcp.openwhispr.com`
+
+Those are official OpenWhispr Cloud. This build does not sign in there.
 
 ## Notes
 
-- The app uses Electron's network stack, which honors system proxy settings
-  (macOS System Settings, Windows Internet Options / WPAD, GNOME proxy) and
-  PAC scripts on all platforms.
-- Connections fail with `ENOTFOUND` if DNS is filtered, `ECONNREFUSED` /
-  `ETIMEDOUT` if a firewall blocks the host, and `CERT_HAS_EXPIRED` /
-  `UNABLE_TO_VERIFY_LEAF_SIGNATURE` if a TLS-intercepting proxy is in the
-  path without its root certificate trusted by the OS.
-- IP-pinning is not supported. The hosts above resolve to provider-managed
-  IPs that change without notice.
-- On minimal Linux containers without a system CA bundle (Alpine, distroless),
-  set `NODE_EXTRA_CA_CERTS` to your CA bundle path so corporate TLS interception
-  is trusted.
-
-## How to test
-
-Run from a machine on the same network as the user. A successful response
-(any HTTP status, including `401`) confirms the network path works.
+- Electron honors the system proxy (macOS, Windows, GNOME) and PAC scripts.
+- Failures: `ENOTFOUND` is DNS, `ECONNREFUSED` / `ETIMEDOUT` is a firewall, TLS errors usually mean intercepting proxy without a trusted root.
+- IPs are not pinned.
 
 ```sh
-# OpenWhispr Cloud reachability
-curl -v https://api.openwhispr.com/api/health
+# Antigravity gateway (any HTTP status, including 401, means the path works)
+curl -v https://daily-cloudcode-pa.googleapis.com
 
-# Streaming providers
-curl -v https://api.deepgram.com/v1/projects
-curl -v https://api.openai.com/v1/models
-curl -v https://streaming.assemblyai.com/v3/token
-
-# Model downloads (only if local mode is in use)
+# Model downloads
 curl -v -I https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 ```
-
-If a request returns `Could not resolve host`, the DNS layer (resolver,
-filter, or ad blocker) is blocking the domain. If it hangs or returns
-`Connection refused`, a firewall is blocking the port. If it returns a TLS
-error, a proxy is intercepting the connection without a trusted root.

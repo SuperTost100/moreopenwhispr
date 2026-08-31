@@ -1,6 +1,8 @@
 name: Tests
 
 on:
+  push:
+    branches: [antigravity-fork, main]
   pull_request:
 
 jobs:

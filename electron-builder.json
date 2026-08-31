@@ -3,7 +3,7 @@
   "afterPack": "scripts/afterPack.js",
   "productName": "MoreOpenWhispr",
   "protocols": {
-    "name": "OpenWhispr Protocol",
+    "name": "MoreOpenWhispr Protocol",
     "schemes": ["openwhispr"]
   },
   "directories": {
@@ -151,8 +151,8 @@
     "hardenedRuntime": true,
     "entitlements": "resources/mac/entitlements.mac.plist",
     "entitlementsInherit": "resources/mac/entitlements.mac.plist",
-    "identity": "Gizmo Labs Inc. (T832773L2J)",
-    "notarize": true,
+    "identity": null,
+    "notarize": false,
     "extraResources": [
       {
         "from": "src/assets/Assets.car",
@@ -162,22 +162,16 @@
     "extendInfo": {
       "LSUIElement": false,
       "CFBundleIconName": "openwhispr",
-      "NSMicrophoneUsageDescription": "OpenWhispr uses the microphone to capture your voice for transcription.",
-      "NSAudioCaptureUsageDescription": "OpenWhispr uses system audio to capture other participants' audio from calls and meetings.",
-      "NSAccessibilityUsageDescription": "OpenWhispr needs accessibility permissions to paste transcribed text into other applications.",
-      "NSCalendarsUsageDescription": "OpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events.",
-      "NSCalendarsFullAccessUsageDescription": "OpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events."
+      "NSMicrophoneUsageDescription": "MoreOpenWhispr uses the microphone to capture your voice for transcription.",
+      "NSAudioCaptureUsageDescription": "MoreOpenWhispr uses system audio to capture other participants' audio from calls and meetings.",
+      "NSAccessibilityUsageDescription": "MoreOpenWhispr needs accessibility permissions to paste transcribed text into other applications.",
+      "NSCalendarsUsageDescription": "MoreOpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events.",
+      "NSCalendarsFullAccessUsageDescription": "MoreOpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events."
     }
   },
   "win": {
     "target": ["nsis", "portable"],
     "icon": "src/assets/icon.ico",
-    "azureSignOptions": {
-      "endpoint": "https://eus.codesigning.azure.net/",
-      "certificateProfileName": "openwhispr-release",
-      "codeSigningAccountName": "OpenWhispr",
-      "publisherName": "CN=Gizmo Labs Inc., O=Gizmo Labs Inc., L=Wilmington, S=Delaware, C=US"
-    },
     "extraResources": [
       {
         "from": "resources/bin/nircmd.exe",
@@ -259,7 +253,7 @@
     "include": "resources/nsis/installer.nsh"
   },
   "dmg": {
-    "title": "OpenWhispr",
+    "title": "MoreOpenWhispr",
     "icon": "src/assets/icon.icns",
     "window": {
       "width": 540,
@@ -268,7 +262,7 @@
   },
   "publish": {
     "provider": "github",
-    "owner": "OpenWhispr",
+    "owner": "SuperTost100",
     "repo": "openwhispr",
     "private": false,
     "releaseType": "draft"

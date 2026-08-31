@@ -1,3 +1,9 @@
+# MoreOpenWhispr (fork) + OpenWhispr technical reference
+
+This tree is **MoreOpenWhispr**: unofficial fork of OpenWhispr on branch `antigravity-fork`. No OpenWhispr Cloud accounts. Default cloud path is Antigravity (`agy`). Public docs: [README.md](README.md), [docs/](docs/). Fork internals: [.fork/ANTIGRAVITY.md](.fork/ANTIGRAVITY.md), [src/config/mowProfile.ts](src/config/mowProfile.ts).
+
+The rest of this file is the upstream architecture map. Read it as OpenWhispr's internals, then overlay the fork notes above.
+
 # OpenWhispr Technical Reference for AI Assistants
 
 This document provides comprehensive technical details about the OpenWhispr project architecture for AI assistants working on the codebase.
