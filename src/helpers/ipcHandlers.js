@@ -4294,12 +4294,7 @@ class IPCHandlers {
       serializeIpcError(
         async (event, { audioBuffer, model, language, keyterms, transcriptionMode }) => {
           const { transcribeWithAntigravity } = require("./antigravityTranscription");
-          let ffmpegPath;
-          try {
-            ffmpegPath = require("ffmpeg-static");
-          } catch {
-            ffmpegPath = undefined;
-          }
+          const { getFFmpegPath } = require("./ffmpegUtils");
           return await transcribeWithAntigravity({
             audioBuffer: Buffer.from(audioBuffer),
             model,
@@ -4307,7 +4302,7 @@ class IPCHandlers {
             language,
             keyterms,
             transcriptionMode,
-            ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+            ffmpegPath: getFFmpegPath() || undefined,
           });
         }
       )
@@ -6061,12 +6056,7 @@ class IPCHandlers {
           const {
             resolveAntigravityTranscriptionMode,
           } = require("./antigravityTranscriptionPolicy");
-          let ffmpegPath;
-          try {
-            ffmpegPath = require("ffmpeg-static");
-          } catch {
-            ffmpegPath = undefined;
-          }
+          const { getFFmpegPath } = require("./ffmpegUtils");
           const { text, model } = await transcribeWithAntigravity({
             audioBuffer: buffer,
             model: route.model,
@@ -6076,7 +6066,7 @@ class IPCHandlers {
             keyterms: Array.isArray(settings?.customDictionary)
               ? settings.customDictionary
               : undefined,
-            ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+            ffmpegPath: getFFmpegPath() || undefined,
           });
           if (text) result = { text, source: "antigravity", model };
         } else {
@@ -9449,18 +9439,13 @@ class IPCHandlers {
             const {
               resolveAntigravityTranscriptionMode,
             } = require("./antigravityTranscriptionPolicy");
-            let ffmpegPath;
-            try {
-              ffmpegPath = require("ffmpeg-static");
-            } catch {
-              ffmpegPath = undefined;
-            }
+            const { getFFmpegPath } = require("./ffmpegUtils");
             const { text } = await transcribeWithAntigravity({
               audioBuffer: fs.readFileSync(realByok),
               model: route.model,
               contentType: AUDIO_MIME_TYPES[ext] || "audio/mpeg",
               transcriptionMode: resolveAntigravityTranscriptionMode(opts || {}),
-              ffmpegPath: typeof ffmpegPath === "string" ? ffmpegPath : undefined,
+              ffmpegPath: getFFmpegPath() || undefined,
             });
             return { success: true, text };
           }

@@ -35,14 +35,14 @@ Not OpenWhispr. Not Gizmo Labs. Not Google. MIT, same as upstream.
 
 ## Download
 
-Unsigned builds. macOS will ask you to right-click → Open the first time. Windows SmartScreen may do the same. That is expected until a release is signed.
+Unsigned builds. macOS will ask you to right-click → Open the first time. If it says the app is damaged, that is Gatekeeper on an unsigned download, not a broken file: `xattr -cr /Applications/MoreOpenWhispr.app` then open it again. Windows SmartScreen may warn too. That is expected until a release is signed.
 
-| Platform | File |
-| --- | --- |
-| macOS (Apple Silicon) | [`.dmg`](https://github.com/SuperTost100/openwhispr/releases/latest) |
-| macOS (Intel) \* | [`.dmg`](https://github.com/SuperTost100/openwhispr/releases/latest) |
-| Windows | [`.exe` installer](https://github.com/SuperTost100/openwhispr/releases/latest) / [portable](https://github.com/SuperTost100/openwhispr/releases/latest) |
-| Linux | [`.AppImage`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.deb`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.rpm`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.tar.gz`](https://github.com/SuperTost100/openwhispr/releases/latest) |
+| Platform              | File                                                                                                                                                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| macOS (Apple Silicon) | [`.dmg`](https://github.com/SuperTost100/openwhispr/releases/latest)                                                                                                                                                                                                                              |
+| macOS (Intel) \*      | [`.dmg`](https://github.com/SuperTost100/openwhispr/releases/latest)                                                                                                                                                                                                                              |
+| Windows               | [`.exe` installer](https://github.com/SuperTost100/openwhispr/releases/latest) / [portable](https://github.com/SuperTost100/openwhispr/releases/latest)                                                                                                                                           |
+| Linux                 | [`.AppImage`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.deb`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.rpm`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.tar.gz`](https://github.com/SuperTost100/openwhispr/releases/latest) |
 
 \* On Intel Macs, live speaker identification and voice fingerprinting are unavailable. ONNX Runtime [stopped shipping macOS x86_64 binaries in 1.24](https://github.com/microsoft/onnxruntime/releases/tag/v1.24.1). Meetings still record and transcribe. Notes search falls back to keyword matching.
 
@@ -72,13 +72,13 @@ These exist on [official OpenWhispr](https://github.com/OpenWhispr/openwhispr) b
 - Account, billing, workspace, referrals, usage analytics, team spaces
 - Telemetry (the toggle is gone; it stays off)
 
-| | MoreOpenWhispr | OpenWhispr |
-| --- | --- | --- |
-| Cloud account | Removed | Optional free + Pro |
-| STT / LLM | Antigravity, BYOK, local | Those plus OpenWhispr Cloud |
-| MCP / cloud CLI | Removed | Pro |
-| Telemetry | Off | Opt-in toggle |
-| Platforms | macOS, Windows, Linux | macOS, Windows, Linux |
+|                 | MoreOpenWhispr           | OpenWhispr                  |
+| --------------- | ------------------------ | --------------------------- |
+| Cloud account   | Removed                  | Optional free + Pro         |
+| STT / LLM       | Antigravity, BYOK, local | Those plus OpenWhispr Cloud |
+| MCP / cloud CLI | Removed                  | Pro                         |
+| Telemetry       | Off                      | Opt-in toggle               |
+| Platforms       | macOS, Windows, Linux    | macOS, Windows, Linux       |
 
 Upstream README is kept at [README.upstream.md](./README.upstream.md).
 

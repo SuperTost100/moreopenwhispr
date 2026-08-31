@@ -95,12 +95,26 @@ function parseTranscriptText(text) {
   return cleaned;
 }
 
+function resolveSpawnableFfmpegPath(ffmpegPath) {
+  if (!ffmpegPath || typeof ffmpegPath !== "string") return ffmpegPath;
+  // asar entries can be read but never exec'd. ffmpegUtils already rewrites + chmod.
+  if (ffmpegPath.includes("app.asar") && !ffmpegPath.includes("app.asar.unpacked")) {
+    return (
+      require("./ffmpegUtils").getFFmpegPath() ||
+      ffmpegPath.replace(/app\.asar([/\\])/, "app.asar.unpacked$1")
+    );
+  }
+  return ffmpegPath;
+}
+
 function convertToWav({ inputPath, outputPath, ffmpegPath }) {
-  const result = spawnSync(
-    ffmpegPath,
-    ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", outputPath],
-    { encoding: "utf8" }
-  );
+  const bin = resolveSpawnableFfmpegPath(ffmpegPath);
+  const result = spawnSync(bin, ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", outputPath], {
+    encoding: "utf8",
+  });
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
   if (result.status !== 0) {
     const detail = (result.stderr || result.stdout || "").trim();
     throw new Error(detail || "ffmpeg conversion failed");

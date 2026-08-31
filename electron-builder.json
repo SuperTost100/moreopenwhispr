@@ -183,6 +183,7 @@
     "target": ["AppImage", "deb", "rpm", "tar.gz"],
     "icon": "src/assets/icon.png",
     "category": "Utility",
+    "maintainer": "SuperTost100 <supertost100@users.noreply.github.com>",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   },
   "flatpak": {

@@ -12,7 +12,13 @@ MoreOpenWhispr on a Mac lives in the menu bar. It waits for a hotkey and types i
 
 1. Grab the Apple Silicon or Intel `.dmg` from [Releases](https://github.com/SuperTost100/openwhispr/releases/latest). Apple menu → About This Mac tells you which chip you have.
 2. Open the disk image and drag **MoreOpenWhispr** into Applications. Leave it on the mounted image and odd things happen later.
-3. The first launch is unsigned. Finder: right-click the app → **Open** → Open. System Settings → Privacy & Security also has an Open Anyway button if Gatekeeper blocked it.
+3. The first launch is unsigned. Finder: right-click the app → **Open** → Open. System Settings → Privacy & Security also has an Open Anyway button if Gatekeeper blocked it. If macOS says the app is **damaged**, that is the same unsigned-download check. In Terminal:
+
+   ```bash
+   xattr -cr /Applications/MoreOpenWhispr.app
+   ```
+
+   Then open it from Applications.
 
 Onboarding asks for the permissions below.
 
@@ -20,12 +26,12 @@ Onboarding asks for the permissions below.
 
 Settings → Privacy & Data → System → Permissions. Each card has Grant Access until macOS agrees.
 
-| Permission | Without it | macOS pane |
-| --- | --- | --- |
-| Microphone | Nothing is captured | Privacy & Security → Microphone |
-| Accessibility | Auto-paste fails. Text still hits the clipboard | Privacy & Security → Accessibility |
-| System Audio | Other people in a meeting are missing. Your mic still works | Privacy & Security → Screen Recording |
-| Screen Recording | Voice-assistant screen context (off by default) | Privacy & Security → Screen Recording |
+| Permission       | Without it                                                  | macOS pane                            |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------- |
+| Microphone       | Nothing is captured                                         | Privacy & Security → Microphone       |
+| Accessibility    | Auto-paste fails. Text still hits the clipboard             | Privacy & Security → Accessibility    |
+| System Audio     | Other people in a meeting are missing. Your mic still works | Privacy & Security → Screen Recording |
+| Screen Recording | Voice-assistant screen context (off by default)             | Privacy & Security → Screen Recording |
 
 System Audio is filed under Screen Recording on macOS. The meeting path captures audio, not your display. Screen Recording for the voice assistant is a one-shot JPEG of the display under the cursor. It is not saved.
 
