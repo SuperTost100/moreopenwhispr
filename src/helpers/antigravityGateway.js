@@ -1,5 +1,6 @@
 const { randomUUID } = require("crypto");
 const { classifyAgyError } = require("./antigravityCli");
+const { resolveAgyCliModel } = require("./antigravityModels.cjs");
 const { markGatewayQuotaExhausted, clearGatewayQuotaCache } = require("./antigravityQuotaCache");
 
 // ponytail: agy CLI uses daily first; prod transcribe model often 429 while daily flash multimodal works.
@@ -18,7 +19,6 @@ const CLIENT_METADATA = JSON.stringify({
 // Daily Cloud Code model ids ≠ agy CLI ids. gemini-3.7-flash-low 404s here.
 const GATEWAY_STT_MODELS = ["gemini-3.6-flash-low", "gemini-3-flash", "gemini-2.5-flash"];
 const STT_BACKEND_MODEL = GATEWAY_STT_MODELS[0];
-const GATEWAY_FLASH_LOW_ALIASES = new Set(["gemini-3.5-flash-low", "gemini-3.7-flash-low"]);
 
 const DEFAULT_SAFETY_SETTINGS = [
   "HARM_CATEGORY_HARASSMENT",
@@ -41,20 +41,8 @@ function resolveBackendModel(model) {
   const trimmed = String(model || "").trim();
   if (!trimmed) return "gemini-3.5-transcribe";
   if (trimmed.startsWith("gemini-3.5-transcribe")) return trimmed;
-  if (GATEWAY_FLASH_LOW_ALIASES.has(trimmed)) return STT_BACKEND_MODEL;
+  if (resolveAgyCliModel(trimmed) === "gemini-3.7-flash-low") return STT_BACKEND_MODEL;
   return trimmed;
-}
-
-function gatewaySttModelCandidates() {
-  const seen = new Set();
-  const out = [];
-  for (const id of [STT_BACKEND_MODEL, ...GATEWAY_STT_MODELS]) {
-    const resolved = resolveBackendModel(id);
-    if (seen.has(resolved)) continue;
-    seen.add(resolved);
-    out.push(resolved);
-  }
-  return out;
 }
 
 function isMissingGatewayModel(error) {
@@ -331,7 +319,7 @@ async function transcribeAudioViaGateway({
   };
 
   let lastError;
-  for (const backendModel of gatewaySttModelCandidates()) {
+  for (const backendModel of GATEWAY_STT_MODELS) {
     try {
       const { text } = await streamGenerateContent({
         accessToken,

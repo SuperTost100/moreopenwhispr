@@ -574,6 +574,11 @@ function registerSidecars() {
   sidecarRegistry.register("llama", () => modelManager.stopServer());
   const onnxWorkerClient = require("./src/helpers/onnxWorkerClient");
   sidecarRegistry.register("onnx", () => onnxWorkerClient.stop());
+  if (isMowBuild()) {
+    sidecarRegistry.register("agy-token", () =>
+      require("./src/helpers/antigravityAuth").stopAntigravityTokenKeepalive()
+    );
+  }
 }
 
 // Phase 2: Non-critical setup after windows are visible

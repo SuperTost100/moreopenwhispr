@@ -73,6 +73,7 @@ class UpdateManager {
         this.notifyRenderers("checking-for-update");
       },
       "update-available": (info) => {
+        this._backgroundCheck = false;
         this.updateAvailable = true;
         if (info) {
           this.lastUpdateInfo = {
@@ -92,6 +93,7 @@ class UpdateManager {
         this._suppressNotification = false;
       },
       "update-not-available": (info) => {
+        this._backgroundCheck = false;
         this.updateAvailable = false;
         this._suppressNotification = false;
         if (!this.updateDownloaded) {
@@ -105,7 +107,10 @@ class UpdateManager {
         this._suppressNotification = false;
         this.isDownloading = false;
         // Background startup/periodic checks 404 until a GitHub release
-        // exists. Don't toast that into the user's face.
+        // exists. Don't toast that into the user's face. The flag is cleared
+        // the moment a check resolves (update-available / -not-available), so
+        // a later failure — a download that dies mid-transfer, say — is a real
+        // error the user should see even though they never asked for the check.
         if (!this._backgroundCheck) {
           this.notifyRenderers("update-error", err);
         }

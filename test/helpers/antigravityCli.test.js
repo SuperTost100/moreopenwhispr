@@ -12,7 +12,7 @@ const {
   resolveAgyBinary,
   runAgyTurn,
 } = require("../../src/helpers/antigravityCli");
-const { resolveAgyCliModel } = require("../../src/helpers/antigravityModels");
+const { resolveAgyCliModel } = require("../../src/helpers/antigravityModels.cjs");
 
 function makeChild({ stdout = "", stderr = "", exitCode = 0, delayMs = 0 } = {}) {
   const child = new EventEmitter();

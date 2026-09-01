@@ -178,6 +178,26 @@ test("offline with App updates off, no update-error reaches the renderers (#1605
   manager.cleanup();
 });
 
+test("a successful background check does not swallow later updater errors", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "setInterval"] });
+  const autoUpdater = makeAutoUpdater();
+  const manager = createUpdateManager(autoUpdater);
+  const sent = [];
+  manager.setWindowManager({
+    notificationPrefs: { notificationsEnabled: true, notifyUpdates: true },
+    mainWindow: makeRendererWindow(sent),
+    controlPanelWindow: makeRendererWindow(sent),
+  });
+
+  manager.checkForUpdatesOnStartup();
+  t.mock.timers.tick(STARTUP_DELAY_MS);
+  autoUpdater.listeners["update-not-available"]?.({});
+  autoUpdater.listeners.error?.(new Error("download failed"));
+  assert.ok(sent.includes("update-error"));
+
+  manager.cleanup();
+});
+
 test("a manual Check for Updates still reports feed errors", async () => {
   const autoUpdater = makeAutoUpdater({ offline: true });
   const manager = createUpdateManager(autoUpdater);

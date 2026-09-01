@@ -7,7 +7,7 @@ const {
   DEFAULT_ANTIGRAVITY_MODEL,
   resolveAgyCliModel,
   withoutEffortArgs,
-} = require("./antigravityModels");
+} = require("./antigravityModels.cjs");
 const DEFAULT_ANTIGRAVITY_STT_MODEL = "gemini-3.5-transcribe";
 
 const AGY_HOME_REL = path.join(".gemini", "antigravity-cli");
@@ -326,6 +326,8 @@ async function runAgyTurn({
   extraArgs,
 }) {
   const binary = resolveAgyBinary(command);
+  // resolveAgyCliModel also fills in the default, so an explicit null/"" model
+  // still reaches buildAgyArgs as a real id instead of dropping --model.
   const cliModel = resolveAgyCliModel(model);
   const args = buildAgyArgs({
     prompt,
