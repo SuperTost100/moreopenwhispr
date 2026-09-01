@@ -15,7 +15,10 @@ const CLIENT_METADATA = JSON.stringify({
   pluginType: "GEMINI",
 });
 
-const STT_BACKEND_MODEL = "gemini-3.5-flash-low";
+// Daily Cloud Code model ids ≠ agy CLI ids. gemini-3.7-flash-low 404s here.
+const GATEWAY_STT_MODELS = ["gemini-3.6-flash-low", "gemini-3-flash", "gemini-2.5-flash"];
+const STT_BACKEND_MODEL = GATEWAY_STT_MODELS[0];
+const GATEWAY_FLASH_LOW_ALIASES = new Set(["gemini-3.5-flash-low", "gemini-3.7-flash-low"]);
 
 const DEFAULT_SAFETY_SETTINGS = [
   "HARM_CATEGORY_HARASSMENT",
@@ -38,7 +41,29 @@ function resolveBackendModel(model) {
   const trimmed = String(model || "").trim();
   if (!trimmed) return "gemini-3.5-transcribe";
   if (trimmed.startsWith("gemini-3.5-transcribe")) return trimmed;
+  if (GATEWAY_FLASH_LOW_ALIASES.has(trimmed)) return STT_BACKEND_MODEL;
   return trimmed;
+}
+
+function gatewaySttModelCandidates() {
+  const seen = new Set();
+  const out = [];
+  for (const id of [STT_BACKEND_MODEL, ...GATEWAY_STT_MODELS]) {
+    const resolved = resolveBackendModel(id);
+    if (seen.has(resolved)) continue;
+    seen.add(resolved);
+    out.push(resolved);
+  }
+  return out;
+}
+
+function isMissingGatewayModel(error) {
+  return error?.status === 404 || error?.code === "AGY_MODEL_RETIRED";
+}
+
+function isModelRetirementNotice(text) {
+  const value = String(text || "");
+  return /is no longer available/i.test(value) && /please switch to/i.test(value);
 }
 
 function deepFindProjectId(payload) {
@@ -292,33 +317,48 @@ async function transcribeAudioViaGateway({
     resolvedProjectId = loaded.projectId;
   }
 
-  const { text } = await streamGenerateContent({
-    accessToken,
-    base: resolvedBase,
-    projectId: resolvedProjectId,
-    model: STT_BACKEND_MODEL,
-    fetchImpl,
-    request: {
-      systemInstruction: {
-        parts: [{ text: buildTranscriptionSystemPrompt({ mode, language, keyterms }) }],
-      },
-      contents: [
-        {
-          role: "user",
-          parts: [{ inlineData: { mimeType, data: audioBase64 } }],
-        },
-      ],
-      generationConfig: { thinkingConfig: { thinkingLevel: "low" } },
+  const request = {
+    systemInstruction: {
+      parts: [{ text: buildTranscriptionSystemPrompt({ mode, language, keyterms }) }],
     },
-  });
+    contents: [
+      {
+        role: "user",
+        parts: [{ inlineData: { mimeType, data: audioBase64 } }],
+      },
+    ],
+    generationConfig: { thinkingConfig: { thinkingLevel: "low" } },
+  };
 
-  if (!text) {
-    const error = new Error("Antigravity transcription returned empty text");
-    error.code = "AGY_EMPTY_TRANSCRIPT";
-    throw error;
+  let lastError;
+  for (const backendModel of gatewaySttModelCandidates()) {
+    try {
+      const { text } = await streamGenerateContent({
+        accessToken,
+        base: resolvedBase,
+        projectId: resolvedProjectId,
+        model: backendModel,
+        fetchImpl,
+        request,
+      });
+      if (!text) {
+        const error = new Error("Antigravity transcription returned empty text");
+        error.code = "AGY_EMPTY_TRANSCRIPT";
+        throw error;
+      }
+      if (isModelRetirementNotice(text)) {
+        const error = new Error(text);
+        error.code = "AGY_MODEL_RETIRED";
+        throw error;
+      }
+      clearGatewayQuotaCache();
+      return { text, model: backendModel, base: resolvedBase };
+    } catch (error) {
+      lastError = error;
+      if (!isMissingGatewayModel(error)) throw error;
+    }
   }
-  clearGatewayQuotaCache();
-  return { text, model: STT_BACKEND_MODEL, base: resolvedBase };
+  throw lastError;
 }
 
 async function generateTextViaGateway({
@@ -358,6 +398,7 @@ module.exports = {
   PROD_CLOUDCODE_BASE,
   CLOUDCODE_BASES,
   STT_BACKEND_MODEL,
+  GATEWAY_STT_MODELS,
   loadCodeAssist,
   generateContent,
   streamGenerateContent,
@@ -367,4 +408,5 @@ module.exports = {
   parseStreamGenerateContentSse,
   buildTranscriptionSystemPrompt,
   resolveBackendModel,
+  isModelRetirementNotice,
 };

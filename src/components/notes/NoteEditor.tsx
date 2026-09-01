@@ -38,6 +38,7 @@ import {
 import { NoteSharingService } from "../../services/NoteSharingService";
 import { fetchSpaceRoster } from "../../hooks/useSpaceRoster";
 import { useAuth } from "../../hooks/useAuth";
+import { isMowBuild } from "../../config/mowProfile";
 import { RichTextEditor } from "../ui/RichTextEditor";
 import type { Editor } from "@tiptap/react";
 import { MeetingTranscriptChat, SelectionBar } from "./MeetingTranscriptChat";
@@ -266,6 +267,7 @@ export default function NoteEditor({
   });
   const shareCapabilities = noteCapabilities(notePermission);
   const canShare =
+    !isMowBuild() &&
     isSignedIn &&
     (!note.cloud_id || isTeamNote || aclState === "loaded") &&
     shareCapabilities.canShare;
@@ -278,7 +280,7 @@ export default function NoteEditor({
     hasCloudCopy: Boolean(note.cloud_id),
   });
   useEffect(() => {
-    if (!isSignedIn || !note.cloud_id || shareCache) return;
+    if (isMowBuild() || !isSignedIn || !note.cloud_id || shareCache) return;
     const cloudId = note.cloud_id;
     let cancelled = false;
     setAclRequest({ cloudId, state: "loading" });

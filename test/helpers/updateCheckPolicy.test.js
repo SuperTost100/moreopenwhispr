@@ -28,3 +28,17 @@ test("checks stay enabled by default before renderer prefs arrive", async () => 
   assert.equal(appUpdatesEnabled({}), true);
   assert.equal(appUpdatesEnabled({ notificationsEnabled: true, notifyUpdates: true }), true);
 });
+
+test("MOW update feed points at the fork, not OpenWhispr/openwhispr", async () => {
+  const { githubUpdateFeed } = await load();
+  const { MOW_PROFILE } = require("../../src/config/mowProfile.cjs");
+
+  assert.deepEqual(githubUpdateFeed(), {
+    provider: "github",
+    owner: MOW_PROFILE.githubOwner,
+    repo: MOW_PROFILE.githubRepo,
+    private: false,
+  });
+  assert.notEqual(githubUpdateFeed().owner, "OpenWhispr");
+  assert.notEqual(githubUpdateFeed().repo, "openwhispr");
+});

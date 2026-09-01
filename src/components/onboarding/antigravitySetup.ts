@@ -3,8 +3,8 @@ import type { CleanupSettings, TranscriptionSettings } from "../../hooks/useSett
 export const ANTIGRAVITY_ONBOARDING = {
   provider: "antigravity",
   transcriptionModel: "gemini-3.5-transcribe",
-  cleanupModel: "gemini-3.5-flash-low",
-  chatModel: "gemini-3.5-flash-medium",
+  cleanupModel: "gemini-3.7-flash-low",
+  chatModel: "gemini-3.7-flash-medium",
 } as const;
 
 type AntigravitySetupStore = {

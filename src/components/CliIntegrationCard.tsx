@@ -42,7 +42,7 @@ export default function CliIntegrationCard({ isPaid, onUpgrade }: CliIntegration
   return (
     <div className="rounded-lg border border-border/50 dark:border-border-subtle/70 bg-card/50 dark:bg-surface-2/50 backdrop-blur-sm p-4">
       <div className="flex items-center gap-2 mb-4">
-        <LogoTile src={logo} alt="OpenWhispr" />
+        <LogoTile src={logo} alt="" />
         <div className="w-9 h-9 rounded-lg bg-white dark:bg-surface-raised shadow-[0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-none dark:border dark:border-white/5 flex items-center justify-center shrink-0">
           <Terminal className="w-4 h-4 text-foreground/70" strokeWidth={2} />
         </div>
@@ -60,24 +60,26 @@ export default function CliIntegrationCard({ isPaid, onUpgrade }: CliIntegration
         <CopyableCommand command={INSTALL_CMD} />
       </div>
 
-      <div className="flex items-center gap-2 mb-5">
-        <Button
-          size="sm"
-          onClick={() => window.electronAPI?.openExternal?.(CLI_DOCS_URL)}
-          className="gap-1.5"
-        >
-          {t("integrations.cli.learnMore")}
-          <ExternalLink className="h-3 w-3" />
-        </Button>
-        <Button variant="outline" size="sm" onClick={handleCopyDocsLink} className="gap-1.5">
-          {docsLinkCopied ? (
-            <Check className="h-3 w-3 text-success" />
-          ) : (
-            <Copy className="h-3 w-3" />
-          )}
-          {t("integrations.cli.copyDocsLink")}
-        </Button>
-      </div>
+      {!isMowBuild() && (
+        <div className="flex items-center gap-2 mb-5">
+          <Button
+            size="sm"
+            onClick={() => window.electronAPI?.openExternal?.(CLI_DOCS_URL)}
+            className="gap-1.5"
+          >
+            {t("integrations.cli.learnMore")}
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleCopyDocsLink} className="gap-1.5">
+            {docsLinkCopied ? (
+              <Check className="h-3 w-3 text-success" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+            {t("integrations.cli.copyDocsLink")}
+          </Button>
+        </div>
+      )}
 
       <div className="mb-4">
         <div className="flex items-center gap-1.5 mb-1">

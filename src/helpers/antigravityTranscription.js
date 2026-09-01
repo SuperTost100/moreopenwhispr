@@ -9,7 +9,7 @@ const {
   DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL,
   isAntigravityTranscribeModel,
 } = require("./antigravityTranscriptionPolicy");
-const { ensureWritableDir, runAgyTurn } = require("./antigravityCli");
+const { DEFAULT_ANTIGRAVITY_MODEL, ensureWritableDir, runAgyTurn } = require("./antigravityCli");
 
 const GEMINI_MIME_TYPES = {
   "audio/mpeg": "audio/mp3",
@@ -198,14 +198,14 @@ async function transcribeWithAntigravityLegacyAgent({
 
     const turn = await runTurn({
       prompt,
-      model: model || "gemini-3.5-flash-low",
+      model: model || DEFAULT_ANTIGRAVITY_MODEL,
       addDirs: [tmpDir],
       cwd: tmpDir,
       writeFilePath: transcriptPath,
       command,
       printTimeout: "45s",
       timeoutMs: 60_000,
-      extraArgs: ["--sandbox", "--effort", "low"],
+      extraArgs: ["--sandbox"],
     });
 
     const writeFileText = fs.existsSync(transcriptPath)
@@ -248,7 +248,7 @@ async function transcribeWithAntigravity({
   const mode = transcriptionMode || "SMART";
   const legacyArgs = {
     audioBuffer,
-    model: "gemini-3.5-flash-low",
+    model: DEFAULT_ANTIGRAVITY_MODEL,
     contentType,
     language,
     keyterms,

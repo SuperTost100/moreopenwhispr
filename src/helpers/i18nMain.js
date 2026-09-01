@@ -1,4 +1,5 @@
 const i18next = require("i18next");
+const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.cjs");
 
 const enTranslation = require("../locales/en/translation.json");
 const esTranslation = require("../locales/es/translation.json");
@@ -53,6 +54,17 @@ function normalizeUiLanguage(language) {
 
 const i18nMain = i18next.createInstance();
 
+if (isMowBuild()) {
+  i18nMain.use({
+    type: "postProcessor",
+    name: "mowBrand",
+    process(value) {
+      if (typeof value !== "string") return value;
+      return value.replaceAll(MOW_PROFILE.upstreamName, MOW_PROFILE.productName);
+    },
+  });
+}
+
 void i18nMain.init({
   initAsync: false,
   resources: {
@@ -106,6 +118,7 @@ void i18nMain.init({
   },
   returnEmptyString: false,
   returnNull: false,
+  postProcess: isMowBuild() ? ["mowBrand"] : undefined,
 });
 
 function changeLanguage(language) {

@@ -11,7 +11,7 @@
 
 **Do not open a public issue.**
 
-Use [GitHub's private vulnerability reporting](https://github.com/SuperTost100/openwhispr/security/advisories/new) on this fork.
+Use [GitHub's private vulnerability reporting](https://github.com/SuperTost100/moreopenwhispr/security/advisories/new) on this fork.
 
 There is no `security@openwhispr.com` inbox for MoreOpenWhispr. That address is upstream's.
 

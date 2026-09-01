@@ -8,9 +8,11 @@ const MOW_PROFILE = {
   shortName: "MOW",
   upstreamName: "OpenWhispr",
   upstreamUrl: "https://github.com/OpenWhispr/openwhispr",
-  repoUrl: "https://github.com/SuperTost100/openwhispr",
-  docsUrl: "https://github.com/SuperTost100/openwhispr#readme",
-  issuesUrl: "https://github.com/SuperTost100/openwhispr/issues",
+  githubOwner: "SuperTost100",
+  githubRepo: "moreopenwhispr",
+  repoUrl: "https://github.com/SuperTost100/moreopenwhispr",
+  docsUrl: "https://github.com/SuperTost100/moreopenwhispr#readme",
+  issuesUrl: "https://github.com/SuperTost100/moreopenwhispr/issues",
 };
 
 const MOW_ACCOUNT_MODES = new Set(["openwhispr"]);

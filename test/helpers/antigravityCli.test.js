@@ -12,6 +12,7 @@ const {
   resolveAgyBinary,
   runAgyTurn,
 } = require("../../src/helpers/antigravityCli");
+const { resolveAgyCliModel } = require("../../src/helpers/antigravityModels");
 
 function makeChild({ stdout = "", stderr = "", exitCode = 0, delayMs = 0 } = {}) {
   const child = new EventEmitter();
@@ -38,7 +39,14 @@ function makeChild({ stdout = "", stderr = "", exitCode = 0, delayMs = 0 } = {})
   return child;
 }
 
-test("buildAgyArgs puts --print immediately before the prompt", () => {
+test("resolveAgyCliModel maps retired 3.5 flash ids onto current agy catalog", () => {
+  assert.equal(resolveAgyCliModel("gemini-3.5-flash-low"), "gemini-3.7-flash-low");
+  assert.equal(resolveAgyCliModel("gemini-3.5-flash-medium"), "gemini-3.7-flash-medium");
+  assert.equal(resolveAgyCliModel("gemini-3.7-flash-low"), "gemini-3.7-flash-low");
+  assert.equal(resolveAgyCliModel(""), "gemini-3.7-flash-low");
+});
+
+test("buildAgyArgs remaps retired 3.5 flash ids and never forwards --effort", () => {
   const args = buildAgyArgs({
     prompt: "hello world",
     model: "gemini-3.5-flash-low",
@@ -47,7 +55,7 @@ test("buildAgyArgs puts --print immediately before the prompt", () => {
     printTimeout: "60s",
     jsonSchema: { type: "object" },
     conversationId: "abc-123",
-    extraArgs: ["--effort", "high"],
+    extraArgs: ["--sandbox", "--effort", "high"],
   });
 
   assert.equal(args[0], "--print");
@@ -56,7 +64,7 @@ test("buildAgyArgs puts --print immediately before the prompt", () => {
     "--dangerously-skip-permissions",
     "--disable-slash-commands",
     "--model",
-    "gemini-3.5-flash-low",
+    "gemini-3.7-flash-low",
     "--add-dir",
     "/tmp/audio",
     "--output-format",
@@ -67,9 +75,9 @@ test("buildAgyArgs puts --print immediately before the prompt", () => {
     '{"type":"object"}',
     "--conversation",
     "abc-123",
-    "--effort",
-    "high",
+    "--sandbox",
   ]);
+  assert.equal(args.includes("--effort"), false);
 });
 
 test("classifyAgyError detects auth, quota, and generic failures", () => {
@@ -158,12 +166,12 @@ test("runAgyTurn returns stdout on success", async () => {
     spawnImpl: (_command, args, options) => {
       assert.equal(args[0], "--print");
       assert.equal(args[1], "hello");
-      assert.equal(options.env.ANTIGRAVITY_MODEL, "gemini-3.5-flash-low");
+      assert.equal(options.env.ANTIGRAVITY_MODEL, "gemini-3.7-flash-low");
       return makeChild({ stdout: "ok\n" });
     },
   });
 
-  assert.deepEqual(result, { text: "ok", model: "gemini-3.5-flash-low", recoveredFrom: null });
+  assert.deepEqual(result, { text: "ok", model: "gemini-3.7-flash-low", recoveredFrom: null });
 });
 
 test("runAgyTurn prefers writeFilePath over noisy stdout", async (t) => {

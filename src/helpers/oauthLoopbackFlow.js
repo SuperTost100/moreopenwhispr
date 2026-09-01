@@ -1,6 +1,7 @@
 const http = require("http");
 const crypto = require("crypto");
 const { openExternalUrl } = require("./externalUrlOpener");
+const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.cjs");
 
 const OAUTH_TIMEOUT_MS = 120000;
 const DEFAULT_DESKTOP_CALLBACK_URL = "https://openwhispr.com/auth/desktop-callback";
@@ -43,6 +44,20 @@ function redirect(res, params) {
   res.end();
 }
 
+function finishBrowser(res, params) {
+  if (!isMowBuild()) {
+    redirect(res, params);
+    return;
+  }
+  const connected = Object.keys(params).some((key) => key.endsWith("_connected"));
+  const title = connected ? "Connected" : "Could not finish sign-in";
+  const body = connected
+    ? `${MOW_PROFILE.productName} connected your calendar. You can close this tab.`
+    : `${MOW_PROFILE.productName} could not finish calendar sign-in. You can close this tab and try again.`;
+  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  res.end(`<html><body><h3>${title}</h3><p>${body}</p></body></html>`);
+}
+
 // Runs a PKCE auth-code flow through an ephemeral 127.0.0.1 server:
 // - buildAuthUrl(redirectUri, state, codeChallenge) → provider authorize URL
 // - handleCallback(code, redirectUri, codeVerifier) → resolves the flow result;
@@ -76,7 +91,7 @@ function runOAuthLoopbackFlow({ buildAuthUrl, handleCallback, errorParam }) {
 
         if (error) {
           callbackClaimed = true;
-          redirect(res, { [errorParam]: error });
+          finishBrowser(res, { [errorParam]: error });
           cleanup();
           reject(new Error(`OAuth error: ${error}`));
           return;
@@ -100,12 +115,12 @@ function runOAuthLoopbackFlow({ buildAuthUrl, handleCallback, errorParam }) {
         const redirectUri = `http://127.0.0.1:${server.address().port}`;
         const result = await handleCallback(code, redirectUri, codeVerifier);
 
-        redirect(res, { [connectedParam]: "true" });
+        finishBrowser(res, { [connectedParam]: "true" });
         cleanup();
         resolve(result);
       } catch (err) {
         callbackClaimed = true;
-        redirect(res, { [errorParam]: err.redirectCode || "server_error" });
+        finishBrowser(res, { [errorParam]: err.redirectCode || "server_error" });
         cleanup();
         reject(err);
       }

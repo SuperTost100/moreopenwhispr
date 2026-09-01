@@ -32,6 +32,11 @@ const MOW_DISABLED_CHANNELS = [
   "clear-managed-enterprise-identity",
   "transcribe-audio-file-cloud",
   "broadcast-sync-event",
+  "get-stt-config",
+  "get-note-recording-config",
+  "get-referral-stats",
+  "send-referral-invite",
+  "get-referral-invites",
 ];
 
 /** Fire-and-forget cloud channels silenced in MOW builds. */

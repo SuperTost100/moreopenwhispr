@@ -7,4 +7,22 @@ function appUpdatesEnabled({ notificationsEnabled, notifyUpdates } = {}) {
   return notificationsEnabled !== false && notifyUpdates !== false;
 }
 
-module.exports = { appUpdatesEnabled };
+function githubUpdateFeed() {
+  const { MOW_PROFILE, isMowBuild } = require("../config/mowProfile.cjs");
+  if (isMowBuild()) {
+    return {
+      provider: "github",
+      owner: MOW_PROFILE.githubOwner,
+      repo: MOW_PROFILE.githubRepo,
+      private: false,
+    };
+  }
+  return {
+    provider: "github",
+    owner: "OpenWhispr",
+    repo: "openwhispr",
+    private: false,
+  };
+}
+
+module.exports = { appUpdatesEnabled, githubUpdateFeed };

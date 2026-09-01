@@ -10,7 +10,7 @@ MoreOpenWhispr runs from the system tray. Press the hotkey, speak, and the text 
 
 ## Install
 
-From [Releases](https://github.com/SuperTost100/openwhispr/releases/latest):
+From [Releases](https://github.com/SuperTost100/moreopenwhispr/releases/latest):
 
 | File | Use |
 | --- | --- |

@@ -1,3 +1,5 @@
+const { isMowBuild } = require("../config/mowProfile.cjs");
+
 const OPENWHISPR_HOST_PATTERNS = [
   "https://auth.openwhispr.com/*",
   "https://api.openwhispr.com/*",
@@ -11,6 +13,7 @@ const OPENWHISPR_HOST_PATTERNS = [
 // that talks to those hosts needs this — webRequest hooks are per-session, so
 // an isolated partition gets none of the default session's.
 function applyOpenWhisprOriginHeader(targetSession) {
+  if (isMowBuild()) return;
   targetSession.webRequest.onBeforeSendHeaders(
     { urls: OPENWHISPR_HOST_PATTERNS },
     (details, callback) => {

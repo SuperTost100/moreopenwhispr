@@ -609,6 +609,20 @@
           "supportsVision": true
         },
         {
+          "id": "gemini-3.7-flash-low",
+          "name": "Gemini 3.7 Flash (Low)",
+          "description": "Fast cleanup via Antigravity subscription",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_7_flash_low",
+          "supportsVision": true
+        },
+        {
+          "id": "gemini-3.7-flash-medium",
+          "name": "Gemini 3.7 Flash (Medium)",
+          "description": "Balanced via Antigravity",
+          "descriptionKey": "models.descriptions.cloud.antigravity_gemini_3_7_flash_medium",
+          "supportsVision": true
+        },
+        {
           "id": "gemini-3.7-flash-high",
           "name": "Gemini 3.7 Flash (High)",
           "description": "Latest Flash via Antigravity",

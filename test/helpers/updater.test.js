@@ -169,6 +169,25 @@ test("offline with App updates off, no update-error reaches the renderers (#1605
 
   windowManager.notificationPrefs.notifyUpdates = true;
   t.mock.timers.tick(PERIODIC_INTERVAL_MS);
+  assert.equal(
+    sent.includes("update-error"),
+    false,
+    "background feed failures must not toast or dialog"
+  );
+
+  manager.cleanup();
+});
+
+test("a manual Check for Updates still reports feed errors", async () => {
+  const autoUpdater = makeAutoUpdater({ offline: true });
+  const manager = createUpdateManager(autoUpdater);
+  const sent = [];
+  manager.setWindowManager({
+    mainWindow: makeRendererWindow(sent),
+    controlPanelWindow: makeRendererWindow(sent),
+  });
+
+  await assert.rejects(() => manager.checkForUpdates());
   assert.ok(sent.includes("update-error"));
 
   manager.cleanup();
