@@ -1645,7 +1645,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     "enterprise",
   ]),
   dictationAgentProvider: readString("dictationAgentProvider", "antigravity"),
-  dictationAgentModel: resolveAgyCliModel(readString("dictationAgentModel", "gemini-3.7-flash-medium")),
+  dictationAgentModel: resolveAgyCliModel(
+    readString("dictationAgentModel", "gemini-3.7-flash-medium")
+  ),
   dictationAgentCloudMode: readCloudMode("dictationAgentCloudMode", "byok"),
   dictationAgentCloudBaseUrl: readString("dictationAgentCloudBaseUrl", ""),
   dictationAgentRemoteUrl: readString("dictationAgentRemoteUrl", ""),
