@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
 import { getPlatform } from "../../utils/platform";
 import { useWindowControls } from "../../hooks/useWindowControls";
+import { isMowBuild } from "../../config/mowProfile";
 // Imported (not referenced by path) so Vite fingerprints it and it resolves
 // under the packaged app's file:// origin. See .onboarding-compact-hero.
 import heroDither from "@/assets/onboarding-hero-dither.webp";
@@ -321,7 +322,7 @@ export default function OnboardingShell({
 export function CompactOnboardingFrame({
   children,
   showBrandMark = true,
-  showLegalNotice = true,
+  showLegalNotice = !isMowBuild(),
   embedded = false,
 }: CompactOnboardingFrameProps) {
   const { t } = useTranslation();

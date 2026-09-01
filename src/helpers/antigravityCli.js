@@ -3,7 +3,11 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 
-const DEFAULT_ANTIGRAVITY_MODEL = "gemini-3.5-flash-low";
+const {
+  DEFAULT_ANTIGRAVITY_MODEL,
+  resolveAgyCliModel,
+  withoutEffortArgs,
+} = require("./antigravityModels");
 const DEFAULT_ANTIGRAVITY_STT_MODEL = "gemini-3.5-transcribe";
 
 const AGY_HOME_REL = path.join(".gemini", "antigravity-cli");
@@ -83,8 +87,9 @@ function buildAgyArgs({
   extraArgs = [],
 }) {
   const args = ["--print", prompt, "--dangerously-skip-permissions", "--disable-slash-commands"];
-  if (model) {
-    args.push("--model", model);
+  const cliModel = model ? resolveAgyCliModel(model) : "";
+  if (cliModel) {
+    args.push("--model", cliModel);
   }
   for (const dir of addDirs) {
     if (dir) {
@@ -106,8 +111,9 @@ function buildAgyArgs({
   if (conversationId) {
     args.push("--conversation", conversationId);
   }
-  if (extraArgs.length > 0) {
-    args.push(...extraArgs);
+  const safeExtraArgs = withoutEffortArgs(extraArgs);
+  if (safeExtraArgs.length > 0) {
+    args.push(...safeExtraArgs);
   }
   return args;
 }
@@ -320,9 +326,10 @@ async function runAgyTurn({
   extraArgs,
 }) {
   const binary = resolveAgyBinary(command);
+  const cliModel = resolveAgyCliModel(model);
   const args = buildAgyArgs({
     prompt,
-    model,
+    model: cliModel,
     addDirs,
     outputFormat,
     printTimeout,
@@ -331,9 +338,7 @@ async function runAgyTurn({
     extraArgs,
   });
   const env = { ...process.env, ...extraEnv };
-  if (model) {
-    env.ANTIGRAVITY_MODEL = model;
-  }
+  env.ANTIGRAVITY_MODEL = cliModel;
   if (path.isAbsolute(binary)) {
     const pathSep = process.platform === "win32" ? ";" : ":";
     env.PATH = path.dirname(binary) + pathSep + (env.PATH || "");
@@ -375,7 +380,7 @@ async function runAgyTurn({
   // includes agent tool chatter (especially if cwd is a large workspace).
   const writeFileText = readTextFileIfPresent(writeFilePath);
   if (writeFileText) {
-    return { text: writeFileText, model, recoveredFrom: "write_file" };
+    return { text: writeFileText, model: cliModel, recoveredFrom: "write_file" };
   }
 
   if (stdoutText) {
@@ -388,21 +393,21 @@ async function runAgyTurn({
             typeof envelope.structured_output === "string"
               ? envelope.structured_output
               : JSON.stringify(envelope.structured_output);
-          return { text: structured, model, recoveredFrom: null, envelope };
+          return { text: structured, model: cliModel, recoveredFrom: null, envelope };
         }
         if (typeof envelope?.response === "string" && envelope.response.trim()) {
-          return { text: envelope.response.trim(), model, recoveredFrom: null, envelope };
+          return { text: envelope.response.trim(), model: cliModel, recoveredFrom: null, envelope };
         }
       } catch {
         // fall through to raw stdout
       }
     }
-    return { text: stdoutText, model, recoveredFrom: null };
+    return { text: stdoutText, model: cliModel, recoveredFrom: null };
   }
 
   const recovered = recoverTranscriptFromDisk({ cwd });
   if (recovered?.text) {
-    return { text: recovered.text, model, recoveredFrom: "disk_transcript" };
+    return { text: recovered.text, model: cliModel, recoveredFrom: "disk_transcript" };
   }
 
   throwAgyFailure({
@@ -425,4 +430,5 @@ module.exports = {
   runAgyTurn,
   killActiveAgyTurn,
   ensureWritableDir,
+  resolveAgyCliModel,
 };

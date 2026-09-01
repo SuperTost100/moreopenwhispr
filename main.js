@@ -764,6 +764,7 @@ function handleInvitationDeepLink(deepLinkUrl) {
 }
 
 function resolveAuthUrl() {
+  if (isMowBuild()) return "";
   const fs = require("fs");
   const envPath = path.join(__dirname, "src", "dist", "runtime-env.json");
   let runtimeEnv = {};
@@ -868,6 +869,7 @@ async function applySessionTokenAndRefresh(token) {
 }
 
 async function handleOAuthDeepLink(deepLinkUrl) {
+  if (isMowBuild()) return;
   try {
     const parsed = new URL(deepLinkUrl);
     const bearerToken = parsed.searchParams.get("bearer_token");
@@ -994,6 +996,9 @@ async function startApp() {
   // Phase 1: Core managers + IPC handlers before windows
   initializeCoreManagers();
   await environmentManager.init();
+  if (isMowBuild()) {
+    require("./src/helpers/antigravityAuth").startAntigravityTokenKeepalive();
+  }
   // After any upgrade the GPU gets one fresh attempt: clear the remembered
   // failure before the whisper pre-warm below resolves its GPU backend.
   resetWhisperGpuFailureOnUpgrade(environmentManager);

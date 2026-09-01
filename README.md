@@ -5,10 +5,10 @@
 <h1 align="center">MoreOpenWhispr</h1>
 
 <p align="center">
-  <a href="https://github.com/SuperTost100/openwhispr/blob/antigravity-fork/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/openwhispr?style=flat" alt="License" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhispr/blob/antigravity-fork/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/moreopenwhispr?style=flat" alt="License" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat" alt="Platform" />
-  <a href="https://github.com/SuperTost100/openwhispr/releases/latest"><img src="https://img.shields.io/github/v/release/SuperTost100/openwhispr?style=flat&sort=semver" alt="GitHub release" /></a>
-  <a href="https://github.com/SuperTost100/openwhispr/releases"><img src="https://img.shields.io/github/downloads/SuperTost100/openwhispr/total?style=flat&color=blue" alt="Downloads" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhispr/releases/latest"><img src="https://img.shields.io/github/v/release/SuperTost100/moreopenwhispr?style=flat&sort=semver" alt="GitHub release" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhispr/releases"><img src="https://img.shields.io/github/downloads/SuperTost100/moreopenwhispr/total?style=flat&color=blue" alt="Downloads" /></a>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/SuperTost100/openwhispr/releases/latest">Download</a> &middot;
+  <a href="https://github.com/SuperTost100/moreopenwhispr/releases/latest">Download</a> &middot;
   <a href="docs/macos.md">macOS</a> &middot;
   <a href="docs/windows.md">Windows</a> &middot;
   <a href="docs/linux.md">Linux</a> &middot;
@@ -39,10 +39,10 @@ Unsigned builds. macOS will ask you to right-click → Open the first time. If i
 
 | Platform              | File                                                                                                                                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| macOS (Apple Silicon) | [`.dmg`](https://github.com/SuperTost100/openwhispr/releases/latest)                                                                                                                                                                                                                              |
-| macOS (Intel) \*      | [`.dmg`](https://github.com/SuperTost100/openwhispr/releases/latest)                                                                                                                                                                                                                              |
-| Windows               | [`.exe` installer](https://github.com/SuperTost100/openwhispr/releases/latest) / [portable](https://github.com/SuperTost100/openwhispr/releases/latest)                                                                                                                                           |
-| Linux                 | [`.AppImage`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.deb`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.rpm`](https://github.com/SuperTost100/openwhispr/releases/latest) / [`.tar.gz`](https://github.com/SuperTost100/openwhispr/releases/latest) |
+| macOS (Apple Silicon) | [`.dmg`](https://github.com/SuperTost100/moreopenwhispr/releases/latest)                                                                                                                                                                                                                              |
+| macOS (Intel) \*      | [`.dmg`](https://github.com/SuperTost100/moreopenwhispr/releases/latest)                                                                                                                                                                                                                              |
+| Windows               | [`.exe` installer](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [portable](https://github.com/SuperTost100/moreopenwhispr/releases/latest)                                                                                                                                           |
+| Linux                 | [`.AppImage`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [`.deb`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [`.rpm`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [`.tar.gz`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) |
 
 \* On Intel Macs, live speaker identification and voice fingerprinting are unavailable. ONNX Runtime [stopped shipping macOS x86_64 binaries in 1.24](https://github.com/microsoft/onnxruntime/releases/tag/v1.24.1). Meetings still record and transcribe. Notes search falls back to keyword matching.
 
@@ -87,7 +87,7 @@ Upstream README is kept at [README.upstream.md](./README.upstream.md).
 Needs [Node.js 24](https://nodejs.org/) (see `.nvmrc`).
 
 ```bash
-git clone https://github.com/SuperTost100/openwhispr.git
+git clone https://github.com/SuperTost100/moreopenwhispr.git
 cd openwhispr
 git checkout antigravity-fork
 nvm use
@@ -124,7 +124,7 @@ This is the shipping branch (`antigravity-fork`). A separate UI redesign lives e
 
 1. Branch off `antigravity-fork`.
 2. `nvm use && npm ci && npm run lint && npm test`
-3. Open a PR against [SuperTost100/openwhispr](https://github.com/SuperTost100/openwhispr) `antigravity-fork`.
+3. Open a PR against [SuperTost100/moreopenwhispr](https://github.com/SuperTost100/moreopenwhispr) `antigravity-fork`.
 
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md), not a public issue.
 

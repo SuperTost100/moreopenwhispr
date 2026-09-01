@@ -38,6 +38,7 @@ import {
 } from "./policyRules";
 import { usePolicyStore } from "./policyStore";
 import { coerceCloudMode, coerceInferenceMode, isMowBuild } from "../config/mowProfile";
+import { resolveAgyCliModel } from "../helpers/antigravityModels";
 import type {
   TranscriptionSettings,
   CleanupSettings,
@@ -1295,7 +1296,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   autoGenerateNoteTitle: readBoolean("autoGenerateNoteTitle", true),
   useCleanupModel: readBoolean("useCleanupModel", true),
   useDictationAgent: readBoolean("useDictationAgent", true),
-  cleanupModel: readString("cleanupModel", "gemini-3.5-flash-low"),
+  cleanupModel: resolveAgyCliModel(readString("cleanupModel", "gemini-3.7-flash-low")),
   cleanupProvider: readString("cleanupProvider", "antigravity"),
 
   // Secrets hydrate from main process in initializeSettings, never from localStorage.
@@ -1622,7 +1623,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ translationTargets: normalized });
   },
 
-  chatAgentModel: readString("chatAgentModel", "gemini-3.5-flash-medium"),
+  chatAgentModel: resolveAgyCliModel(readString("chatAgentModel", "gemini-3.7-flash-medium")),
   chatAgentProvider: readString("chatAgentProvider", "antigravity"),
   chatAgentCloudMode: readCloudMode("chatAgentCloudMode", "byok"),
   chatAgentMode: readInferenceMode("chatAgentMode", "providers", [
@@ -1644,7 +1645,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     "enterprise",
   ]),
   dictationAgentProvider: readString("dictationAgentProvider", "antigravity"),
-  dictationAgentModel: readString("dictationAgentModel", "gemini-3.5-flash-medium"),
+  dictationAgentModel: resolveAgyCliModel(readString("dictationAgentModel", "gemini-3.7-flash-medium")),
   dictationAgentCloudMode: readCloudMode("dictationAgentCloudMode", "byok"),
   dictationAgentCloudBaseUrl: readString("dictationAgentCloudBaseUrl", ""),
   dictationAgentRemoteUrl: readString("dictationAgentRemoteUrl", ""),
@@ -1657,7 +1658,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     "providers",
   ]),
   dictationAgentVisionProvider: readString("dictationAgentVisionProvider", "antigravity"),
-  dictationAgentVisionModel: readString("dictationAgentVisionModel", "gemini-3.5-flash-high"),
+  dictationAgentVisionModel: resolveAgyCliModel(
+    readString("dictationAgentVisionModel", "gemini-3.7-flash-high")
+  ),
   dictationAgentVisionCloudMode: readCloudMode("dictationAgentVisionCloudMode", "byok"),
   dictationAgentVisionCloudBaseUrl: readString("dictationAgentVisionCloudBaseUrl", ""),
   dictationAgentVisionCustomApiKey: readString("dictationAgentVisionCustomApiKey", ""),

@@ -10,5 +10,10 @@ describe("mowAccountIpc", () => {
     assert.ok(MOW_DISABLED_CHANNELS.includes("cloud-transcribe"));
     assert.ok(MOW_DISABLED_CHANNELS.includes("get-workspace-policy"));
     assert.ok(MOW_DISABLED_CHANNELS.includes("broadcast-sync-event"));
+    assert.ok(MOW_DISABLED_CHANNELS.includes("get-stt-config"));
+    assert.ok(MOW_DISABLED_CHANNELS.includes("get-note-recording-config"));
+    assert.ok(MOW_DISABLED_CHANNELS.includes("get-referral-stats"));
+    assert.ok(MOW_DISABLED_CHANNELS.includes("send-referral-invite"));
+    assert.ok(MOW_DISABLED_CHANNELS.includes("get-referral-invites"));
   });
 });

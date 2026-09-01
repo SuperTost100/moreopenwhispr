@@ -26,3 +26,14 @@ describe("normalizeUiLanguage", () => {
     assert.equal(normalizeUiLanguage(""), "en");
   });
 });
+
+describe("mowBrand", () => {
+  it("rewrites OpenWhispr in tray copy on MOW", () => {
+    const { i18nMain } = require("../../src/helpers/i18nMain");
+    const { isMowBuild, MOW_PROFILE } = require("../../src/config/mowProfile.cjs");
+    if (!isMowBuild()) return;
+    const tooltip = i18nMain.t("tray.tooltip");
+    assert.match(tooltip, new RegExp(`^${MOW_PROFILE.productName}`));
+    assert.equal(tooltip.startsWith(MOW_PROFILE.upstreamName), false);
+  });
+});

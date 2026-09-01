@@ -68,7 +68,7 @@ Dedicated `gemini-3.5-transcribe-live` returned 404 on the daily gateway. Implem
 
 ## Distribution
 
-- GitHub: [SuperTost100/openwhispr](https://github.com/SuperTost100/openwhispr), branch `antigravity-fork`
+- GitHub: [SuperTost100/moreopenwhispr](https://github.com/SuperTost100/moreopenwhispr), branch `antigravity-fork`
 - Releases: unsigned macOS / Windows / Linux via `.github/workflows/release.yml`
 - Account / billing UI disabled via `src/config/mowProfile.ts`
 - `repoUrl` / `issuesUrl` / `docsUrl` live in `mowProfile.ts` (keep them pointing at SuperTost100)

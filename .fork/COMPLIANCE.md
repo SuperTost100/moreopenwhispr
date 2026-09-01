@@ -28,7 +28,7 @@ OpenWhispr Cloud sign-in, billing, and workspace UI are hidden (`src/config/mowP
 
 ## Release checklist
 
-- [ ] `mowProfile.ts` repo URLs point at `SuperTost100/openwhispr`
+- [ ] `mowProfile.ts` repo URLs point at `SuperTost100/moreopenwhispr`
 - [ ] README says unofficial fork
 - [ ] `LICENSE` included in the repo and linked from README
 - [ ] `electron-builder.json` `publish.owner` is `SuperTost100` (not `OpenWhispr`)

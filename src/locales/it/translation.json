@@ -2575,6 +2575,8 @@
         "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
         "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
         "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
+        "antigravity_gemini_3_7_flash_low": "Fast cleanup via Antigravity subscription",
+        "antigravity_gemini_3_7_flash_medium": "Balanced via Antigravity",
         "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
         "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
         "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",

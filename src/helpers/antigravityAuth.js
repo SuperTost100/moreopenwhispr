@@ -12,8 +12,14 @@ const OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const TOKEN_REFRESH_SKEW_SEC = 120;
 
 let cachedOAuthClient = null;
+let cachedOAuthCandidates = null;
 let cachedProjectId = null;
 let cachedProjectBase = null;
+
+const CLIENT_ID_RE = /(\d+-[\w-]+\.apps\.googleusercontent\.com)/g;
+// Split concatenated GOCSPX blobs (agy stores two secrets back-to-back).
+const CLIENT_SECRET_RE =
+  /GOCSPX-[A-Za-z0-9_-]{8,48}?(?=GOCSPX-|https?:\/\/|[^A-Za-z0-9_-]|$)/g;
 
 function parseExpiryTimestamp(expiryRaw) {
   if (!expiryRaw) return 0;
@@ -74,7 +80,58 @@ function resolveAgyBinaryPath() {
   }
 }
 
+function unique(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function extractOAuthCandidates(blob) {
+  const haystack = String(blob || "");
+  if (!haystack.includes("auth.cloud.google")) {
+    return { clientIds: [], clientSecrets: [] };
+  }
+  return {
+    clientIds: unique([...haystack.matchAll(CLIENT_ID_RE)].map((m) => m[1])),
+    clientSecrets: unique([...haystack.matchAll(CLIENT_SECRET_RE)].map((m) => m[0])),
+  };
+}
+
+function preferredOAuthPair(candidates) {
+  if (!candidates?.clientIds?.length || !candidates?.clientSecrets?.length) {
+    return null;
+  }
+  // Current agy: first GOCSPX sits on the authorize URL; the working
+  // client id is the last .apps.googleusercontent.com in the binary.
+  return {
+    clientId: candidates.clientIds[candidates.clientIds.length - 1],
+    clientSecret: candidates.clientSecrets[0],
+  };
+}
+
+function oauthRefreshPairs(candidates) {
+  const pairs = [];
+  const seen = new Set();
+  const add = (clientId, clientSecret) => {
+    if (!clientId || !clientSecret) return;
+    const key = `${clientId}\0${clientSecret}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    pairs.push({ clientId, clientSecret });
+  };
+  const preferred = preferredOAuthPair(candidates);
+  if (preferred) add(preferred.clientId, preferred.clientSecret);
+  for (const clientId of candidates.clientIds) {
+    for (const clientSecret of candidates.clientSecrets) {
+      add(clientId, clientSecret);
+    }
+  }
+  return pairs.slice(0, 6);
+}
+
 // ponytail: public Antigravity OAuth app creds live inside the agy binary; scrape at runtime so git never stores them.
+function extractOAuthFromBlob(blob) {
+  return preferredOAuthPair(extractOAuthCandidates(blob));
+}
+
 function tryExtractOAuthFromAgyBinary() {
   const agyPath = resolveAgyBinaryPath();
   if (!agyPath) {
@@ -95,35 +152,29 @@ function tryExtractOAuthFromAgyBinary() {
     }
   }
 
-  const authIdx = blob.indexOf("auth.cloud.google");
-  if (authIdx < 0) {
+  const candidates = extractOAuthCandidates(blob);
+  if (!candidates.clientIds.length || !candidates.clientSecrets.length) {
     return null;
   }
-  const window = blob.slice(Math.max(0, authIdx - 800), authIdx + 800);
-  const clientId = window.match(/(\d+-[\w-]+\.apps\.googleusercontent\.com)/)?.[1];
-  const clientSecret = window.match(/(GOCSPX-[A-Za-z0-9_-]+)/)?.[1];
-  if (!clientId || !clientSecret) {
-    return null;
-  }
-  return { clientId, clientSecret };
+  cachedOAuthCandidates = candidates;
+  return preferredOAuthPair(candidates);
 }
 
-function resolveOAuthClientCredentials() {
-  if (cachedOAuthClient) {
-    return cachedOAuthClient;
+function resolveOAuthCandidates() {
+  if (cachedOAuthCandidates?.clientIds?.length && cachedOAuthCandidates?.clientSecrets?.length) {
+    return cachedOAuthCandidates;
   }
 
   const envId = process.env.ANTIGRAVITY_CLIENT_ID?.trim();
   const envSecret = process.env.ANTIGRAVITY_CLIENT_SECRET?.trim();
   if (envId && envSecret) {
-    cachedOAuthClient = { clientId: envId, clientSecret: envSecret };
-    return cachedOAuthClient;
+    cachedOAuthCandidates = { clientIds: [envId], clientSecrets: [envSecret] };
+    return cachedOAuthCandidates;
   }
 
   const fromAgy = tryExtractOAuthFromAgyBinary();
-  if (fromAgy) {
-    cachedOAuthClient = fromAgy;
-    return cachedOAuthClient;
+  if (fromAgy && cachedOAuthCandidates) {
+    return cachedOAuthCandidates;
   }
 
   throw authError(
@@ -132,14 +183,28 @@ function resolveOAuthClientCredentials() {
   );
 }
 
-async function refreshAccessToken(refreshToken, fetchImpl = fetch) {
-  const { clientId, clientSecret } = resolveOAuthClientCredentials();
+function resolveOAuthClientCredentials() {
+  if (cachedOAuthClient) {
+    return cachedOAuthClient;
+  }
+  const pair = preferredOAuthPair(resolveOAuthCandidates());
+  if (!pair) {
+    throw authError(
+      "Antigravity OAuth client credentials unavailable. Install `agy` on PATH or set ANTIGRAVITY_CLIENT_ID and ANTIGRAVITY_CLIENT_SECRET.",
+      "AGY_OAUTH_CONFIG_MISSING"
+    );
+  }
+  cachedOAuthClient = pair;
+  return cachedOAuthClient;
+}
+
+async function refreshWithPair(refreshToken, pair, fetchImpl) {
   const response = await fetchImpl(OAUTH_TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      client_id: clientId,
-      client_secret: clientSecret,
+      client_id: pair.clientId,
+      client_secret: pair.clientSecret,
       refresh_token: refreshToken,
       grant_type: "refresh_token",
     }),
@@ -161,7 +226,35 @@ async function refreshAccessToken(refreshToken, fetchImpl = fetch) {
   };
 }
 
-async function getAntigravityAccessToken({ fetchImpl = fetch, forceRefresh = false } = {}) {
+async function refreshAccessToken(refreshToken, fetchImpl = fetch) {
+  const candidates = resolveOAuthCandidates();
+  const pairs = oauthRefreshPairs(candidates);
+  if (cachedOAuthClient) {
+    pairs.unshift(cachedOAuthClient);
+  }
+  const tried = new Set();
+  let lastError = authError("Antigravity OAuth refresh failed", "AGY_TOKEN_EXPIRED");
+  for (const pair of pairs) {
+    const key = `${pair.clientId}\0${pair.clientSecret}`;
+    if (tried.has(key)) continue;
+    tried.add(key);
+    try {
+      const refreshed = await refreshWithPair(refreshToken, pair, fetchImpl);
+      cachedOAuthClient = pair;
+      return refreshed;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  cachedOAuthClient = null;
+  throw lastError;
+}
+
+async function getAntigravityAccessToken({
+  fetchImpl = fetch,
+  forceRefresh = false,
+  minTtlSec = TOKEN_REFRESH_SKEW_SEC,
+} = {}) {
   const data = readTokenFile();
   if (!data?.token) {
     throw authError(
@@ -172,11 +265,12 @@ async function getAntigravityAccessToken({ fetchImpl = fetch, forceRefresh = fal
 
   const tokenObj = { ...data.token };
   const expiryTs = parseExpiryTimestamp(tokenObj.expiry);
+  const ttlFloor = Number.isFinite(minTtlSec) ? minTtlSec : TOKEN_REFRESH_SKEW_SEC;
   const needsRefresh =
     forceRefresh ||
     !tokenObj.access_token ||
     expiryTs === 0 ||
-    expiryTs - Date.now() / 1000 < TOKEN_REFRESH_SKEW_SEC;
+    expiryTs - Date.now() / 1000 < ttlFloor;
 
   if (needsRefresh) {
     if (!tokenObj.refresh_token) {
@@ -192,6 +286,30 @@ async function getAntigravityAccessToken({ fetchImpl = fetch, forceRefresh = fal
   }
 
   return tokenObj.access_token;
+}
+
+const TOKEN_KEEPALIVE_MS = 15 * 60 * 1000;
+const TOKEN_KEEPALIVE_TTL_SEC = 25 * 60;
+let tokenKeepaliveTimer = null;
+
+function startAntigravityTokenKeepalive({
+  intervalMs = TOKEN_KEEPALIVE_MS,
+  minTtlSec = TOKEN_KEEPALIVE_TTL_SEC,
+} = {}) {
+  if (tokenKeepaliveTimer) return tokenKeepaliveTimer;
+  const tick = () => {
+    getAntigravityAccessToken({ minTtlSec }).catch(() => {});
+  };
+  tick();
+  tokenKeepaliveTimer = setInterval(tick, intervalMs);
+  tokenKeepaliveTimer.unref?.();
+  return tokenKeepaliveTimer;
+}
+
+function stopAntigravityTokenKeepalive() {
+  if (!tokenKeepaliveTimer) return;
+  clearInterval(tokenKeepaliveTimer);
+  tokenKeepaliveTimer = null;
 }
 
 function clearAntigravityProjectCache() {
@@ -223,6 +341,8 @@ function getAntigravityTokenPath() {
 module.exports = {
   getTokenFilePath,
   getAntigravityAccessToken,
+  startAntigravityTokenKeepalive,
+  stopAntigravityTokenKeepalive,
   getAntigravityProjectId,
   getAntigravityProjectBase,
   clearAntigravityProjectCache,
@@ -232,4 +352,7 @@ module.exports = {
   refreshAccessToken,
   resolveOAuthClientCredentials,
   tryExtractOAuthFromAgyBinary,
+  extractOAuthFromBlob,
+  extractOAuthCandidates,
+  oauthRefreshPairs,
 };

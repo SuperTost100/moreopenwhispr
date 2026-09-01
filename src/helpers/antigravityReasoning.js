@@ -165,7 +165,7 @@ async function reasonWithAntigravity({
         command,
         printTimeout: "120s",
         timeoutMs: 180_000,
-        extraArgs: ["--sandbox", "--effort", "low"],
+        extraArgs: ["--sandbox"],
       });
       return turn.text.trim();
     } finally {

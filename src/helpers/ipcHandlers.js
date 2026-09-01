@@ -29,6 +29,7 @@ const {
 const { classifyAndLog } = require("./networkErrors");
 const { resolveSystemDefaultMicrophone } = require("./systemDefaultMicrophone");
 const { registerMowAccountIpcOverrides } = require("./mowAccountIpc");
+const { isMowBuild } = require("../config/mowProfile.cjs");
 // The renderer's ModelRegistry is not main-loadable; the raw registry data is
 // packaged, and the route resolver only needs {id, baseUrl} per provider.
 const transcriptionProviderBaseUrls = () =>
@@ -5556,17 +5557,25 @@ class IPCHandlers {
       return {};
     })();
 
-    const getApiUrl = () =>
-      process.env.OPENWHISPR_API_URL ||
-      process.env.VITE_OPENWHISPR_API_URL ||
-      runtimeEnv.VITE_OPENWHISPR_API_URL ||
-      "";
+    const getApiUrl = () => {
+      if (isMowBuild()) return "";
+      return (
+        process.env.OPENWHISPR_API_URL ||
+        process.env.VITE_OPENWHISPR_API_URL ||
+        runtimeEnv.VITE_OPENWHISPR_API_URL ||
+        ""
+      );
+    };
 
-    const getAuthUrl = () =>
-      process.env.AUTH_URL ||
-      process.env.VITE_AUTH_URL ||
-      runtimeEnv.VITE_AUTH_URL ||
-      "https://auth.openwhispr.com";
+    const getAuthUrl = () => {
+      if (isMowBuild()) return "";
+      return (
+        process.env.AUTH_URL ||
+        process.env.VITE_AUTH_URL ||
+        runtimeEnv.VITE_AUTH_URL ||
+        "https://auth.openwhispr.com"
+      );
+    };
 
     const getSessionCookiesFromWindow = async (win) => {
       const scopedUrls = [getAuthUrl(), getApiUrl()].filter(Boolean);

@@ -1,5 +1,6 @@
 const { Menu } = require("electron");
 const { i18nMain } = require("./i18nMain");
+const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.cjs");
 
 class MenuManager {
   static setupMainMenu(onOpenSettings) {
@@ -106,7 +107,9 @@ class MenuManager {
               label: i18nMain.t("menu.learnMore"),
               click: async () => {
                 const { openExternalUrl } = require("./externalUrlOpener");
-                await openExternalUrl("https://github.com/OpenWhispr/openwhispr");
+                await openExternalUrl(
+                  isMowBuild() ? MOW_PROFILE.repoUrl : "https://github.com/OpenWhispr/openwhispr"
+                );
               },
             },
           ],

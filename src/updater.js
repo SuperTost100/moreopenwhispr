@@ -1,5 +1,5 @@
 const { autoUpdater } = require("electron-updater");
-const { appUpdatesEnabled } = require("./helpers/updateCheckPolicy");
+const { appUpdatesEnabled, githubUpdateFeed } = require("./helpers/updateCheckPolicy");
 
 class UpdateManager {
   constructor() {
@@ -14,6 +14,7 @@ class UpdateManager {
     this.updateCheckInterval = null;
     this.windowManager = null;
     this._suppressNotification = false;
+    this._backgroundCheck = false;
 
     this.setupAutoUpdater();
   }
@@ -27,12 +28,7 @@ class UpdateManager {
       return;
     }
 
-    autoUpdater.setFeedURL({
-      provider: "github",
-      owner: "OpenWhispr",
-      repo: "openwhispr",
-      private: false,
-    });
+    autoUpdater.setFeedURL(githubUpdateFeed());
 
     // Use arch-specific update channel on macOS to prevent arm64/x64
     // from downloading mismatched artifacts. Both builds publish to the
@@ -108,7 +104,12 @@ class UpdateManager {
         console.error("❌ Auto-updater error:", err);
         this._suppressNotification = false;
         this.isDownloading = false;
-        this.notifyRenderers("update-error", err);
+        // Background startup/periodic checks 404 until a GitHub release
+        // exists. Don't toast that into the user's face.
+        if (!this._backgroundCheck) {
+          this.notifyRenderers("update-error", err);
+        }
+        this._backgroundCheck = false;
       },
       "download-progress": (progressObj) => {
         console.log(
@@ -171,6 +172,7 @@ class UpdateManager {
 
       console.log("🔍 Checking for updates...");
       this._suppressNotification = true;
+      this._backgroundCheck = false;
       const result = await autoUpdater.checkForUpdates();
 
       if (result?.isUpdateAvailable && result?.updateInfo) {
@@ -308,8 +310,10 @@ class UpdateManager {
       return;
     }
     console.log(`🔄 ${label} update check...`);
+    this._backgroundCheck = true;
     autoUpdater.checkForUpdates().catch((err) => {
       console.error(`${label} update check failed:`, err);
+      this._backgroundCheck = false;
     });
   }
 

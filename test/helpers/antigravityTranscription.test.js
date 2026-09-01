@@ -57,7 +57,7 @@ test("transcribeWithAntigravity uses daily gateway stream path by default", asyn
   });
 
   assert.equal(result.text, "spoken words");
-  assert.equal(result.model, "gemini-3.5-flash-low");
+  assert.equal(result.model, "gemini-3.6-flash-low");
   assert.ok(calls.some((url) => String(url).includes("streamGenerateContent")));
 });
 
@@ -78,6 +78,8 @@ test("transcribeWithAntigravity legacy agent path when useLegacyAgent", async ()
   assert.equal(calls.length, 1);
   assert.ok(calls[0].writeFilePath);
   assert.deepEqual(calls[0].addDirs, [path.dirname(calls[0].writeFilePath)]);
+  assert.deepEqual(calls[0].extraArgs, ["--sandbox"]);
+  assert.ok(!calls[0].extraArgs.includes("--effort"));
 });
 
 test("prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversion failed", async () => {

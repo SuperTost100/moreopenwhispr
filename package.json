@@ -91,7 +91,7 @@
   "author": {
     "name": "MoreOpenWhispr",
     "email": "supertost100@users.noreply.github.com",
-    "url": "https://github.com/SuperTost100/openwhispr"
+    "url": "https://github.com/SuperTost100/moreopenwhispr"
   },
   "license": "MIT",
   "devDependencies": {
@@ -222,12 +222,12 @@
     "markdown-it": "14.2.0",
     "tmp": "0.2.7"
   },
-  "homepage": "https://github.com/SuperTost100/openwhispr",
+  "homepage": "https://github.com/SuperTost100/moreopenwhispr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SuperTost100/openwhispr.git"
+    "url": "https://github.com/SuperTost100/moreopenwhispr.git"
   },
   "bugs": {
-    "url": "https://github.com/SuperTost100/openwhispr/issues"
+    "url": "https://github.com/SuperTost100/moreopenwhispr/issues"
   }
 }

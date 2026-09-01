@@ -264,7 +264,7 @@
   "publish": {
     "provider": "github",
     "owner": "SuperTost100",
-    "repo": "openwhispr",
+    "repo": "moreopenwhispr",
     "private": false,
     "releaseType": "draft"
   }

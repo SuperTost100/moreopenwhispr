@@ -93,9 +93,9 @@ test("transcribeAudioViaGateway uses daily stream multimodal flash-low", async (
   });
 
   assert.equal(result.text, "spoken");
-  assert.equal(result.model, "gemini-3.5-flash-low");
+  assert.equal(result.model, "gemini-3.6-flash-low");
   assert.match(captured.url, /daily-cloudcode.*streamGenerateContent/);
-  assert.equal(captured.body.model, "gemini-3.5-flash-low");
+  assert.equal(captured.body.model, "gemini-3.6-flash-low");
   assert.equal(
     captured.body.request.systemInstruction.parts[0].text.includes("Expected spoken language: de"),
     true
@@ -108,6 +108,73 @@ test("transcribeAudioViaGateway uses daily stream multimodal flash-low", async (
     mimeType: "audio/wav",
     data: "abc",
   });
+});
+
+test("transcribeAudioViaGateway tries the next daily model after a 404", async () => {
+  const models = [];
+  const fetchImpl = async (url, init) => {
+    if (String(url).includes("loadCodeAssist")) {
+      return {
+        ok: true,
+        json: async () => ({ cloudaicompanionProject: "daily-proj" }),
+      };
+    }
+    const body = JSON.parse(init.body);
+    models.push(body.model);
+    if (body.model === "gemini-3.6-flash-low") {
+      return {
+        ok: false,
+        status: 404,
+        text: async () => '{"error":{"message":"Requested entity was not found."}}',
+      };
+    }
+    return {
+      ok: true,
+      text: async () =>
+        'data: {"response":{"candidates":[{"content":{"parts":[{"text":"spoken"}]}}]}}\n',
+    };
+  };
+
+  const result = await transcribeAudioViaGateway({
+    accessToken: "tok",
+    audioBase64: "abc",
+    mimeType: "audio/wav",
+    fetchImpl,
+  });
+  assert.equal(result.text, "spoken");
+  assert.equal(result.model, "gemini-3-flash");
+  assert.deepEqual(models[0], "gemini-3.6-flash-low");
+  assert.equal(models[1], "gemini-3-flash");
+});
+
+test("transcribeAudioViaGateway rejects a retired-model notice as a transcript", async () => {
+  const fetchImpl = async (url) => {
+    if (String(url).includes("loadCodeAssist")) {
+      return {
+        ok: true,
+        json: async () => ({ cloudaicompanionProject: "daily-proj" }),
+      };
+    }
+    return {
+      ok: true,
+      text: async () =>
+        'data: {"response":{"candidates":[{"content":{"parts":[{"text":"Gemini 3.5 Flash is no longer available. Please switch to Gemini 3.7 Flash in the latest version of Antigravity."}]}}]}}\n',
+    };
+  };
+
+  await assert.rejects(
+    () =>
+      transcribeAudioViaGateway({
+        accessToken: "tok",
+        audioBase64: "abc",
+        mimeType: "audio/wav",
+        fetchImpl,
+      }),
+    (error) => {
+      assert.equal(error.code, "AGY_MODEL_RETIRED");
+      return true;
+    }
+  );
 });
 
 test("generateContent retries on 429 then succeeds", async () => {
