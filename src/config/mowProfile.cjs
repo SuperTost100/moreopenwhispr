@@ -2,17 +2,21 @@
 
 // ponytail: CJS mirror of mowProfile.ts for Electron main / node --test require().
 // Named .cjs so Vite SSR prefers mowProfile.ts (its resolve order ranks .js before .ts).
+const githubOwner = "SuperTost100";
+const githubRepo = "moreopenwhispr";
+const repoUrl = `https://github.com/${githubOwner}/${githubRepo}`;
+
 const MOW_PROFILE = {
   enabled: true,
   productName: "MoreOpenWhispr",
   shortName: "MOW",
   upstreamName: "OpenWhispr",
   upstreamUrl: "https://github.com/OpenWhispr/openwhispr",
-  githubOwner: "SuperTost100",
-  githubRepo: "moreopenwhispr",
-  repoUrl: "https://github.com/SuperTost100/moreopenwhispr",
-  docsUrl: "https://github.com/SuperTost100/moreopenwhispr#readme",
-  issuesUrl: "https://github.com/SuperTost100/moreopenwhispr/issues",
+  githubOwner,
+  githubRepo,
+  repoUrl,
+  docsUrl: `${repoUrl}#readme`,
+  issuesUrl: `${repoUrl}/issues`,
 };
 
 const MOW_ACCOUNT_MODES = new Set(["openwhispr"]);
@@ -42,6 +46,11 @@ function mowRepoUrl(path = "") {
   return path ? `${base}/${path.replace(/^\//, "")}` : base;
 }
 
+function rewriteUpstreamBrand(value) {
+  if (typeof value !== "string") return value;
+  return value.replaceAll(MOW_PROFILE.upstreamName, MOW_PROFILE.productName);
+}
+
 module.exports = {
   MOW_PROFILE,
   MOW_ACCOUNT_MODES,
@@ -51,4 +60,5 @@ module.exports = {
   coerceInferenceMode,
   coerceCloudMode,
   mowRepoUrl,
+  rewriteUpstreamBrand,
 };

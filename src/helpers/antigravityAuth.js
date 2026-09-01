@@ -1,7 +1,11 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { execFileSync } = require("child_process");
+const { execFile, execFileSync } = require("child_process");
+const { promisify } = require("util");
+
+const execFileAsync = promisify(execFile);
+const STRINGS_MAX_BUFFER = 64 * 1024 * 1024;
 
 const TOKEN_REL = path.join(".gemini", "antigravity-cli", "antigravity-oauth-token");
 
@@ -18,8 +22,7 @@ let cachedProjectBase = null;
 
 const CLIENT_ID_RE = /(\d+-[\w-]+\.apps\.googleusercontent\.com)/g;
 // Split concatenated GOCSPX blobs (agy stores two secrets back-to-back).
-const CLIENT_SECRET_RE =
-  /GOCSPX-[A-Za-z0-9_-]{8,48}?(?=GOCSPX-|https?:\/\/|[^A-Za-z0-9_-]|$)/g;
+const CLIENT_SECRET_RE = /GOCSPX-[A-Za-z0-9_-]{8,48}?(?=GOCSPX-|https?:\/\/|[^A-Za-z0-9_-]|$)/g;
 
 function parseExpiryTimestamp(expiryRaw) {
   if (!expiryRaw) return 0;
@@ -132,6 +135,25 @@ function extractOAuthFromBlob(blob) {
   return preferredOAuthPair(extractOAuthCandidates(blob));
 }
 
+function hasCachedOAuthCandidates() {
+  return Boolean(
+    cachedOAuthCandidates?.clientIds?.length && cachedOAuthCandidates?.clientSecrets?.length
+  );
+}
+
+function envOAuthCandidates() {
+  const envId = process.env.ANTIGRAVITY_CLIENT_ID?.trim();
+  const envSecret = process.env.ANTIGRAVITY_CLIENT_SECRET?.trim();
+  if (!envId || !envSecret) return null;
+  return { clientIds: [envId], clientSecrets: [envSecret] };
+}
+
+function cacheOAuthCandidates(candidates) {
+  if (!candidates?.clientIds?.length || !candidates?.clientSecrets?.length) return null;
+  cachedOAuthCandidates = candidates;
+  return candidates;
+}
+
 function tryExtractOAuthFromAgyBinary() {
   const agyPath = resolveAgyBinaryPath();
   if (!agyPath) {
@@ -142,7 +164,7 @@ function tryExtractOAuthFromAgyBinary() {
   try {
     blob = execFileSync("strings", [agyPath], {
       encoding: "utf8",
-      maxBuffer: 64 * 1024 * 1024,
+      maxBuffer: STRINGS_MAX_BUFFER,
     });
   } catch {
     try {
@@ -152,28 +174,50 @@ function tryExtractOAuthFromAgyBinary() {
     }
   }
 
-  const candidates = extractOAuthCandidates(blob);
-  if (!candidates.clientIds.length || !candidates.clientSecrets.length) {
-    return null;
+  const candidates = cacheOAuthCandidates(extractOAuthCandidates(blob));
+  return candidates ? preferredOAuthPair(candidates) : null;
+}
+
+// Scraping `agy` costs tens of MB of string matching. resolveOAuthCandidates()
+// has to do it synchronously (it sits under the sync refresh path and blocks
+// the main process), so warm the same cache asynchronously first — off the
+// interactive path — and the sync scrape never runs in practice.
+async function warmOAuthCandidates() {
+  if (hasCachedOAuthCandidates()) return cachedOAuthCandidates;
+
+  const fromEnv = cacheOAuthCandidates(envOAuthCandidates());
+  if (fromEnv) return fromEnv;
+
+  const agyPath = resolveAgyBinaryPath();
+  if (!agyPath) return null;
+
+  let blob = "";
+  try {
+    ({ stdout: blob } = await execFileAsync("strings", [agyPath], {
+      encoding: "utf8",
+      maxBuffer: STRINGS_MAX_BUFFER,
+    }));
+  } catch {
+    try {
+      blob = await fs.promises.readFile(agyPath, "latin1");
+    } catch {
+      return null;
+    }
   }
-  cachedOAuthCandidates = candidates;
-  return preferredOAuthPair(candidates);
+
+  return cacheOAuthCandidates(extractOAuthCandidates(blob));
 }
 
 function resolveOAuthCandidates() {
-  if (cachedOAuthCandidates?.clientIds?.length && cachedOAuthCandidates?.clientSecrets?.length) {
+  if (hasCachedOAuthCandidates()) {
     return cachedOAuthCandidates;
   }
 
-  const envId = process.env.ANTIGRAVITY_CLIENT_ID?.trim();
-  const envSecret = process.env.ANTIGRAVITY_CLIENT_SECRET?.trim();
-  if (envId && envSecret) {
-    cachedOAuthCandidates = { clientIds: [envId], clientSecrets: [envSecret] };
-    return cachedOAuthCandidates;
-  }
+  const fromEnv = cacheOAuthCandidates(envOAuthCandidates());
+  if (fromEnv) return fromEnv;
 
-  const fromAgy = tryExtractOAuthFromAgyBinary();
-  if (fromAgy && cachedOAuthCandidates) {
+  tryExtractOAuthFromAgyBinary();
+  if (hasCachedOAuthCandidates()) {
     return cachedOAuthCandidates;
   }
 
@@ -181,21 +225,6 @@ function resolveOAuthCandidates() {
     "Antigravity OAuth client credentials unavailable. Install `agy` on PATH or set ANTIGRAVITY_CLIENT_ID and ANTIGRAVITY_CLIENT_SECRET.",
     "AGY_OAUTH_CONFIG_MISSING"
   );
-}
-
-function resolveOAuthClientCredentials() {
-  if (cachedOAuthClient) {
-    return cachedOAuthClient;
-  }
-  const pair = preferredOAuthPair(resolveOAuthCandidates());
-  if (!pair) {
-    throw authError(
-      "Antigravity OAuth client credentials unavailable. Install `agy` on PATH or set ANTIGRAVITY_CLIENT_ID and ANTIGRAVITY_CLIENT_SECRET.",
-      "AGY_OAUTH_CONFIG_MISSING"
-    );
-  }
-  cachedOAuthClient = pair;
-  return cachedOAuthClient;
 }
 
 async function refreshWithPair(refreshToken, pair, fetchImpl) {
@@ -290,23 +319,31 @@ async function getAntigravityAccessToken({
 
 const TOKEN_KEEPALIVE_MS = 15 * 60 * 1000;
 const TOKEN_KEEPALIVE_TTL_SEC = 25 * 60;
+const TOKEN_KEEPALIVE_START_DELAY_MS = 10_000;
 let tokenKeepaliveTimer = null;
+let tokenKeepaliveStartup = null;
 
 function startAntigravityTokenKeepalive({
   intervalMs = TOKEN_KEEPALIVE_MS,
   minTtlSec = TOKEN_KEEPALIVE_TTL_SEC,
 } = {}) {
   if (tokenKeepaliveTimer) return tokenKeepaliveTimer;
-  const tick = () => {
-    getAntigravityAccessToken({ minTtlSec }).catch(() => {});
+  const tick = async () => {
+    await warmOAuthCandidates().catch(() => {});
+    await getAntigravityAccessToken({ minTtlSec }).catch(() => {});
   };
-  tick();
+  tokenKeepaliveStartup = setTimeout(tick, TOKEN_KEEPALIVE_START_DELAY_MS);
+  tokenKeepaliveStartup.unref?.();
   tokenKeepaliveTimer = setInterval(tick, intervalMs);
   tokenKeepaliveTimer.unref?.();
   return tokenKeepaliveTimer;
 }
 
 function stopAntigravityTokenKeepalive() {
+  if (tokenKeepaliveStartup) {
+    clearTimeout(tokenKeepaliveStartup);
+    tokenKeepaliveStartup = null;
+  }
   if (!tokenKeepaliveTimer) return;
   clearInterval(tokenKeepaliveTimer);
   tokenKeepaliveTimer = null;
@@ -350,8 +387,8 @@ module.exports = {
   parseExpiryTimestamp,
   readTokenFile,
   refreshAccessToken,
-  resolveOAuthClientCredentials,
   tryExtractOAuthFromAgyBinary,
+  warmOAuthCandidates,
   extractOAuthFromBlob,
   extractOAuthCandidates,
   oauthRefreshPairs,

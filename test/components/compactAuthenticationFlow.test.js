@@ -59,8 +59,16 @@ test("returning-user authentication renders the complete compact onboarding surf
   assert.match(markup, /onboarding-compact-hero/);
   assert.match(markup, /auth\.welcomeTitle/);
   assert.match(markup, /auth\.emailStep\.continueWithoutAccount/);
-  assert.match(markup, /auth\.legal\.terms/);
-  assert.match(markup, /auth\.legal\.privacy/);
+  // The fork can't point users at OpenWhispr's terms and privacy pages, so
+  // CompactOnboardingFrame suppresses the legal notice on a MOW build. Keep the
+  // upstream expectation alive for the profile-disabled case.
+  const { isMowBuild } = await vite.ssrLoadModule("/config/mowProfile.ts");
+  if (isMowBuild()) {
+    assert.doesNotMatch(markup, /auth\.legal\./);
+  } else {
+    assert.match(markup, /auth\.legal\.terms/);
+    assert.match(markup, /auth\.legal\.privacy/);
+  }
   assert.doesNotMatch(markup, /onboarding-embedded-auth/);
 });
 

@@ -1,5 +1,5 @@
 const i18next = require("i18next");
-const { isMowBuild, MOW_PROFILE } = require("../config/mowProfile.cjs");
+const { isMowBuild, rewriteUpstreamBrand } = require("../config/mowProfile.cjs");
 
 const enTranslation = require("../locales/en/translation.json");
 const esTranslation = require("../locales/es/translation.json");
@@ -58,10 +58,7 @@ if (isMowBuild()) {
   i18nMain.use({
     type: "postProcessor",
     name: "mowBrand",
-    process(value) {
-      if (typeof value !== "string") return value;
-      return value.replaceAll(MOW_PROFILE.upstreamName, MOW_PROFILE.productName);
-    },
+    process: rewriteUpstreamBrand,
   });
 }
 

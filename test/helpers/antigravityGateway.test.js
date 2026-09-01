@@ -5,7 +5,9 @@ const {
   transcribeAudioViaGateway,
   extractResponseText,
   parseStreamGenerateContentSse,
+  resolveBackendModel,
   DAILY_CLOUDCODE_BASE,
+  STT_BACKEND_MODEL,
 } = require("../../src/helpers/antigravityGateway");
 
 test("extractResponseText reads candidate parts", () => {
@@ -15,6 +17,13 @@ test("extractResponseText reads candidate parts", () => {
     },
   });
   assert.equal(text, "hello world");
+});
+
+test("resolveBackendModel maps retired flash-low CLI ids onto the daily STT model", () => {
+  assert.equal(resolveBackendModel("gemini-3.5-flash-low"), STT_BACKEND_MODEL);
+  assert.equal(resolveBackendModel("gemini-3.7-flash-low"), STT_BACKEND_MODEL);
+  assert.equal(resolveBackendModel("gemini-3.5-transcribe"), "gemini-3.5-transcribe");
+  assert.equal(resolveBackendModel("gemini-3.7-flash-medium"), "gemini-3.7-flash-medium");
 });
 
 test("parseStreamGenerateContentSse joins streamed text chunks", () => {

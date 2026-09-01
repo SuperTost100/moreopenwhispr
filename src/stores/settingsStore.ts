@@ -38,7 +38,7 @@ import {
 } from "./policyRules";
 import { usePolicyStore } from "./policyStore";
 import { coerceCloudMode, coerceInferenceMode, isMowBuild } from "../config/mowProfile";
-import { resolveAgyCliModel } from "../helpers/antigravityModels";
+import { DEFAULT_ANTIGRAVITY_MODEL, resolveAgyCliModel } from "../helpers/antigravityModels";
 import type {
   TranscriptionSettings,
   CleanupSettings,
@@ -1296,7 +1296,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   autoGenerateNoteTitle: readBoolean("autoGenerateNoteTitle", true),
   useCleanupModel: readBoolean("useCleanupModel", true),
   useDictationAgent: readBoolean("useDictationAgent", true),
-  cleanupModel: resolveAgyCliModel(readString("cleanupModel", "gemini-3.7-flash-low")),
+  cleanupModel: resolveAgyCliModel(readString("cleanupModel", DEFAULT_ANTIGRAVITY_MODEL)),
   cleanupProvider: readString("cleanupProvider", "antigravity"),
 
   // Secrets hydrate from main process in initializeSettings, never from localStorage.

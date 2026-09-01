@@ -156,7 +156,11 @@ test("extractOAuthFromBlob finds client id far after the authorize URL", () => {
 });
 
 test("extractOAuthFromBlob splits concatenated secrets and prefers the last client id", () => {
-  const { extractOAuthFromBlob, extractOAuthCandidates, oauthRefreshPairs } = require("../../src/helpers/antigravityAuth");
+  const {
+    extractOAuthFromBlob,
+    extractOAuthCandidates,
+    oauthRefreshPairs,
+  } = require("../../src/helpers/antigravityAuth");
   const blob = [
     "https://auth.cloud.google/authorize",
     "GOCSPX-aaaaaaaaaaaaaaaaaaaa",
@@ -181,4 +185,36 @@ test("extractOAuthFromBlob splits concatenated secrets and prefers the last clie
   assert.equal(pairs[0].clientId, "222222222222-second.apps.googleusercontent.com");
   assert.equal(pairs[0].clientSecret, "GOCSPX-aaaaaaaaaaaaaaaaaaaa");
   assert.equal(pairs.length, 4);
+});
+
+// The sync scrape in resolveOAuthCandidates() blocks the main process, so the
+// keepalive warms this cache asynchronously first. Env creds must still win
+// over the binary, exactly as they do on the sync path.
+test("warmOAuthCandidates prefers env credentials and caches them", async () => {
+  const originalClientId = process.env.ANTIGRAVITY_CLIENT_ID;
+  const originalClientSecret = process.env.ANTIGRAVITY_CLIENT_SECRET;
+  process.env.ANTIGRAVITY_CLIENT_ID = "warm-client-id";
+  process.env.ANTIGRAVITY_CLIENT_SECRET = "warm-client-secret";
+  delete require.cache[require.resolve("../../src/helpers/antigravityAuth")];
+  const { warmOAuthCandidates } = require("../../src/helpers/antigravityAuth");
+
+  try {
+    const warmed = await warmOAuthCandidates();
+    assert.deepEqual(warmed, {
+      clientIds: ["warm-client-id"],
+      clientSecrets: ["warm-client-secret"],
+    });
+
+    // Second call is served from cache, so it stays cheap and stable even once
+    // the env vars are gone.
+    delete process.env.ANTIGRAVITY_CLIENT_ID;
+    delete process.env.ANTIGRAVITY_CLIENT_SECRET;
+    assert.deepEqual(await warmOAuthCandidates(), warmed);
+  } finally {
+    if (originalClientId === undefined) delete process.env.ANTIGRAVITY_CLIENT_ID;
+    else process.env.ANTIGRAVITY_CLIENT_ID = originalClientId;
+    if (originalClientSecret === undefined) delete process.env.ANTIGRAVITY_CLIENT_SECRET;
+    else process.env.ANTIGRAVITY_CLIENT_SECRET = originalClientSecret;
+    delete require.cache[require.resolve("../../src/helpers/antigravityAuth")];
+  }
 });

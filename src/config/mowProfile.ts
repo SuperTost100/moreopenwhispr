@@ -1,5 +1,9 @@
 import type { InferenceMode } from "../types/electron";
 
+const githubOwner = "SuperTost100";
+const githubRepo = "moreopenwhispr";
+const repoUrl = `https://github.com/${githubOwner}/${githubRepo}` as const;
+
 /** MoreOpenWhispr (MOW): no OpenWhispr Cloud accounts, billing, sync, or telemetry. */
 export const MOW_PROFILE = {
   enabled: true,
@@ -7,11 +11,11 @@ export const MOW_PROFILE = {
   shortName: "MOW",
   upstreamName: "OpenWhispr",
   upstreamUrl: "https://github.com/OpenWhispr/openwhispr",
-  githubOwner: "SuperTost100",
-  githubRepo: "moreopenwhispr",
-  repoUrl: "https://github.com/SuperTost100/moreopenwhispr",
-  docsUrl: "https://github.com/SuperTost100/moreopenwhispr#readme",
-  issuesUrl: "https://github.com/SuperTost100/moreopenwhispr/issues",
+  githubOwner,
+  githubRepo,
+  repoUrl,
+  docsUrl: `${repoUrl}#readme`,
+  issuesUrl: `${repoUrl}/issues`,
 } as const;
 
 export const MOW_ACCOUNT_MODES = new Set(["openwhispr"]);
@@ -39,4 +43,9 @@ export function coerceCloudMode(mode: string): string {
 export function mowRepoUrl(path = ""): string {
   const base = MOW_PROFILE.repoUrl.replace(/\/$/, "");
   return path ? `${base}/${path.replace(/^\//, "")}` : base;
+}
+
+export function rewriteUpstreamBrand<T>(value: T): T {
+  if (typeof value !== "string") return value;
+  return value.replaceAll(MOW_PROFILE.upstreamName, MOW_PROFILE.productName) as T;
 }
