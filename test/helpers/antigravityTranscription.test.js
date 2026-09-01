@@ -40,7 +40,7 @@ test("transcribeWithAntigravity uses daily gateway stream path by default", asyn
     contentType: "audio/wav",
     language: "auto",
     getAccessToken: async () => "token",
-    fetchImpl: async (url, init) => {
+    fetchImpl: async (url) => {
       calls.push(url);
       if (String(url).includes("loadCodeAssist")) {
         return {

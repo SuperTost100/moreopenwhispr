@@ -3,10 +3,7 @@ const assert = require("node:assert/strict");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const {
-  parseExpiryTimestamp,
-  getAntigravityAccessToken,
-} = require("../../src/helpers/antigravityAuth");
+const { parseExpiryTimestamp } = require("../../src/helpers/antigravityAuth");
 
 test("parseExpiryTimestamp parses RFC3339 with timezone offset", () => {
   const ts = parseExpiryTimestamp("2026-08-23T13:55:03.196847+02:00");

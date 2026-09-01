@@ -36,7 +36,7 @@ test("parseStreamGenerateContentSse joins streamed text chunks", () => {
 
 test("generateContent tries daily before prod", async () => {
   const calls = [];
-  const fetchImpl = async (url, init) => {
+  const fetchImpl = async (url) => {
     calls.push(url);
     if (String(url).includes("loadCodeAssist")) {
       return {
