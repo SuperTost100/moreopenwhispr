@@ -99,16 +99,14 @@ export function ContainerOverview({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto min-h-0">
+    <div className="cp-notes flex-1 overflow-y-auto min-h-0">
       <div className="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-5">
         <div className="flex flex-col items-center text-center gap-2 pt-4">
           <div className="h-12 w-12 rounded-xl bg-foreground/4 dark:bg-white/5 border border-border/25 dark:border-white/8 flex items-center justify-center mb-1">
             <ContainerIcon space={space} folder={folder} size={20} />
           </div>
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">
-            {folder?.name ?? space.name}
-          </h1>
-          <p className="text-[13px] text-foreground/50 dark:text-foreground/40">
+          <h1 className="cp-notes__page-title text-foreground">{folder?.name ?? space.name}</h1>
+          <p className="cp-notes__page-subtitle">
             {t(`notes.overview.subtitle.${space.kind === "team" ? "team" : "private"}`)}
           </p>
           <p className="text-xs text-foreground/35 dark:text-foreground/25">

@@ -2767,3 +2767,119 @@ a:hover {
     font-size: 1.1875rem;
   }
 }
+
+/* Control panel — Notes view (scoped). There is no shell-level page head here
+   on purpose: the space/folder overview's own heading doubles as the page
+   head, since the space name is the meaningful contextual title (like a
+   document name), not a generic "Notes" label. This scope styles that
+   heading, its paired subtitle, and the overview's explainer banner + ask
+   bar to the same neutral hairline-card language as the other cp-* views.
+   .cp-notes__page-title exists because the bare `h1` rule near the top of
+   this file hard-sets font-size: 2.5rem — a plain element selector a
+   Tailwind text-* utility class can't reliably out-cascade — so the page
+   title needs its own class the same way every other cp-* view's title does.
+   Scoped to ContainerOverview + the folder-tree rail; the note editor and
+   SpacesTree's own drag-and-drop internals are untouched. */
+.cp-notes {
+  --cp-notes-space-1: 8px;
+  --cp-notes-space-2: 16px;
+  --cp-notes-radius: 8px;
+  --cp-notes-radius-panel: 12px;
+  --cp-notes-line: #cdd5d1;
+  --cp-notes-muted: #59645f;
+  --cp-notes-info-bg: #f6f8f7;
+  --cp-notes-info-accent: var(--color-primary);
+}
+
+.dark .cp-notes {
+  --cp-notes-line: oklch(0.35 0.007 260);
+  --cp-notes-muted: oklch(0.72 0 0);
+  --cp-notes-info-bg: oklch(0.25 0.007 260);
+}
+
+.cp-notes__page-title {
+  margin: 0 0 var(--cp-notes-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-notes__page-subtitle {
+  margin: 0;
+  color: var(--cp-notes-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .cp-notes__page-title {
+    font-size: 1.1875rem;
+  }
+}
+
+.cp-notes__banner {
+  position: relative;
+  padding: var(--cp-notes-space-2);
+  border: 1px solid var(--cp-notes-line);
+  border-radius: var(--cp-notes-radius-panel);
+  background: var(--cp-notes-info-bg);
+}
+
+.cp-notes__banner-dismiss {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--cp-notes-radius);
+  background: transparent;
+  color: var(--cp-notes-muted);
+  cursor: pointer;
+}
+
+.cp-notes__banner-dismiss:hover {
+  background: color-mix(in srgb, var(--cp-notes-muted) 14%, transparent);
+}
+
+.cp-notes__banner-dismiss:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cp-notes__banner-title {
+  margin: 0 24px 2px 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cp-notes__banner-description {
+  margin: 0 24px 0 0;
+  color: var(--cp-notes-muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.cp-notes__ask-card {
+  border-radius: var(--cp-notes-radius-panel);
+  border: 1px solid var(--cp-notes-line);
+  background: var(--cp-notes-info-bg);
+}
+
+.cp-notes__chip {
+  border-color: var(--cp-notes-line);
+}
+
+.cp-notes__empty-art {
+  opacity: 0.55;
+}
+
+.dark .cp-notes__empty-art {
+  opacity: 0.75;
+}
