@@ -698,7 +698,7 @@ export default function PersonalNotesView({
         className="shrink-0 overflow-hidden transition-[width] duration-300 ease-out"
         style={{ width: isSidePanelLayout ? 0 : "13rem" }}
       >
-        <div className="w-52 shrink-0 border-r border-border/15 dark:border-white/4 flex flex-col h-full">
+        <div className="w-52 shrink-0 border-r border-border/15 dark:border-white/6 bg-background dark:bg-surface-1 flex flex-col h-full">
           <div className="px-2 pt-2 pb-1 shrink-0 space-y-0.5">
             <button
               onClick={() => setShowActionManager(true)}
@@ -863,7 +863,7 @@ export default function PersonalNotesView({
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center -mt-6">
             <svg
-              className="text-foreground dark:text-white mb-5"
+              className="cp-notes__empty-art text-foreground dark:text-white mb-5"
               width="72"
               height="64"
               viewBox="0 0 72 64"
