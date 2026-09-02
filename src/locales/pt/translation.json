@@ -687,6 +687,10 @@
       "pageTitle": "Configurações",
       "pageSubtitle": "Preferências, atalhos, voz para texto, modelos de linguagem, privacidade e sistema."
     },
+    "dictionary": {
+      "pageTitle": "Dicionário",
+      "pageSubtitle": "Palavras personalizadas para maior precisão na transcrição, e snippets que se transformam em texto salvo."
+    },
     "cloudMigration": {
       "title": "Boas-vindas ao OpenWhispr Cloud",
       "description": "Mudamos sua transcrição para o OpenWhispr Cloud para resultados mais rápidos e precisos. Suas configurações anteriores foram salvas — volte quando quiser em Configurações.",

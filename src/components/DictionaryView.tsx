@@ -136,7 +136,11 @@ export default function DictionaryView() {
   );
 
   return (
-    <Tabs defaultValue="dictionary" className="flex flex-col h-full">
+    <Tabs
+      defaultValue="dictionary"
+      className="cp-dictionary flex flex-col h-full"
+      aria-labelledby="cp-dictionary-page-title"
+    >
       <ConfirmDialog
         open={confirmClear}
         onOpenChange={setConfirmClear}
@@ -146,7 +150,15 @@ export default function DictionaryView() {
         variant="destructive"
       />
 
-      <div className="px-5 pt-4">
+      <div className="cp-dictionary__inner px-5">
+        <header className="cp-dictionary__page-head">
+          <h1 id="cp-dictionary-page-title" className="cp-dictionary__page-title">
+            {t("controlPanel.dictionary.pageTitle")}
+          </h1>
+          <p className="cp-dictionary__page-subtitle">
+            {t("controlPanel.dictionary.pageSubtitle")}
+          </p>
+        </header>
         <TabsList className="h-7 p-0.5 rounded-[7px]">
           <TabsTrigger value="dictionary" className="h-6 px-2.5 text-xs rounded-[5px]">
             {t("dictionary.tabDictionary")}
@@ -158,7 +170,7 @@ export default function DictionaryView() {
       </div>
 
       <TabsContent value="dictionary" className="flex-1 min-h-0 mt-0 overflow-y-auto">
-        <div className="px-5 py-4 flex flex-col gap-3">
+        <div className="cp-dictionary__inner px-5 py-4 flex flex-col gap-3">
           {/* ─── Add word ─── */}
           <div>
             <div className="relative">
@@ -332,7 +344,9 @@ export default function DictionaryView() {
       </TabsContent>
 
       <TabsContent value="snippets" className="flex-1 min-h-0 mt-0 overflow-y-auto">
-        <SnippetsView />
+        <div className="cp-dictionary__inner">
+          <SnippetsView />
+        </div>
       </TabsContent>
     </Tabs>
   );

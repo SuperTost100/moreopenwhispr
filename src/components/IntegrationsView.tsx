@@ -355,245 +355,251 @@ export default function IntegrationsView({ isPaid, onUpgrade }: IntegrationsView
   }, [isMac, setAppleCalendarConnected]);
 
   return (
-    <div className="max-w-lg mx-auto w-full px-6 py-6 space-y-5">
-      <div>
-        <h2 className="text-base font-semibold text-foreground">{t("integrations.title")}</h2>
-        <p className="text-xs text-muted-foreground/70 mt-0.5">{t("integrations.description")}</p>
-      </div>
+    <section className="cp-integrations" aria-labelledby="cp-integrations-page-title">
+      <div className="cp-integrations__inner space-y-5">
+        <header className="cp-integrations__page-head">
+          <h1 id="cp-integrations-page-title" className="cp-integrations__page-title">
+            {t("integrations.title")}
+          </h1>
+          <p className="cp-integrations__page-subtitle">{t("integrations.description")}</p>
+        </header>
 
-      <div>
-        <SectionLabel>{t("integrations.sections.calendar")}</SectionLabel>
-        <SettingsPanel>
-          <ProviderRow
-            icon={googleCalendarIcon}
-            i18nKey="integrations.googleCalendar"
-            connected={hasAccounts}
-            isConnecting={isConnecting}
-            onConnect={handleConnect}
-          />
-          <CalendarAccountRows
-            i18nKey="integrations.googleCalendar"
-            accounts={gcalAccounts}
-            disconnectingEmail={disconnectingEmail}
-            onUnlink={setConfirmDisconnectEmail}
-            primaryOnly={gcalPrimaryOnly}
-            onPrimaryOnlyChange={setGcalPrimaryOnly}
-            isConnecting={isConnecting}
-            onAddAnother={handleConnect}
-          />
-
-          <ProviderRow
-            icon={microsoftCalendarIcon}
-            i18nKey="integrations.microsoftCalendar"
-            connected={mcalAccounts.length > 0}
-            isConnecting={isMsConnecting}
-            onConnect={handleMicrosoftConnect}
-          />
-          <CalendarAccountRows
-            i18nKey="integrations.microsoftCalendar"
-            accounts={mcalAccounts}
-            disconnectingEmail={msDisconnectingEmail}
-            onUnlink={setConfirmMsDisconnectEmail}
-            primaryOnly={mcalPrimaryOnly}
-            onPrimaryOnlyChange={setMcalPrimaryOnly}
-            isConnecting={isMsConnecting}
-            onAddAnother={handleMicrosoftConnect}
-          />
-
-          {isMac && (
-            <ProviderRow
-              icon={appleCalendarIcon}
-              i18nKey="integrations.appleCalendar"
-              connected={appleCalendarConnected}
-              isConnecting={isAppleConnecting}
-              onConnect={handleAppleConnect}
-            />
-          )}
-
-          {isMac && appleCalendarConnected && (
-            <SettingsPanelRow>
-              <div className="group flex items-center gap-3 pl-12">
-                <CalendarDays className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                <span className="text-xs text-muted-foreground truncate flex-1">
-                  {appleSourceNames.join(" · ")}
-                </span>
-                <button
-                  onClick={() => setConfirmAppleDisconnect(true)}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-                  aria-label={t("integrations.appleCalendar.disconnect")}
-                >
-                  <Unlink className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </SettingsPanelRow>
-          )}
-        </SettingsPanel>
-      </div>
-
-      {!isMowBuild() && (
         <div>
-          <SectionLabel>{t("integrations.sections.api")}</SectionLabel>
+          <SectionLabel>{t("integrations.sections.calendar")}</SectionLabel>
           <SettingsPanel>
-            <SettingsPanelRow>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center shrink-0">
-                  <Code2 className="h-4 w-4 text-primary/80" strokeWidth={2} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">
-                    {t("integrations.api.title")}
-                  </p>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">
-                    {isPaid ? t("integrations.api.description") : t("integrations.api.proRequired")}
-                  </p>
-                </div>
-                {isPaid ? (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setApiKeysDialogOpen(true)}
-                    className="shrink-0"
+            <ProviderRow
+              icon={googleCalendarIcon}
+              i18nKey="integrations.googleCalendar"
+              connected={hasAccounts}
+              isConnecting={isConnecting}
+              onConnect={handleConnect}
+            />
+            <CalendarAccountRows
+              i18nKey="integrations.googleCalendar"
+              accounts={gcalAccounts}
+              disconnectingEmail={disconnectingEmail}
+              onUnlink={setConfirmDisconnectEmail}
+              primaryOnly={gcalPrimaryOnly}
+              onPrimaryOnlyChange={setGcalPrimaryOnly}
+              isConnecting={isConnecting}
+              onAddAnother={handleConnect}
+            />
+
+            <ProviderRow
+              icon={microsoftCalendarIcon}
+              i18nKey="integrations.microsoftCalendar"
+              connected={mcalAccounts.length > 0}
+              isConnecting={isMsConnecting}
+              onConnect={handleMicrosoftConnect}
+            />
+            <CalendarAccountRows
+              i18nKey="integrations.microsoftCalendar"
+              accounts={mcalAccounts}
+              disconnectingEmail={msDisconnectingEmail}
+              onUnlink={setConfirmMsDisconnectEmail}
+              primaryOnly={mcalPrimaryOnly}
+              onPrimaryOnlyChange={setMcalPrimaryOnly}
+              isConnecting={isMsConnecting}
+              onAddAnother={handleMicrosoftConnect}
+            />
+
+            {isMac && (
+              <ProviderRow
+                icon={appleCalendarIcon}
+                i18nKey="integrations.appleCalendar"
+                connected={appleCalendarConnected}
+                isConnecting={isAppleConnecting}
+                onConnect={handleAppleConnect}
+              />
+            )}
+
+            {isMac && appleCalendarConnected && (
+              <SettingsPanelRow>
+                <div className="group flex items-center gap-3 pl-12">
+                  <CalendarDays className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                  <span className="text-xs text-muted-foreground truncate flex-1">
+                    {appleSourceNames.join(" · ")}
+                  </span>
+                  <button
+                    onClick={() => setConfirmAppleDisconnect(true)}
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                    aria-label={t("integrations.appleCalendar.disconnect")}
                   >
-                    {t("integrations.api.manage")}
-                  </Button>
-                ) : (
-                  <Button size="sm" onClick={onUpgrade} className="shrink-0">
-                    {t("integrations.api.viewPlans")}
-                  </Button>
-                )}
-              </div>
-            </SettingsPanelRow>
+                    <Unlink className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </SettingsPanelRow>
+            )}
           </SettingsPanel>
         </div>
-      )}
 
-      {!isMowBuild() && (
-        <div>
-          <SectionLabel>{t("integrations.sections.mcp")}</SectionLabel>
-          <McpIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
-        </div>
-      )}
-
-      <div>
-        <SectionLabel>{t("integrations.sections.cli")}</SectionLabel>
-        <CliIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
-      </div>
-
-      {!hasAccounts && (
-        <div className="rounded-lg border border-border/40 dark:border-border-subtle/40 bg-muted/20 dark:bg-surface-2/30 p-4 flex items-start gap-3">
-          <Info size={15} className="text-primary/60 shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-foreground/80">
-              {t("integrations.notABot.title")}
-            </p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
-              {t("integrations.notABot.description")}
-            </p>
+        {!isMowBuild() && (
+          <div>
+            <SectionLabel>{t("integrations.sections.api")}</SectionLabel>
+            <SettingsPanel>
+              <SettingsPanelRow>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center shrink-0">
+                    <Code2 className="h-4 w-4 text-primary/80" strokeWidth={2} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground">
+                      {t("integrations.api.title")}
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">
+                      {isPaid
+                        ? t("integrations.api.description")
+                        : t("integrations.api.proRequired")}
+                    </p>
+                  </div>
+                  {isPaid ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setApiKeysDialogOpen(true)}
+                      className="shrink-0"
+                    >
+                      {t("integrations.api.manage")}
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={onUpgrade} className="shrink-0">
+                      {t("integrations.api.viewPlans")}
+                    </Button>
+                  )}
+                </div>
+              </SettingsPanelRow>
+            </SettingsPanel>
           </div>
+        )}
+
+        {!isMowBuild() && (
+          <div>
+            <SectionLabel>{t("integrations.sections.mcp")}</SectionLabel>
+            <McpIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
+          </div>
+        )}
+
+        <div>
+          <SectionLabel>{t("integrations.sections.cli")}</SectionLabel>
+          <CliIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
         </div>
-      )}
 
-      <Dialog open={apiKeysDialogOpen} onOpenChange={setApiKeysDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{t("integrations.api.dialogTitle")}</DialogTitle>
-            <DialogDescription asChild>
-              <span className="text-xs text-muted-foreground/80 leading-relaxed">
-                {t("apiKeysSection.description")}
-                <span className="mx-1.5 text-muted-foreground/30">·</span>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 text-primary/80 hover:text-primary transition-colors"
-                  onClick={() => window.electronAPI?.openExternal?.(API_DOCS_URL)}
-                >
-                  {t("apiKeysSection.docsLink")}
-                </button>
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <ApiKeysSection />
-        </DialogContent>
-      </Dialog>
+        {!hasAccounts && (
+          <div className="rounded-lg border border-border/40 dark:border-border-subtle/40 bg-muted/20 dark:bg-surface-2/30 p-4 flex items-start gap-3">
+            <Info size={15} className="text-primary/60 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-foreground/80">
+                {t("integrations.notABot.title")}
+              </p>
+              <p className="text-xs text-muted-foreground/60 mt-0.5 leading-relaxed">
+                {t("integrations.notABot.description")}
+              </p>
+            </div>
+          </div>
+        )}
 
-      <ConfirmDialog
-        open={!!confirmDisconnectEmail}
-        onOpenChange={(open) => {
-          if (!open) setConfirmDisconnectEmail(null);
-        }}
-        title={t("integrations.googleCalendar.disconnectConfirm", {
-          email: confirmDisconnectEmail,
-        })}
-        description={t("integrations.googleCalendar.disconnectDescription")}
-        confirmText={t("integrations.googleCalendar.disconnect")}
-        variant="destructive"
-        onConfirm={() => {
-          if (confirmDisconnectEmail) handleDisconnect(confirmDisconnectEmail);
-        }}
-      />
+        <Dialog open={apiKeysDialogOpen} onOpenChange={setApiKeysDialogOpen}>
+          <DialogContent className="sm:max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{t("integrations.api.dialogTitle")}</DialogTitle>
+              <DialogDescription asChild>
+                <span className="text-xs text-muted-foreground/80 leading-relaxed">
+                  {t("apiKeysSection.description")}
+                  <span className="mx-1.5 text-muted-foreground/30">·</span>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 text-primary/80 hover:text-primary transition-colors"
+                    onClick={() => window.electronAPI?.openExternal?.(API_DOCS_URL)}
+                  >
+                    {t("apiKeysSection.docsLink")}
+                  </button>
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <ApiKeysSection />
+          </DialogContent>
+        </Dialog>
 
-      <ConfirmDialog
-        open={!!confirmMsDisconnectEmail}
-        onOpenChange={(open) => {
-          if (!open) setConfirmMsDisconnectEmail(null);
-        }}
-        title={t("integrations.microsoftCalendar.disconnectConfirm", {
-          email: confirmMsDisconnectEmail,
-        })}
-        description={t("integrations.microsoftCalendar.disconnectDescription")}
-        confirmText={t("integrations.microsoftCalendar.disconnect")}
-        variant="destructive"
-        onConfirm={() => {
-          if (confirmMsDisconnectEmail) handleMicrosoftDisconnect(confirmMsDisconnectEmail);
-        }}
-      />
+        <ConfirmDialog
+          open={!!confirmDisconnectEmail}
+          onOpenChange={(open) => {
+            if (!open) setConfirmDisconnectEmail(null);
+          }}
+          title={t("integrations.googleCalendar.disconnectConfirm", {
+            email: confirmDisconnectEmail,
+          })}
+          description={t("integrations.googleCalendar.disconnectDescription")}
+          confirmText={t("integrations.googleCalendar.disconnect")}
+          variant="destructive"
+          onConfirm={() => {
+            if (confirmDisconnectEmail) handleDisconnect(confirmDisconnectEmail);
+          }}
+        />
 
-      <ConfirmDialog
-        open={showPermissionDialog}
-        onOpenChange={setShowPermissionDialog}
-        title={t("integrations.googleCalendar.systemAudioRequired")}
-        description={t("integrations.googleCalendar.systemAudioDescription")}
-        confirmText={
-          systemAudio.mode === "native"
-            ? t("integrations.googleCalendar.openSettings")
-            : t("onboarding.permissions.grantAccess")
-        }
-        onConfirm={systemAudio.mode === "native" ? systemAudio.openSettings : systemAudio.request}
-      />
+        <ConfirmDialog
+          open={!!confirmMsDisconnectEmail}
+          onOpenChange={(open) => {
+            if (!open) setConfirmMsDisconnectEmail(null);
+          }}
+          title={t("integrations.microsoftCalendar.disconnectConfirm", {
+            email: confirmMsDisconnectEmail,
+          })}
+          description={t("integrations.microsoftCalendar.disconnectDescription")}
+          confirmText={t("integrations.microsoftCalendar.disconnect")}
+          variant="destructive"
+          onConfirm={() => {
+            if (confirmMsDisconnectEmail) handleMicrosoftDisconnect(confirmMsDisconnectEmail);
+          }}
+        />
 
-      <ConfirmDialog
-        open={confirmAppleDisconnect}
-        onOpenChange={setConfirmAppleDisconnect}
-        title={t("integrations.appleCalendar.disconnectConfirm")}
-        description={t("integrations.appleCalendar.disconnectDescription")}
-        confirmText={t("integrations.appleCalendar.disconnect")}
-        variant="destructive"
-        onConfirm={handleAppleDisconnect}
-      />
+        <ConfirmDialog
+          open={showPermissionDialog}
+          onOpenChange={setShowPermissionDialog}
+          title={t("integrations.googleCalendar.systemAudioRequired")}
+          description={t("integrations.googleCalendar.systemAudioDescription")}
+          confirmText={
+            systemAudio.mode === "native"
+              ? t("integrations.googleCalendar.openSettings")
+              : t("onboarding.permissions.grantAccess")
+          }
+          onConfirm={systemAudio.mode === "native" ? systemAudio.openSettings : systemAudio.request}
+        />
 
-      <ConfirmDialog
-        open={appleConnectError === "denied"}
-        onOpenChange={(open) => !open && setAppleConnectError(null)}
-        title={t("integrations.appleCalendar.permissionDenied")}
-        description={t("integrations.appleCalendar.permissionDeniedDescription")}
-        confirmText={t("integrations.appleCalendar.openSettings")}
-        onConfirm={() => window.electronAPI?.openCalendarPrivacySettings?.()}
-      />
+        <ConfirmDialog
+          open={confirmAppleDisconnect}
+          onOpenChange={setConfirmAppleDisconnect}
+          title={t("integrations.appleCalendar.disconnectConfirm")}
+          description={t("integrations.appleCalendar.disconnectDescription")}
+          confirmText={t("integrations.appleCalendar.disconnect")}
+          variant="destructive"
+          onConfirm={handleAppleDisconnect}
+        />
 
-      <AlertDialog
-        open={appleConnectError === "failed"}
-        onOpenChange={(open) => !open && setAppleConnectError(null)}
-        title={t("integrations.appleCalendar.connectFailed")}
-        description={t("integrations.appleCalendar.connectFailedDescription")}
-        onOk={() => {}}
-      />
+        <ConfirmDialog
+          open={appleConnectError === "denied"}
+          onOpenChange={(open) => !open && setAppleConnectError(null)}
+          title={t("integrations.appleCalendar.permissionDenied")}
+          description={t("integrations.appleCalendar.permissionDeniedDescription")}
+          confirmText={t("integrations.appleCalendar.openSettings")}
+          onConfirm={() => window.electronAPI?.openCalendarPrivacySettings?.()}
+        />
 
-      <AlertDialog
-        open={!!oauthErrorKey}
-        onOpenChange={(open) => !open && setOauthErrorKey(null)}
-        title={oauthErrorKey ? t(`${oauthErrorKey}.connectFailed`) : ""}
-        description={oauthErrorKey ? t(`${oauthErrorKey}.connectFailedDescription`) : ""}
-        onOk={() => {}}
-      />
-    </div>
+        <AlertDialog
+          open={appleConnectError === "failed"}
+          onOpenChange={(open) => !open && setAppleConnectError(null)}
+          title={t("integrations.appleCalendar.connectFailed")}
+          description={t("integrations.appleCalendar.connectFailedDescription")}
+          onOk={() => {}}
+        />
+
+        <AlertDialog
+          open={!!oauthErrorKey}
+          onOpenChange={(open) => !open && setOauthErrorKey(null)}
+          title={oauthErrorKey ? t(`${oauthErrorKey}.connectFailed`) : ""}
+          description={oauthErrorKey ? t(`${oauthErrorKey}.connectFailedDescription`) : ""}
+          onOk={() => {}}
+        />
+      </div>
+    </section>
   );
 }

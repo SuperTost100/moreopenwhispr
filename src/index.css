@@ -2565,3 +2565,102 @@ a:hover {
     font-size: 1.1875rem;
   }
 }
+
+/* Control panel — Integrations view (scoped). Outer padding + a 64rem inner
+   cap, same pattern as .cp-history / .cp-settings-view. */
+.cp-integrations {
+  --cp-integrations-space-1: 8px;
+  --cp-integrations-space-2: 16px;
+  --cp-integrations-space-3: 24px;
+  --cp-integrations-space-4: 32px;
+  --cp-integrations-muted: #59645f;
+  padding: var(--cp-integrations-space-3) var(--cp-integrations-space-2)
+    var(--cp-integrations-space-4);
+}
+
+.dark .cp-integrations {
+  --cp-integrations-muted: oklch(0.72 0 0);
+}
+
+.cp-integrations__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.cp-integrations__page-head {
+  margin-bottom: var(--cp-integrations-space-3);
+}
+
+.cp-integrations__page-title {
+  margin: 0 0 var(--cp-integrations-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-integrations__page-subtitle {
+  margin: 0;
+  color: var(--cp-integrations-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .cp-integrations {
+    padding-top: var(--cp-integrations-space-2);
+  }
+
+  .cp-integrations__page-title {
+    font-size: 1.1875rem;
+  }
+}
+
+/* Control panel — Dictionary view (scoped). Same page-head + 64rem-inner-cap
+   pattern; the Dictionary/Snippets tabs remain in-page sub-navigation below
+   the head. */
+.cp-dictionary {
+  --cp-dictionary-space-1: 8px;
+  --cp-dictionary-space-2: 16px;
+  --cp-dictionary-space-3: 24px;
+  --cp-dictionary-muted: #59645f;
+}
+
+.dark .cp-dictionary {
+  --cp-dictionary-muted: oklch(0.72 0 0);
+}
+
+.cp-dictionary__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.cp-dictionary__page-head {
+  padding: var(--cp-dictionary-space-3) 0 var(--cp-dictionary-space-2);
+}
+
+.cp-dictionary__page-title {
+  margin: 0 0 var(--cp-dictionary-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-dictionary__page-subtitle {
+  margin: 0;
+  color: var(--cp-dictionary-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .cp-dictionary__page-head {
+    padding-top: var(--cp-dictionary-space-2);
+  }
+
+  .cp-dictionary__page-title {
+    font-size: 1.1875rem;
+  }
+}

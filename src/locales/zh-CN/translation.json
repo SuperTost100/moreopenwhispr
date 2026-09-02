@@ -708,6 +708,10 @@
       "pageTitle": "设置",
       "pageSubtitle": "偏好设置、快捷键、语音转文字、语言模型、隐私和系统。"
     },
+    "dictionary": {
+      "pageTitle": "词典",
+      "pageSubtitle": "提升转录准确度的自定义词语，以及会展开为已保存文本的片段。"
+    },
     "cloudMigration": {
       "title": "欢迎使用 OpenWhispr 云端",
       "description": "我们已将转录切换到 OpenWhispr 云端，以获得更快、更准确的结果。你之前的设置已保存——随时可以在设置中切换回去。",

@@ -708,6 +708,10 @@
       "pageTitle": "設定",
       "pageSubtitle": "環境設定、ホットキー、音声認識、言語モデル、プライバシー、システム。"
     },
+    "dictionary": {
+      "pageTitle": "辞書",
+      "pageSubtitle": "文字起こしの精度を高める単語と、保存したテキストに変換されるスニペット。"
+    },
     "cloudMigration": {
       "title": "OpenWhispr Cloud へようこそ",
       "description": "より高速で正確な文字起こしのために OpenWhispr Cloud に切り替えました。以前の設定は保存されています。設定からいつでも戻せます。",

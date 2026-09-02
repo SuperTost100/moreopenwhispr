@@ -708,6 +708,10 @@
       "pageTitle": "Einstellungen",
       "pageSubtitle": "Einstellungen, Hotkeys, Spracherkennung, Sprachmodelle, Datenschutz und System."
     },
+    "dictionary": {
+      "pageTitle": "Wörterbuch",
+      "pageSubtitle": "Eigene Wörter für eine genauere Transkription und Snippets, die sich in gespeicherten Text verwandeln."
+    },
     "cloudMigration": {
       "title": "Willkommen bei OpenWhispr Cloud",
       "description": "Wir haben die Transkription auf OpenWhispr Cloud umgestellt für schnellere und genauere Ergebnisse. Ihre bisherigen Einstellungen sind gespeichert – wechseln Sie jederzeit in den Einstellungen zurück.",
