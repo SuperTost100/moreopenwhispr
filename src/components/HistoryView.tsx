@@ -1,13 +1,14 @@
 import { Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
-import { Loader2, Sparkles, Cloud, X, Mic, Trash2, Archive } from "lucide-react";
+import { Loader2, Sparkles, Cloud, X, Trash2, Archive } from "lucide-react";
 import TranscriptionItem from "./ui/TranscriptionItem";
 import type { TranscriptionItem as TranscriptionItemType } from "../types/electron";
 import { formatHotkeyLabel, parseHotkeyList } from "../utils/hotkeys";
 import { formatDateGroup } from "../utils/dateFormatting";
 import { useUpcomingEvents } from "../hooks/useUpcomingEvents";
 import UpcomingMeetings from "./UpcomingMeetings";
+import ConfiguredProcessingRoute from "./control-panel/ConfiguredProcessingRoute";
 import { useSettingsStore } from "../stores/settingsStore";
 import { effectiveLocalHistoryEnabled } from "../stores/policyRules";
 import { usePolicyStore } from "../stores/policyStore";
@@ -78,51 +79,69 @@ export default function HistoryView({
     return groups;
   }, [history, t]);
 
-  const discardedToggle = (
-    <button
-      onClick={onToggleDiscarded}
-      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-foreground hover:!bg-black/5 dark:hover:!bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 transition-all duration-200"
+  const historyToolbar = (
+    <div
+      className="cp-history__toolbar"
+      role="toolbar"
+      aria-label={t("controlPanel.history.toolbarLabel")}
     >
-      <Archive size={11} />
-      <span>
-        {showDiscarded
-          ? t("controlPanel.history.discarded.hide")
-          : t("controlPanel.history.discarded.show")}
-      </span>
-    </button>
+      <button type="button" onClick={onToggleDiscarded} className="cp-history__toolbar-btn">
+        <Archive size={16} aria-hidden="true" />
+        <span>
+          {showDiscarded
+            ? t("controlPanel.history.discarded.hide")
+            : t("controlPanel.history.discarded.show")}
+        </span>
+      </button>
+      {history.length > 0 && (
+        <button
+          type="button"
+          onClick={clearAllTranscriptions}
+          className="cp-history__toolbar-btn cp-history__toolbar-btn--destructive"
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          <span>{t("controlPanel.history.clearAll")}</span>
+        </button>
+      )}
+    </div>
   );
 
   return (
-    <div className="px-4 pt-4 pb-6">
-      <div className="mx-auto max-w-5xl">
-        {history.length === 0 && <div className="mb-2 flex justify-end">{discardedToggle}</div>}
+    <section className="cp-history" aria-labelledby="cp-history-page-title">
+      <div className="cp-history__inner">
+        <header className="cp-history__page-head">
+          <h1 id="cp-history-page-title" className="cp-history__page-title">
+            {t("controlPanel.history.pageTitle")}
+          </h1>
+          <p className="cp-history__page-subtitle">{t("controlPanel.history.pageSubtitle")}</p>
+        </header>
+
         {showCloudMigrationBanner && (
-          <div className="mb-3 relative rounded-lg border border-primary/20 bg-primary/5 dark:bg-primary/10 p-3">
+          <div className="cp-history__banner cp-history__banner--info">
             <button
+              type="button"
               onClick={() => {
                 setShowCloudMigrationBanner(false);
                 localStorage.setItem("cloudMigrationShown", "true");
               }}
               aria-label={t("common.close")}
-              className="absolute top-2 right-2 p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="cp-history__banner-dismiss"
             >
-              <X size={14} />
+              <X size={16} aria-hidden="true" />
             </button>
-            <div className="flex items-start gap-3 pr-6">
-              <div className="shrink-0 w-8 h-8 rounded-md bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                <Cloud size={16} className="text-primary" />
+            <div className="cp-history__banner-body">
+              <div className="cp-history__banner-icon" aria-hidden="true">
+                <Cloud size={16} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground mb-0.5">
-                  {t("controlPanel.cloudMigration.title")}
-                </p>
-                <p className="text-xs text-muted-foreground mb-2">
+              <div className="cp-history__banner-copy">
+                <p className="cp-history__banner-title">{t("controlPanel.cloudMigration.title")}</p>
+                <p className="cp-history__banner-description">
                   {t("controlPanel.cloudMigration.description")}
                 </p>
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-7 text-xs"
+                  className="cp-history__banner-action"
                   onClick={() => {
                     setShowCloudMigrationBanner(false);
                     localStorage.setItem("cloudMigrationShown", "true");
@@ -137,32 +156,31 @@ export default function HistoryView({
         )}
 
         {!useCleanupModel && !aiCTADismissed && (
-          <div className="mb-3 relative rounded-lg border border-primary/20 bg-primary/5 dark:bg-primary/10 p-3">
+          <div className="cp-history__banner cp-history__banner--info">
             <button
+              type="button"
               onClick={() => {
                 localStorage.setItem("aiCTADismissed", "true");
                 setAiCTADismissed(true);
               }}
               aria-label={t("common.close")}
-              className="absolute top-2 right-2 p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="cp-history__banner-dismiss"
             >
-              <X size={14} />
+              <X size={16} aria-hidden="true" />
             </button>
-            <div className="flex items-start gap-3 pr-6">
-              <div className="shrink-0 w-8 h-8 rounded-md bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                <Sparkles size={16} className="text-primary" />
+            <div className="cp-history__banner-body">
+              <div className="cp-history__banner-icon" aria-hidden="true">
+                <Sparkles size={16} />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground mb-0.5">
-                  {t("controlPanel.aiCta.title")}
-                </p>
-                <p className="text-xs text-muted-foreground mb-2">
+              <div className="cp-history__banner-copy">
+                <p className="cp-history__banner-title">{t("controlPanel.aiCta.title")}</p>
+                <p className="cp-history__banner-description">
                   {t("controlPanel.aiCta.description")}
                 </p>
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-7 text-xs"
+                  className="cp-history__banner-action"
                   onClick={() => onOpenSettings("intelligence")}
                 >
                   {t("controlPanel.aiCta.enable")}
@@ -172,38 +190,43 @@ export default function HistoryView({
           </div>
         )}
 
-        <div className="flex gap-6">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 pb-2.5">
-              <Mic size={12} className="text-muted-foreground" />
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-                {t("upcoming.transcriptions")}
-              </span>
-            </div>
+        <ConfiguredProcessingRoute />
+
+        <div className="cp-history__layout">
+          <section className="cp-history__main" aria-labelledby="cp-history-recent-title">
+            <header className="cp-history__list-head">
+              <h2 id="cp-history-recent-title" className="cp-history__list-title">
+                {t("controlPanel.history.recentTitle")}
+              </h2>
+              {historyToolbar}
+            </header>
+
             {!dataRetentionEnabled && (
-              <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 px-3.5 py-2.5 flex items-center gap-2.5">
-                <span className="text-amber-600 dark:text-amber-400 shrink-0 text-sm">⊘</span>
-                <p className="text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
-                  {t("controlPanel.history.dataRetentionDisabled")}
-                </p>
+              <div className="cp-history__retention-warning" role="status">
+                <span className="cp-history__retention-icon" aria-hidden="true">
+                  ⊘
+                </span>
+                <p>{t("controlPanel.history.dataRetentionDisabled")}</p>
               </div>
             )}
+
             {isLoading && history.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card/50 dark:bg-card/60 backdrop-blur-sm">
-                <div className="flex items-center justify-center gap-2 py-8">
-                  <Loader2 size={14} className="animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">{t("controlPanel.loading")}</span>
+              <div className="cp-history__panel cp-history__panel--loading">
+                <div className="cp-history__panel-center">
+                  <Loader2 size={16} className="cp-history__spinner" aria-hidden="true" />
+                  <span>{t("controlPanel.loading")}</span>
                 </div>
               </div>
             ) : history.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card/50 dark:bg-card/60 backdrop-blur-sm">
-                <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="cp-history__panel cp-history__panel--empty">
+                <div className="cp-history__empty-state">
                   <svg
-                    className="text-foreground dark:text-white mb-5"
+                    className="cp-history__empty-art"
                     width="64"
                     height="64"
                     viewBox="0 0 64 64"
                     fill="none"
+                    aria-hidden="true"
                   >
                     <rect
                       x="24"
@@ -282,17 +305,13 @@ export default function HistoryView({
                       strokeLinecap="round"
                     />
                   </svg>
-                  <h3 className="text-xs font-semibold text-foreground/70 dark:text-foreground/60 mb-2">
-                    {t("controlPanel.history.empty")}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-foreground/50 dark:text-foreground/25">
+                  <h3 className="cp-history__empty-title">{t("controlPanel.history.empty")}</h3>
+                  <div className="cp-history__empty-hint">
                     <span>{t("controlPanel.history.press")}</span>
                     {parseHotkeyList(hotkey).map((hk, index) => (
                       <Fragment key={hk}>
-                        {index > 0 && <span className="text-foreground/30">/</span>}
-                        <kbd className="inline-flex items-center h-5 px-1.5 rounded-sm bg-surface-1 dark:bg-white/6 border border-border/50 text-xs font-mono font-medium text-foreground/60 dark:text-foreground/40">
-                          {formatHotkeyLabel(hk)}
-                        </kbd>
+                        {index > 0 && <span className="cp-history__empty-sep">/</span>}
+                        <kbd className="cp-history__hotkey">{formatHotkeyLabel(hk)}</kbd>
                       </Fragment>
                     ))}
                     <span>{t("controlPanel.history.toStart")}</span>
@@ -300,27 +319,19 @@ export default function HistoryView({
                 </div>
               </div>
             ) : (
-              <div className="group">
+              <div className="cp-history__groups">
                 {groupedHistory.map((group, index) => (
-                  <div key={group.label} className={index > 0 ? "mt-4" : ""}>
-                    <div className="sticky -top-1 z-10 -mx-4 px-5 pt-2 pb-2 bg-background flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide">
+                  <section
+                    key={group.label}
+                    className="cp-history__group"
+                    aria-labelledby={`cp-history-date-${index}`}
+                  >
+                    <div className="cp-history__date-head">
+                      <h3 id={`cp-history-date-${index}`} className="cp-history__date-label">
                         {group.label}
-                      </span>
-                      {index === 0 && (
-                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
-                          {discardedToggle}
-                          <button
-                            onClick={clearAllTranscriptions}
-                            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-destructive hover:!bg-destructive/8 dark:hover:!bg-destructive/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 transition-all duration-200"
-                          >
-                            <Trash2 size={11} />
-                            <span>{t("controlPanel.history.clearAll")}</span>
-                          </button>
-                        </div>
-                      )}
+                      </h3>
                     </div>
-                    <div className="space-y-1.5 relative z-0">
+                    <div className="cp-history__items">
                       {group.items.map((item) => (
                         <TranscriptionItem
                           key={item.id}
@@ -333,14 +344,14 @@ export default function HistoryView({
                         />
                       ))}
                     </div>
-                  </div>
+                  </section>
                 ))}
               </div>
             )}
-          </div>
+          </section>
 
-          <div className="w-64 shrink-0 hidden sm:block">
-            <div className="sticky top-4">
+          <aside className="cp-history__meetings" aria-label={t("upcoming.title")}>
+            <div className="cp-history__meetings-sticky">
               <UpcomingMeetings
                 events={events}
                 isLoading={eventsLoading}
@@ -348,9 +359,9 @@ export default function HistoryView({
                 onConnectCalendar={onOpenIntegrations}
               />
             </div>
-          </div>
+          </aside>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

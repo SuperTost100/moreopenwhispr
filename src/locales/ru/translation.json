@@ -600,6 +600,16 @@
     }
   },
   "controlPanel": {
+    "shell": {
+      "forkDisclosureNoAccount": "Аккаунт не требуется.",
+      "forkDisclosureUnofficial": "Неофициальный форк {{upstreamName}}.",
+      "forkDisclosureNotAffiliated": "Не связан с Google."
+    },
+    "compactNav": {
+      "viewsMenu": "Сменить раздел",
+      "viewsMenuLabel": "Навигация приложения",
+      "moreLabel": "Ещё"
+    },
     "updateRequiredByOrg": {
       "title": "Требуется обновление",
       "description": "Ваша организация требует OpenWhispr {{version}} или новее. Пожалуйста, обновите приложение."
@@ -634,6 +644,10 @@
       "updatePayment": "Обновить платёж"
     },
     "history": {
+      "pageTitle": "Диктовка",
+      "pageSubtitle": "Текущий микрофон, провайдер, режим очистки и вывод.",
+      "recentTitle": "Недавние диктовки",
+      "toolbarLabel": "Действия с историей",
       "couldNotLoadTitle": "Не удалось загрузить историю",
       "couldNotLoadDescription": "Произошла ошибка при загрузке транскрипций. Попробуйте закрыть и снова открыть приложение.",
       "copiedTitle": "Скопировано!",
@@ -690,6 +704,10 @@
       },
       "retryTranslationMode": "Режим перевода"
     },
+    "settings": {
+      "pageTitle": "Настройки",
+      "pageSubtitle": "Настройки, горячие клавиши, речь в текст, языковые модели, конфиденциальность и система."
+    },
     "cloudMigration": {
       "title": "Добро пожаловать в OpenWhispr Cloud",
       "description": "Мы переключили транскрипцию на OpenWhispr Cloud для более быстрых и точных результатов. Ваши предыдущие настройки сохранены — вы можете вернуться к ним в любой момент в настройках.",
@@ -712,6 +730,64 @@
       "title": "Отсутствуют обязательные модели",
       "description": "Ваша организация требует наличия этих моделей на этом устройстве: {{models}}.",
       "download": "Скачать"
+    },
+    "processingRoute": {
+      "title": "Настроенный маршрут обработки",
+      "subtitle": "Каждый этап указывает место и учетные данные.",
+      "subtitlePolicy": "Каждый этап отражает политику организации и текущие настройки.",
+      "ariaLabel": "Настроенный маршрут обработки диктовки",
+      "boundaries": {
+        "onDevice": "На этом устройстве",
+        "audioLeavesDevice": "Аудио покидает устройство",
+        "apiKey": "Используется ваш API-ключ",
+        "customRoute": "Пользовательский маршрут",
+        "providerRequest": "Запрос к провайдеру"
+      },
+      "stages": {
+        "capture": "Захват",
+        "transcribe": "Транскрипция",
+        "cleanup": "Очистка",
+        "delivery": "Доставка"
+      },
+      "details": {
+        "capture": {
+          "systemMic": "Автоматический выбор микрофона",
+          "builtInMic": "Встроенный микрофон",
+          "selectedMic": "Выбранный микрофон",
+          "specificMic": "{{label}}"
+        },
+        "transcribe": {
+          "whisper": "Whisper · {{model}}",
+          "parakeet": "Parakeet · {{model}}",
+          "cohere": "Cohere · {{model}}",
+          "antigravitySmart": "Antigravity · умная транскрипция",
+          "antigravityVerbatim": "Antigravity · дословная транскрипция",
+          "byok": "Транскрипция {{provider}}",
+          "customHost": "Пользовательская конечная точка · {{host}}",
+          "customUnconfigured": "Пользовательская конечная точка не настроена",
+          "selfHosted": "Самостоятельный хостинг · {{host}}",
+          "selfHostedUnconfigured": "Конечная точка самостоятельного хостинга не настроена",
+          "misconfigured": "Маршрут транскрипции настроен не полностью"
+        },
+        "cleanup": {
+          "disabled": "Очистка отключена",
+          "skippedFast": "Быстрый режим · второй проход пропущен",
+          "local": "Локальная модель · {{model}}",
+          "selfHosted": "Самостоятельный хостинг · {{host}}",
+          "selfHostedUnconfigured": "Конечная точка самостоятельного хостинга не настроена",
+          "enterprise": "Enterprise · {{provider}}",
+          "antigravityFast": "Antigravity · быстрая очистка",
+          "antigravityPolished": "Antigravity · тщательная очистка",
+          "customHost": "Пользовательская конечная точка · {{host}}",
+          "customUnconfigured": "Пользовательская конечная точка не настроена",
+          "cloud": "Очистка OpenWhispr Cloud",
+          "byok": "Очистка {{provider}}"
+        },
+        "delivery": {
+          "paste": "Вставить в активное приложение",
+          "clipboardOnly": "Только копирование в буфер обмена"
+        }
+      }
     }
   },
   "reasoning": {
@@ -3251,6 +3327,7 @@
     "agentDefault": "Добавлено по умолчанию"
   },
   "sidebar": {
+    "dictation": "Диктовка",
     "home": "Главная",
     "notes": "Заметки",
     "upload": "Загрузить",

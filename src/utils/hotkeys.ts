@@ -107,6 +107,26 @@ function formatModifierPart(part: string, platform: Platform): string {
   }
 }
 
+function formatNumpadPart(part: string): string | null {
+  const match = /^num([0-9])$/i.exec(part);
+  if (match) return `Num ${match[1]}`;
+
+  switch (part.toLowerCase()) {
+    case "numadd":
+      return "Num +";
+    case "numsub":
+      return "Num -";
+    case "nummult":
+      return "Num *";
+    case "numdiv":
+      return "Num /";
+    case "numdec":
+      return "Num .";
+    default:
+      return null;
+  }
+}
+
 /**
  * Formats an Electron accelerator string into a user-friendly display label.
  *
@@ -151,12 +171,19 @@ export function formatHotkeyLabelForPlatform(hotkey: string, platform: Platform)
   if (hotkey.includes("+")) {
     const parts = hotkey.split("+");
     const formattedParts = parts.map(
-      (part) => formatSideModifierPart(part, platform) ?? formatModifierPart(part, platform)
+      (part) =>
+        formatNumpadPart(part) ??
+        formatSideModifierPart(part, platform) ??
+        formatModifierPart(part, platform)
     );
     return formattedParts.join("+");
   }
 
-  return formatSideModifierPart(hotkey, platform) ?? formatModifierPart(hotkey, platform);
+  return (
+    formatNumpadPart(hotkey) ??
+    formatSideModifierPart(hotkey, platform) ??
+    formatModifierPart(hotkey, platform)
+  );
 }
 
 /**

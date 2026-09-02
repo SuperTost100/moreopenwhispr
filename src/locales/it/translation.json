@@ -600,6 +600,16 @@
     }
   },
   "controlPanel": {
+    "shell": {
+      "forkDisclosureNoAccount": "Nessun account richiesto.",
+      "forkDisclosureUnofficial": "Fork non ufficiale di {{upstreamName}}.",
+      "forkDisclosureNotAffiliated": "Non affiliato a Google."
+    },
+    "compactNav": {
+      "viewsMenu": "Cambia vista",
+      "viewsMenuLabel": "Navigazione app",
+      "moreLabel": "Altro"
+    },
     "updateRequiredByOrg": {
       "title": "Aggiornamento richiesto",
       "description": "La tua organizzazione richiede OpenWhispr {{version}} o versioni successive. Aggiorna l'app."
@@ -634,6 +644,10 @@
       "updatePayment": "Aggiorna pagamento"
     },
     "history": {
+      "pageTitle": "Dettatura",
+      "pageSubtitle": "Microfono, provider, modalità di pulizia e output attuali.",
+      "recentTitle": "Dettature recenti",
+      "toolbarLabel": "Azioni cronologia",
       "couldNotLoadTitle": "Impossibile caricare la cronologia",
       "couldNotLoadDescription": "Si è verificato un errore nel caricamento delle trascrizioni. Chiudi e riapri l'app.",
       "copiedTitle": "Copiato!",
@@ -690,6 +704,10 @@
       },
       "retryTranslationMode": "Modalità Traduzione"
     },
+    "settings": {
+      "pageTitle": "Impostazioni",
+      "pageSubtitle": "Preferenze, scorciatoie, riconoscimento vocale, modelli linguistici, privacy e sistema."
+    },
     "cloudMigration": {
       "title": "Benvenuto in OpenWhispr Cloud",
       "description": "Abbiamo spostato la trascrizione su OpenWhispr Cloud per risultati più rapidi e accurati. Le impostazioni precedenti sono state salvate: puoi tornare indietro in qualsiasi momento dalle Impostazioni.",
@@ -712,6 +730,64 @@
       "title": "Modelli richiesti mancanti",
       "description": "La tua organizzazione richiede questi modelli su questo dispositivo: {{models}}.",
       "download": "Scarica"
+    },
+    "processingRoute": {
+      "title": "Percorso di elaborazione configurato",
+      "subtitle": "Ogni fase indica posizione e credenziali.",
+      "subtitlePolicy": "Ogni fase riflette la policy dell'organizzazione e le impostazioni attuali.",
+      "ariaLabel": "Percorso di elaborazione dettatura configurato",
+      "boundaries": {
+        "onDevice": "Su questo dispositivo",
+        "audioLeavesDevice": "L'audio lascia il dispositivo",
+        "apiKey": "Usa la tua chiave API",
+        "customRoute": "Percorso personalizzato",
+        "providerRequest": "Richiesta al provider"
+      },
+      "stages": {
+        "capture": "Acquisizione",
+        "transcribe": "Trascrizione",
+        "cleanup": "Pulizia",
+        "delivery": "Consegna"
+      },
+      "details": {
+        "capture": {
+          "systemMic": "Selezione automatica del microfono",
+          "builtInMic": "Microfono integrato",
+          "selectedMic": "Microfono selezionato",
+          "specificMic": "{{label}}"
+        },
+        "transcribe": {
+          "whisper": "Whisper · {{model}}",
+          "parakeet": "Parakeet · {{model}}",
+          "cohere": "Cohere · {{model}}",
+          "antigravitySmart": "Antigravity · trascrizione smart",
+          "antigravityVerbatim": "Antigravity · trascrizione verbatim",
+          "byok": "Trascrizione {{provider}}",
+          "customHost": "Endpoint personalizzato · {{host}}",
+          "customUnconfigured": "Endpoint personalizzato non configurato",
+          "selfHosted": "Self-hosted · {{host}}",
+          "selfHostedUnconfigured": "Endpoint self-hosted non configurato",
+          "misconfigured": "Il percorso di trascrizione non è completamente configurato"
+        },
+        "cleanup": {
+          "disabled": "Pulizia disattivata",
+          "skippedFast": "Modalità veloce · secondo passaggio saltato",
+          "local": "Modello locale · {{model}}",
+          "selfHosted": "Self-hosted · {{host}}",
+          "selfHostedUnconfigured": "Endpoint self-hosted non configurato",
+          "enterprise": "Enterprise · {{provider}}",
+          "antigravityFast": "Antigravity · pulizia veloce",
+          "antigravityPolished": "Antigravity · pulizia rifinita",
+          "customHost": "Endpoint personalizzato · {{host}}",
+          "customUnconfigured": "Endpoint personalizzato non configurato",
+          "cloud": "Pulizia OpenWhispr Cloud",
+          "byok": "Pulizia {{provider}}"
+        },
+        "delivery": {
+          "paste": "Incolla nell'app attiva",
+          "clipboardOnly": "Solo copia negli appunti"
+        }
+      }
     }
   },
   "reasoning": {
@@ -3223,6 +3299,7 @@
     "agentDefault": "Aggiunto di default"
   },
   "sidebar": {
+    "dictation": "Dettatura",
     "home": "Home",
     "notes": "Note",
     "upload": "Carica",

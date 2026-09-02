@@ -600,6 +600,16 @@
     }
   },
   "controlPanel": {
+    "shell": {
+      "forkDisclosureNoAccount": "No se requiere cuenta.",
+      "forkDisclosureUnofficial": "Fork no oficial de {{upstreamName}}.",
+      "forkDisclosureNotAffiliated": "No afiliado a Google."
+    },
+    "compactNav": {
+      "viewsMenu": "Cambiar vista",
+      "viewsMenuLabel": "Navegación de la app",
+      "moreLabel": "Más"
+    },
     "updateRequiredByOrg": {
       "title": "Actualización obligatoria",
       "description": "Tu organización requiere OpenWhispr {{version}} o una versión más reciente. Actualiza la aplicación."
@@ -634,6 +644,10 @@
       "updatePayment": "Actualizar pago"
     },
     "history": {
+      "pageTitle": "Dictado",
+      "pageSubtitle": "Micrófono, proveedor, modo de limpieza y salida actuales.",
+      "recentTitle": "Dictados recientes",
+      "toolbarLabel": "Acciones del historial",
       "couldNotLoadTitle": "No se pudo cargar tu historial",
       "couldNotLoadDescription": "Ocurrió un problema al cargar tus transcripciones. Cierra y abre la app de nuevo.",
       "discarded": {
@@ -690,6 +704,10 @@
       "rawTranscript": "Transcripción sin procesar",
       "retryTranslationMode": "Modo Traducción"
     },
+    "settings": {
+      "pageTitle": "Ajustes",
+      "pageSubtitle": "Preferencias, atajos, conversión de voz a texto, modelos de lenguaje, privacidad y sistema."
+    },
     "cloudMigration": {
       "title": "Bienvenido a OpenWhispr Cloud",
       "description": "Cambiamos tu transcripción a OpenWhispr Cloud para resultados más rápidos y precisos. Tu configuración anterior se guardó: puedes volver cuando quieras en Ajustes.",
@@ -712,6 +730,64 @@
       "title": "Faltan modelos requeridos",
       "description": "Tu organización requiere estos modelos en este dispositivo: {{models}}.",
       "download": "Descargar"
+    },
+    "processingRoute": {
+      "title": "Ruta de procesamiento configurada",
+      "subtitle": "Cada etapa indica su ubicación y credencial.",
+      "subtitlePolicy": "Cada etapa refleja la política de tu organización y la configuración actual.",
+      "ariaLabel": "Ruta de procesamiento de dictado configurada",
+      "boundaries": {
+        "onDevice": "En este dispositivo",
+        "audioLeavesDevice": "El audio sale del dispositivo",
+        "apiKey": "Usa tu clave API",
+        "customRoute": "Ruta personalizada",
+        "providerRequest": "Solicitud al proveedor"
+      },
+      "stages": {
+        "capture": "Captura",
+        "transcribe": "Transcribir",
+        "cleanup": "Limpieza",
+        "delivery": "Entrega"
+      },
+      "details": {
+        "capture": {
+          "systemMic": "Selección automática de micrófono",
+          "builtInMic": "Micrófono integrado",
+          "selectedMic": "Micrófono seleccionado",
+          "specificMic": "{{label}}"
+        },
+        "transcribe": {
+          "whisper": "Whisper · {{model}}",
+          "parakeet": "Parakeet · {{model}}",
+          "cohere": "Cohere · {{model}}",
+          "antigravitySmart": "Antigravity · transcripción inteligente",
+          "antigravityVerbatim": "Antigravity · transcripción literal",
+          "byok": "Transcripción con {{provider}}",
+          "customHost": "Endpoint personalizado · {{host}}",
+          "customUnconfigured": "Endpoint personalizado no configurado",
+          "selfHosted": "Autohospedado · {{host}}",
+          "selfHostedUnconfigured": "Endpoint autohospedado no configurado",
+          "misconfigured": "La ruta de transcripción no está completamente configurada"
+        },
+        "cleanup": {
+          "disabled": "Limpieza desactivada",
+          "skippedFast": "Modo rápido · segunda pasada omitida",
+          "local": "Modelo local · {{model}}",
+          "selfHosted": "Autohospedado · {{host}}",
+          "selfHostedUnconfigured": "Endpoint autohospedado no configurado",
+          "enterprise": "Enterprise · {{provider}}",
+          "antigravityFast": "Antigravity · limpieza rápida",
+          "antigravityPolished": "Antigravity · limpieza pulida",
+          "customHost": "Endpoint personalizado · {{host}}",
+          "customUnconfigured": "Endpoint personalizado no configurado",
+          "cloud": "Limpieza de OpenWhispr Cloud",
+          "byok": "Limpieza con {{provider}}"
+        },
+        "delivery": {
+          "paste": "Pegar en la app enfocada",
+          "clipboardOnly": "Solo copiar al portapapeles"
+        }
+      }
     }
   },
   "reasoning": {
@@ -3271,6 +3347,7 @@
     "agentDefault": "Añadido por defecto"
   },
   "sidebar": {
+    "dictation": "Dictado",
     "home": "Inicio",
     "notes": "Notas",
     "upload": "Subir",

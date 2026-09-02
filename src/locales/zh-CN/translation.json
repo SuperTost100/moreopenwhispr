@@ -600,6 +600,16 @@
     }
   },
   "controlPanel": {
+    "shell": {
+      "forkDisclosureNoAccount": "无需账户。",
+      "forkDisclosureUnofficial": "非官方 {{upstreamName}} 分支。",
+      "forkDisclosureNotAffiliated": "与 Google 无关联。"
+    },
+    "compactNav": {
+      "viewsMenu": "切换视图",
+      "viewsMenuLabel": "应用导航",
+      "moreLabel": "更多"
+    },
     "updateRequiredByOrg": {
       "title": "需要更新",
       "description": "您的组织要求使用 OpenWhispr {{version}} 或更高版本。请更新应用。"
@@ -634,6 +644,10 @@
       "updatePayment": "更新支付方式"
     },
     "history": {
+      "pageTitle": "听写",
+      "pageSubtitle": "当前麦克风、提供商、清理模式和输出。",
+      "recentTitle": "最近的听写",
+      "toolbarLabel": "历史记录操作",
       "couldNotLoadTitle": "无法加载历史记录",
       "couldNotLoadDescription": "加载转录记录时出错，请尝试关闭并重新打开应用。",
       "copiedTitle": "已复制！",
@@ -690,6 +704,10 @@
       },
       "retryTranslationMode": "翻译模式"
     },
+    "settings": {
+      "pageTitle": "设置",
+      "pageSubtitle": "偏好设置、快捷键、语音转文字、语言模型、隐私和系统。"
+    },
     "cloudMigration": {
       "title": "欢迎使用 OpenWhispr 云端",
       "description": "我们已将转录切换到 OpenWhispr 云端，以获得更快、更准确的结果。你之前的设置已保存——随时可以在设置中切换回去。",
@@ -712,6 +730,64 @@
       "title": "缺少必需的模型",
       "description": "您的组织要求在此设备上安装这些模型：{{models}}。",
       "download": "下载"
+    },
+    "processingRoute": {
+      "title": "已配置的处理路径",
+      "subtitle": "每个阶段都会标明位置与凭据。",
+      "subtitlePolicy": "每个阶段反映组织策略和当前设置。",
+      "ariaLabel": "已配置的听写处理路径",
+      "boundaries": {
+        "onDevice": "在此设备上",
+        "audioLeavesDevice": "音频离开设备",
+        "apiKey": "使用你的 API 密钥",
+        "customRoute": "自定义路径",
+        "providerRequest": "提供商请求"
+      },
+      "stages": {
+        "capture": "采集",
+        "transcribe": "转写",
+        "cleanup": "整理",
+        "delivery": "交付"
+      },
+      "details": {
+        "capture": {
+          "systemMic": "自动选择麦克风",
+          "builtInMic": "内置麦克风",
+          "selectedMic": "所选麦克风",
+          "specificMic": "{{label}}"
+        },
+        "transcribe": {
+          "whisper": "Whisper · {{model}}",
+          "parakeet": "Parakeet · {{model}}",
+          "cohere": "Cohere · {{model}}",
+          "antigravitySmart": "Antigravity · 智能转写",
+          "antigravityVerbatim": "Antigravity · 逐字转写",
+          "byok": "{{provider}} 转写",
+          "customHost": "自定义端点 · {{host}}",
+          "customUnconfigured": "未配置自定义端点",
+          "selfHosted": "自托管 · {{host}}",
+          "selfHostedUnconfigured": "未配置自托管端点",
+          "misconfigured": "转写路径未完全配置"
+        },
+        "cleanup": {
+          "disabled": "已禁用整理",
+          "skippedFast": "快速模式 · 跳过第二轮",
+          "local": "本地模型 · {{model}}",
+          "selfHosted": "自托管 · {{host}}",
+          "selfHostedUnconfigured": "未配置自托管端点",
+          "enterprise": "Enterprise · {{provider}}",
+          "antigravityFast": "Antigravity · 快速整理",
+          "antigravityPolished": "Antigravity · 精细整理",
+          "customHost": "自定义端点 · {{host}}",
+          "customUnconfigured": "未配置自定义端点",
+          "cloud": "OpenWhispr Cloud 整理",
+          "byok": "{{provider}} 整理"
+        },
+        "delivery": {
+          "paste": "粘贴到当前应用",
+          "clipboardOnly": "仅复制到剪贴板"
+        }
+      }
     }
   },
   "reasoning": {
@@ -3223,6 +3299,7 @@
     "agentDefault": "默认添加"
   },
   "sidebar": {
+    "dictation": "听写",
     "home": "首页",
     "notes": "笔记",
     "upload": "上传",

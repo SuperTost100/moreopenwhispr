@@ -1,11 +1,5 @@
 import React, { useState } from "react";
 import {
-  Home,
-  MessageSquare,
-  NotebookPen,
-  BookOpen,
-  Upload,
-  Blocks,
   Gift,
   Lock,
   Settings,
@@ -18,25 +12,22 @@ import {
 } from "lucide-react";
 import logoIcon from "../assets/icon.png";
 import { useTranslation } from "react-i18next";
+import { preventOrphanWord } from "../utils/orphanWord";
 import { cn } from "./lib/utils";
 import SupportDropdown from "./ui/SupportDropdown";
 import { getCachedPlatform } from "../utils/platform";
 import type { UpsellDecision } from "../lib/upsell";
 import { isAgentAllowed, isPolicyActionAllowed } from "../stores/policyRules";
 import { usePolicyStore } from "../stores/policyStore";
-import { isMowBuild } from "../config/mowProfile";
+import { isMowBuild, MOW_PROFILE } from "../config/mowProfile";
+import {
+  getAllowedControlPanelNavItems,
+  type ControlPanelView,
+} from "./control-panel/controlPanelNavModel";
 
 const platform = getCachedPlatform();
 
-const rowIconClass =
-  "shrink-0 text-foreground/60 group-hover:text-foreground/75 dark:text-foreground/50 dark:group-hover:text-foreground/65 transition-colors duration-150";
-const rowLabelClass =
-  "text-xs text-foreground/80 group-hover:text-foreground dark:text-foreground/70 dark:group-hover:text-foreground/85 transition-colors duration-150";
-const rowButtonClass =
-  "group flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-left outline-none hover:bg-foreground/4 dark:hover:bg-white/4 focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors duration-150";
-
-export type ControlPanelView =
-  "home" | "chat" | "personal-notes" | "dictionary" | "upload" | "integrations";
+export type { ControlPanelView };
 
 interface ControlPanelSidebarProps {
   activeView: ControlPanelView;
@@ -53,6 +44,7 @@ interface ControlPanelSidebarProps {
   authLoaded?: boolean;
   upsell: UpsellDecision;
   updateAction?: React.ReactNode;
+  collapseToggle?: React.ReactNode;
 }
 
 export default function ControlPanelSidebar({
@@ -70,6 +62,7 @@ export default function ControlPanelSidebar({
   authLoaded,
   upsell,
   updateAction,
+  collapseToggle,
 }: ControlPanelSidebarProps) {
   const { t } = useTranslation();
   const [upgradeDismissed, setUpgradeDismissed] = useState(
@@ -83,54 +76,49 @@ export default function ControlPanelSidebar({
 
   const agentAllowed = usePolicyStore(isAgentAllowed);
   const policyActionsAllowed = usePolicyStore((state) => isPolicyActionAllowed(state));
-
-  const navItems: {
-    id: ControlPanelView;
-    label: string;
-    icon: React.ComponentType<{ size?: number; className?: string }>;
-  }[] = [
-    { id: "home", label: t("sidebar.home"), icon: Home },
-    ...(agentAllowed
-      ? [{ id: "chat" as const, label: t("sidebar.chat"), icon: MessageSquare }]
-      : []),
-    { id: "personal-notes", label: t("sidebar.notes"), icon: NotebookPen },
-    ...(policyActionsAllowed
-      ? [{ id: "upload" as const, label: t("sidebar.upload"), icon: Upload }]
-      : []),
-    { id: "dictionary", label: t("sidebar.dictionary"), icon: BookOpen },
-    { id: "integrations", label: t("sidebar.integrations"), icon: Blocks },
-  ];
+  const navItems = getAllowedControlPanelNavItems({ agentAllowed, policyActionsAllowed });
 
   return (
-    <div className="w-48 h-full shrink-0 border-r border-border/15 dark:border-white/6 flex flex-col bg-surface-1/60 dark:bg-surface-1">
+    <aside
+      className="cp-shell-sidebar flex h-full w-[var(--cp-shell-sidebar-width)] shrink-0 flex-col border-r"
+      aria-label={t("controlPanel.compactNav.viewsMenuLabel")}
+    >
       <div
-        className="w-full h-10 shrink-0"
+        className="h-10 w-full shrink-0"
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       />
 
-      {onOpenSearch && (
-        <div className="px-2 pt-2 pb-1">
+      <div className="flex items-center justify-between gap-2 px-3.5 pb-3 pt-1">
+        <p className="cp-shell-product-label min-w-0 truncate text-sm font-semibold tracking-tight">
+          {isMowBuild() ? MOW_PROFILE.productName : MOW_PROFILE.upstreamName}
+        </p>
+        {collapseToggle}
+      </div>
+
+      {onOpenSearch ? (
+        <div className="px-2.5 pb-1">
           <button
+            type="button"
             onClick={onOpenSearch}
-            className="group flex items-center w-full h-7 px-2.5 rounded-md border border-border/70 dark:border-white/25 bg-transparent hover:bg-foreground/5 dark:hover:bg-white/5 transition-colors gap-2 outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
+            className="cp-shell-search-trigger group flex h-11 w-full items-center gap-2 rounded-md border px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <Search size={11} className="text-muted-foreground/50 shrink-0" />
-            <span className="flex-1 text-[11px] text-left text-muted-foreground/50">
+            <Search size={14} className="shrink-0 opacity-60" aria-hidden="true" />
+            <span className="flex-1 truncate text-sm opacity-70">
               {t("commandSearch.shortPlaceholder")}
             </span>
-            <div className="flex items-center gap-0.5 shrink-0">
-              <kbd className="text-[10px] px-1 py-px rounded border border-border/30 dark:border-white/8 bg-muted/40 text-muted-foreground/40 font-mono leading-tight">
+            <div className="flex shrink-0 items-center gap-0.5">
+              <kbd className="rounded border px-1 py-px font-mono text-[10px] leading-tight opacity-60">
                 {platform === "darwin" ? "⌘" : "Ctrl"}
               </kbd>
-              <kbd className="text-[10px] px-1 py-px rounded border border-border/30 dark:border-white/8 bg-muted/40 text-muted-foreground/40 font-mono leading-tight">
+              <kbd className="rounded border px-1 py-px font-mono text-[10px] leading-tight opacity-60">
                 K
               </kbd>
             </div>
           </button>
         </div>
-      )}
+      ) : null}
 
-      <nav className="flex flex-col gap-0.5 px-2 pt-2 pb-2">
+      <nav className="flex flex-col gap-0.5 px-2.5 pb-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
@@ -138,34 +126,17 @@ export default function ControlPanelSidebar({
           return (
             <button
               key={item.id}
+              type="button"
               onClick={() => onViewChange(item.id)}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md outline-none transition-colors duration-150 text-left",
-                "focus-visible:ring-1 focus-visible:ring-primary/30",
-                isActive
-                  ? "bg-primary/8 dark:bg-primary/10"
-                  : "hover:bg-foreground/4 dark:hover:bg-white/4 active:bg-foreground/6"
+                "cp-shell-nav-item group flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-left text-sm outline-none",
+                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                isActive && "cp-shell-nav-item--active font-medium"
               )}
             >
-              <Icon
-                size={15}
-                className={cn(
-                  "shrink-0 transition-colors duration-150",
-                  isActive
-                    ? "text-primary"
-                    : "text-foreground/60 group-hover:text-foreground/75 dark:text-foreground/55 dark:group-hover:text-foreground/70"
-                )}
-              />
-              <span
-                className={cn(
-                  "text-xs transition-colors duration-150",
-                  isActive
-                    ? "text-foreground font-medium"
-                    : "text-foreground/80 group-hover:text-foreground dark:text-foreground/75 dark:group-hover:text-foreground/90"
-                )}
-              >
-                {item.label}
-              </span>
+              <Icon size={16} className="shrink-0 opacity-70" aria-hidden="true" />
+              <span>{t(item.labelKey)}</span>
             </button>
           );
         })}
@@ -173,49 +144,59 @@ export default function ControlPanelSidebar({
 
       <div className="flex-1" />
 
-      {showLimitBanner && (
-        <div className="px-2 pb-2">
-          <div className="rounded-lg border border-destructive/25 bg-destructive/5 dark:bg-destructive/10 p-3">
+      {showLimitBanner ? (
+        <div className="px-2.5 pb-2">
+          <div className="cp-shell-banner rounded-lg border p-3">
             <div className="flex flex-col items-center text-center">
-              <img src={logoIcon} alt="" className="w-7 h-7 rounded-md mb-2" />
-              <p className="text-xs font-medium text-foreground mb-0.5">
-                {t("sidebar.limitReached")}
-              </p>
-              <p className="text-[11px] leading-snug text-muted-foreground mb-2.5">
+              <img
+                src={logoIcon}
+                alt=""
+                className="mb-2 h-7 w-7 rounded-md"
+                width={28}
+                height={28}
+              />
+              <p className="mb-0.5 text-xs font-medium">{t("sidebar.limitReached")}</p>
+              <p className="mb-2.5 text-[11px] leading-snug opacity-70">
                 {t("sidebar.limitReachedDescription")}
               </p>
               <button
+                type="button"
                 onClick={onUpgrade}
-                className="w-full h-7 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+                className="h-9 w-full rounded-md bg-primary text-xs font-medium text-primary-foreground hover:bg-primary/90"
               >
                 {t("sidebar.viewPlans")}
               </button>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      {showUpgradeBanner && (
-        <div className="px-2 pb-2">
-          <div className="relative rounded-xl border border-[#6c50e9]/25 dark:border-[#6c50e9]/40 bg-card bg-gradient-to-b from-[#6c50e9]/15 via-[#6c50e9]/5 to-transparent dark:from-[#6c50e9]/30 dark:via-[#6c50e9]/10 p-3">
+      {showUpgradeBanner ? (
+        <div className="px-2.5 pb-2">
+          <div className="cp-shell-banner relative rounded-lg border p-3">
             <button
+              type="button"
               onClick={() => {
                 setUpgradeDismissed(true);
                 localStorage.setItem("upgradeProDismissed", "true");
               }}
               aria-label={t("common.dismiss")}
-              className="absolute top-2 right-2 p-0.5 rounded-sm text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="absolute right-2 top-2 rounded-sm p-0.5 opacity-60 hover:bg-foreground/5 hover:opacity-100"
             >
-              <X size={12} />
+              <X size={12} aria-hidden="true" />
             </button>
-            <img src={logoIcon} alt="" className="w-7 h-7 rounded-md mb-2.5" />
-            <p className="text-[13px] font-semibold text-foreground mb-0.5">
-              {t("sidebar.upgradeTitle")}
-            </p>
-            <p className="text-xs leading-snug text-muted-foreground mb-2.5">
+            <img
+              src={logoIcon}
+              alt=""
+              className="mb-2.5 h-7 w-7 rounded-md"
+              width={28}
+              height={28}
+            />
+            <p className="mb-0.5 text-[13px] font-semibold">{t("sidebar.upgradeTitle")}</p>
+            <p className="mb-2.5 text-xs leading-snug opacity-70">
               {t("sidebar.upgradeDescription")}
             </p>
-            <div className="space-y-1.5 mb-3">
+            <div className="mb-3 space-y-1.5">
               {(
                 [
                   [Zap, t("sidebar.upgradeInstantSetup")],
@@ -224,90 +205,114 @@ export default function ControlPanelSidebar({
                 ] as const
               ).map(([Icon, label]) => (
                 <div key={label} className="flex items-start gap-1.5">
-                  <Icon size={12} className="shrink-0 mt-px text-foreground/60" />
-                  <span className="text-[11px] leading-snug text-foreground/80">{label}</span>
+                  <Icon size={12} className="mt-px shrink-0 opacity-60" aria-hidden="true" />
+                  <span className="text-[11px] leading-snug opacity-80">{label}</span>
                 </div>
               ))}
             </div>
             <button
+              type="button"
               onClick={onUpgrade}
-              className="w-full h-7 rounded-full bg-[#4079ed] text-white text-xs font-medium hover:bg-[#3568d9] active:bg-[#2f5dc4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4079ed]/40 transition-colors"
+              className="h-9 w-full rounded-md bg-primary text-xs font-medium text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {t("sidebar.learnMore")}
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <div className="px-2 pb-2 space-y-0.5">
-        {updateAction && (
-          <div className="px-1 pb-1" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+      <div className="space-y-0.5 px-2.5 pb-2.5">
+        {updateAction ? (
+          <div
+            className="px-0.5 pb-1"
+            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+          >
             {updateAction}
           </div>
-        )}
+        ) : null}
 
-        {isSignedIn && onOpenReferrals && !isMowBuild() && (
+        {isSignedIn && onOpenReferrals && !isMowBuild() ? (
           <button
+            type="button"
             onClick={onOpenReferrals}
             aria-label={t("sidebar.referral")}
-            className={rowButtonClass}
+            className="cp-shell-footer-item flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <Gift size={15} className={rowIconClass} />
-            <span className={rowLabelClass}>{t("sidebar.referral")}</span>
+            <Gift size={16} className="shrink-0 opacity-70" aria-hidden="true" />
+            <span>{t("sidebar.referral")}</span>
           </button>
-        )}
+        ) : null}
 
         <button
+          type="button"
           onClick={onOpenSettings}
           aria-label={t("sidebar.settings")}
-          className={rowButtonClass}
+          className="cp-shell-footer-item flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          <Settings size={15} className={rowIconClass} />
-          <span className={rowLabelClass}>{t("sidebar.settings")}</span>
+          <Settings size={16} className="shrink-0 opacity-70" aria-hidden="true" />
+          <span>{t("sidebar.settings")}</span>
         </button>
 
         <SupportDropdown
           trigger={
-            <button aria-label={t("sidebar.support")} className={rowButtonClass}>
-              <HelpCircle size={15} className={rowIconClass} />
-              <span className={rowLabelClass}>{t("sidebar.support")}</span>
+            <button
+              type="button"
+              aria-label={t("sidebar.support")}
+              className="cp-shell-footer-item flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <HelpCircle size={16} className="shrink-0 opacity-70" aria-hidden="true" />
+              <span>{t("sidebar.support")}</span>
             </button>
           }
         />
 
-        <div className="mx-1 h-px bg-border/10 dark:bg-white/6 my-1.5!" />
-
-        {!isMowBuild() && (
-          <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md">
-            {userImage ? (
-              <img src={userImage} alt="" className="w-6 h-6 rounded-full shrink-0 object-cover" />
-            ) : (
-              <UserCircle
-                size={18}
-                className="shrink-0 text-foreground/50 dark:text-foreground/45"
-              />
+        {isMowBuild() ? (
+          <p className="cp-shell-fork-disclosure px-3 pt-1.5 text-[11px] leading-snug">
+            {preventOrphanWord(t("controlPanel.shell.forkDisclosureNoAccount"))}
+            <br />
+            {preventOrphanWord(
+              t("controlPanel.shell.forkDisclosureUnofficial", {
+                upstreamName: MOW_PROFILE.upstreamName,
+              })
             )}
-            <div className="flex-1 min-w-0">
-              {isSignedIn && (userName || userEmail) ? (
-                <>
-                  <p className="text-xs text-foreground/80 dark:text-foreground/80 truncate leading-tight">
-                    {userName || t("sidebar.defaultUser")}
-                  </p>
-                  {userEmail && (
-                    <p className="text-xs text-foreground/55 dark:text-foreground/55 truncate leading-tight">
-                      {userEmail}
+            <br />
+            {preventOrphanWord(t("controlPanel.shell.forkDisclosureNotAffiliated"))}
+          </p>
+        ) : null}
+
+        {!isMowBuild() ? (
+          <>
+            <div className="cp-shell-footer-divider mx-1 my-1.5 h-px" />
+            <div className="flex items-center gap-2.5 rounded-md px-3 py-1.5">
+              {userImage ? (
+                <img
+                  src={userImage}
+                  alt=""
+                  className="h-6 w-6 shrink-0 rounded-full object-cover"
+                  width={24}
+                  height={24}
+                />
+              ) : (
+                <UserCircle size={18} className="shrink-0 opacity-50" aria-hidden="true" />
+              )}
+              <div className="min-w-0 flex-1">
+                {isSignedIn && (userName || userEmail) ? (
+                  <>
+                    <p className="truncate text-xs leading-tight opacity-80">
+                      {userName || t("sidebar.defaultUser")}
                     </p>
-                  )}
-                </>
-              ) : authLoaded && !isSignedIn ? (
-                <p className="text-xs text-foreground/45 dark:text-foreground/55">
-                  {t("sidebar.notSignedIn")}
-                </p>
-              ) : null}
+                    {userEmail ? (
+                      <p className="truncate text-xs leading-tight opacity-55">{userEmail}</p>
+                    ) : null}
+                  </>
+                ) : authLoaded && !isSignedIn ? (
+                  <p className="text-xs opacity-55">{t("sidebar.notSignedIn")}</p>
+                ) : null}
+              </div>
             </div>
-          </div>
-        )}
+          </>
+        ) : null}
       </div>
-    </div>
+    </aside>
   );
 }
