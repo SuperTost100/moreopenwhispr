@@ -55,6 +55,7 @@ import {
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
 import ControlPanelSidebar, { type ControlPanelView } from "./ControlPanelSidebar";
+import ControlPanelCompactNav from "./control-panel/ControlPanelCompactNav";
 import MeetingRecordingMount from "./MeetingRecordingMount";
 import MeetingRecordingPill from "./notes/MeetingRecordingPill";
 import WindowControls from "./WindowControls";
@@ -90,7 +91,7 @@ import {
 
 const platform = getCachedPlatform();
 
-const SIDEBAR_WIDTH_PX = 192;
+const SIDEBAR_WIDTH_PX = 224;
 
 // Bump to force a one-time full semantic reindex on next launch (see the
 // reindex effect for the per-version history).
@@ -100,6 +101,7 @@ const toggleIconClass =
   "text-foreground/60 group-hover:text-foreground/75 dark:text-foreground/50 dark:group-hover:text-foreground/65 transition-colors duration-150";
 
 const SettingsModal = React.lazy(() => import("./SettingsModal"));
+const SettingsView = React.lazy(() => import("./settings/SettingsView"));
 const ReferralModal = React.lazy(() => import("./ReferralModal"));
 const PersonalNotesView = React.lazy(() => import("./notes/PersonalNotesView"));
 const DictionaryView = React.lazy(() => import("./DictionaryView"));
@@ -117,7 +119,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const { t } = useTranslation();
   const history = useTranscriptions();
   const [isLoading, setIsLoading] = useState(true);
-  const [showSettings, setShowSettings] = useState(!!initialSettingsSection);
+  // isMeetingMode is read here (ahead of its other uses below) because it's
+  // also what decides, at mount, whether an initialSettingsSection deep-link
+  // (e.g. post-onboarding) opens the modal or the settings view — the same
+  // choice openSettings() makes for every later call, via isSidePanelLayout.
+  // activeView can't yet be "personal-notes" on first render (it defaults to
+  // "home" below), so isMeetingMode alone stands in for isSidePanelLayout here.
+  const isMeetingMode = useIsMeetingMode();
+  const [showSettings, setShowSettings] = useState(() => !!initialSettingsSection && isMeetingMode);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [showPostMigration, setShowPostMigration] = useState(false);
   const [limitData, setLimitData] = useState<{ wordsUsed: number; limit: number } | null>(null);
@@ -137,7 +146,9 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const [showSearch, setShowSearch] = useState(false);
   const showDiscarded = useShowDiscarded();
   const [showCloudMigrationBanner, setShowCloudMigrationBanner] = useState(false);
-  const [activeView, setActiveView] = useState<ControlPanelView>("home");
+  const [activeView, setActiveView] = useState<ControlPanelView>(() =>
+    initialSettingsSection && !isMeetingMode ? "settings" : "home"
+  );
   const {
     collapsed: sidebarCollapsed,
     peek: sidebarPeek,
@@ -146,11 +157,28 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     hidePeek: hideSidebarPeek,
     leaveToggle: leaveSidebarToggle,
   } = useCollapsibleSidebar();
-  const isMeetingMode = useIsMeetingMode();
   const isNarrowWindow = useIsNarrowWindow();
   const activeNoteId = useActiveNoteId();
   const isSidePanelLayout =
     isMeetingMode || (isNarrowWindow && activeView === "personal-notes" && activeNoteId != null);
+
+  // Single entry point for opening Settings: every caller (sidebar footer,
+  // compact nav, IPC deep links, banners, view callbacks) routes through this
+  // so the modal-vs-view decision and the legacy-section resolution live in
+  // exactly one place. `section` may be a legacy identifier (e.g.
+  // "transcription") — SettingsModal and SettingsView each resolve it via
+  // settingsRouting themselves, the same way they always have.
+  const openSettings = useCallback(
+    (section?: string) => {
+      setSettingsSection(section);
+      if (isSidePanelLayout) {
+        setShowSettings(true);
+      } else {
+        setActiveView("settings");
+      }
+    },
+    [isSidePanelLayout]
+  );
   const recordingNoteId = useMeetingRecordingStore((s) => s.recordingNoteId);
   const recordingFolderId = useMeetingRecordingStore((s) => s.recordingFolderId);
   const [meetingRecordingRequest, setMeetingRecordingRequest] = useState<{
@@ -222,7 +250,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     settings: gpuBannerSettings,
     agentAllowedByPolicy,
     dismissed: gpuBannerDismissed,
-    settingsOpen: showSettings,
+    settingsOpen: showSettings || activeView === "settings",
     platform,
   });
 
@@ -296,12 +324,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         setShowSearch(true);
       } else if (mod && e.key === ",") {
         e.preventDefault();
-        setShowSettings(true);
+        openSettings();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [openSettings]);
 
   useEffect(() => {
     if (updateStatus.updateDownloaded && !isDownloading) {
@@ -447,10 +475,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
 
   useEffect(() => {
     const cleanup = window.electronAPI?.onShowSettings?.(() => {
-      setShowSettings(true);
+      openSettings();
     });
     return () => cleanup?.();
-  }, []);
+  }, [openSettings]);
 
   // When accessibility is missing on macOS, open the permissions settings page
   useEffect(() => {
@@ -458,8 +486,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       if (isAccessibilitySkipped()) return;
       const migration = await window.electronAPI?.getPostMigrationState?.();
       if (migration?.justMigrated) return;
-      setSettingsSection("privacyData");
-      setShowSettings(true);
+      openSettings("privacyData");
       toast({
         title: t("controlPanel.accessibilityMissing.title"),
         description: t("controlPanel.accessibilityMissing.description"),
@@ -467,7 +494,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       });
     });
     return () => cleanup?.();
-  }, [toast, t]);
+  }, [toast, t, openSettings]);
 
   useEffect(() => {
     fetchStreamingProviders();
@@ -851,8 +878,25 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     return null;
   };
 
+  const updateAction =
+    !updateStatus.isDevelopment &&
+    (updateStatus.updateAvailable ||
+      updateStatus.updateDownloaded ||
+      isDownloading ||
+      isInstalling) ? (
+      <Button
+        variant={updateStatus.updateDownloaded ? "default" : "outline"}
+        size="sm"
+        onClick={handleUpdateClick}
+        disabled={isInstalling || isDownloading}
+        className="gap-1.5 text-xs w-full h-11 min-[800px]:h-7"
+      >
+        {getUpdateButtonContent()}
+      </Button>
+    ) : undefined;
+
   return (
-    <div className="h-screen bg-background flex flex-col">
+    <div className="cp-shell h-screen bg-background flex flex-col">
       <MeetingRecordingMount />
       <MeetingRecordingPill
         activeView={activeView}
@@ -956,11 +1000,11 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
 
       <div className="flex flex-1 overflow-hidden relative">
         <div
-          className="shrink-0 transition-[width] duration-300 ease-out"
+          className="cp-shell-sidebar-spacer hidden min-[800px]:block shrink-0 transition-[width] duration-300 ease-out"
           style={{ width: sidebarCollapsed || isSidePanelLayout ? 0 : SIDEBAR_WIDTH_PX }}
         />
         <div
-          className={`absolute inset-y-0 left-0 z-30 transition-transform duration-300 ease-out${
+          className={`cp-shell-sidebar-panel absolute inset-y-0 left-0 z-30 hidden min-[800px]:block transition-transform duration-300 ease-out${
             sidebarCollapsed && sidebarPeek && !isSidePanelLayout
               ? " shadow-[10px_0_40px_-18px_rgba(0,0,0,0.2)]"
               : ""
@@ -978,15 +1022,9 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             activeView={activeView}
             onViewChange={setActiveView}
             onOpenSearch={() => setShowSearch(true)}
-            onOpenSettings={() => {
-              setSettingsSection(undefined);
-              setShowSettings(true);
-            }}
+            onOpenSettings={() => openSettings()}
             onOpenReferrals={() => setShowReferrals(true)}
-            onUpgrade={() => {
-              setSettingsSection("plansBilling");
-              setShowSettings(true);
-            }}
+            onUpgrade={() => openSettings("plansBilling")}
             isOverLimit={usage?.isOverLimit ?? false}
             userName={user?.name}
             userEmail={user?.email}
@@ -994,28 +1032,29 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             isSignedIn={isSignedIn}
             authLoaded={authLoaded}
             upsell={upsell}
-            updateAction={
-              !updateStatus.isDevelopment &&
-              (updateStatus.updateAvailable ||
-                updateStatus.updateDownloaded ||
-                isDownloading ||
-                isInstalling) ? (
-                <Button
-                  variant={updateStatus.updateDownloaded ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleUpdateClick}
-                  disabled={isInstalling || isDownloading}
-                  className="gap-1.5 text-xs w-full h-7"
+            updateAction={updateAction}
+            collapseToggle={
+              !sidebarCollapsed ? (
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  className="group flex h-7 w-7 shrink-0 items-center justify-center rounded-md outline-none transition-colors duration-150 hover:bg-foreground/5 focus-visible:ring-1 focus-visible:ring-primary/30 dark:hover:bg-white/5"
                 >
-                  {getUpdateButtonContent()}
-                </Button>
+                  {sidebarCollapsed ? (
+                    <PanelLeftOpen size={15} className={toggleIconClass} />
+                  ) : (
+                    <PanelLeftClose size={15} className={toggleIconClass} />
+                  )}
+                </button>
               ) : undefined
             }
           />
         </div>
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div
-            className="flex items-center justify-between w-full h-10 shrink-0"
+            className="cp-shell-drag-strip flex items-center justify-between w-full h-10 shrink-0"
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
             {isSidePanelLayout && (
@@ -1041,7 +1080,22 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               </div>
             )}
           </div>
-          <div className="flex-1 overflow-y-auto pt-1">
+          {!isSidePanelLayout ? (
+            <div className="min-[800px]:hidden">
+              <ControlPanelCompactNav
+                activeView={activeView}
+                onViewChange={setActiveView}
+                onOpenSearch={() => setShowSearch(true)}
+                onOpenSettings={() => openSettings()}
+                onOpenReferrals={() => setShowReferrals(true)}
+                isSignedIn={isSignedIn}
+                agentAllowed={agentAllowedByPolicy}
+                policyActionsAllowed={policyActionsAllowed}
+                updateAction={updateAction}
+              />
+            </div>
+          ) : null}
+          <div className="flex-1 overflow-y-auto pt-1 min-w-0">
             {updateRequiredByOrg && (
               <div className="max-w-3xl mx-auto w-full mb-3">
                 <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-3">
@@ -1084,10 +1138,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                         variant="default"
                         size="sm"
                         className="h-7 text-xs"
-                        onClick={() => {
-                          setSettingsSection("account");
-                          setShowSettings(true);
-                        }}
+                        onClick={() => openSettings("account")}
                       >
                         {t("controlPanel.billing.updatePayment")}
                       </Button>
@@ -1117,16 +1168,15 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                             variant="default"
                             size="sm"
                             className="h-7 text-xs"
-                            onClick={() => {
-                              setSettingsSection(
+                            onClick={() =>
+                              openSettings(
                                 gpuAccelAvailable.transcription
                                   ? "transcription"
                                   : gpuAccelAvailable.intelligence === "dictationAgent"
                                     ? "dictationAgent"
                                     : "intelligence"
-                              );
-                              setShowSettings(true);
-                            }}
+                              )
+                            }
                           >
                             {t("controlPanel.gpu.enableButton")}
                           </Button>
@@ -1162,10 +1212,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 onRetryTranscription={retryTranscription}
                 showDiscarded={showDiscarded}
                 onToggleDiscarded={toggleShowDiscarded}
-                onOpenSettings={(section) => {
-                  setSettingsSection(section);
-                  setShowSettings(true);
-                }}
+                onOpenSettings={openSettings}
                 onOpenIntegrations={() => setActiveView("integrations")}
               />
             )}
@@ -1177,10 +1224,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             {activeView === "personal-notes" && (
               <Suspense fallback={null}>
                 <PersonalNotesView
-                  onOpenSettings={(section) => {
-                    setSettingsSection(section);
-                    setShowSettings(true);
-                  }}
+                  onOpenSettings={openSettings}
                   meetingRecordingRequest={meetingRecordingRequest}
                   onMeetingRecordingRequestHandled={handleMeetingRecordingRequestHandled}
                   invitationEntry={invitationNotesEntry}
@@ -1201,10 +1245,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                     if (folderId) setActiveFolderId(folderId);
                     setActiveView("personal-notes");
                   }}
-                  onOpenSettings={(section) => {
-                    setSettingsSection(section);
-                    setShowSettings(true);
-                  }}
+                  onOpenSettings={openSettings}
                 />
               </Suspense>
             )}
@@ -1212,19 +1253,23 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               <Suspense fallback={null}>
                 <IntegrationsView
                   isPaid={usage?.hasPaidAccessOptimistic ?? false}
-                  onUpgrade={() => {
-                    setSettingsSection("plansBilling");
-                    setShowSettings(true);
-                  }}
+                  onUpgrade={() => openSettings("plansBilling")}
                 />
+              </Suspense>
+            )}
+            {activeView === "settings" && !isSidePanelLayout && (
+              <Suspense fallback={null}>
+                <SettingsView initialSection={settingsSection} />
               </Suspense>
             )}
           </div>
         </main>
-        {!isSidePanelLayout && (
+        {!isSidePanelLayout && sidebarCollapsed && (
           <div
-            className={`absolute z-40 flex h-10 items-center ${
-              platform === "darwin" ? "left-21 top-2" : "left-2 top-0"
+            className={`cp-shell-collapse-toggle absolute z-40 hidden min-[800px]:flex items-center ${
+              sidebarPeek
+                ? "cp-shell-collapse-toggle--peek"
+                : `h-10 ${platform === "darwin" ? "left-21 top-2" : "left-2 top-0"}`
             }`}
             style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
             onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
