@@ -708,6 +708,10 @@
       "pageTitle": "Impostazioni",
       "pageSubtitle": "Preferenze, scorciatoie, riconoscimento vocale, modelli linguistici, privacy e sistema."
     },
+    "dictionary": {
+      "pageTitle": "Dizionario",
+      "pageSubtitle": "Parole personalizzate per una trascrizione più precisa, e snippet che si trasformano in testo salvato."
+    },
     "cloudMigration": {
       "title": "Benvenuto in OpenWhispr Cloud",
       "description": "Abbiamo spostato la trascrizione su OpenWhispr Cloud per risultati più rapidi e accurati. Le impostazioni precedenti sono state salvate: puoi tornare indietro in qualsiasi momento dalle Impostazioni.",

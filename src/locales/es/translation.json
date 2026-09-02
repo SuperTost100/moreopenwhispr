@@ -708,6 +708,10 @@
       "pageTitle": "Ajustes",
       "pageSubtitle": "Preferencias, atajos, conversión de voz a texto, modelos de lenguaje, privacidad y sistema."
     },
+    "dictionary": {
+      "pageTitle": "Diccionario",
+      "pageSubtitle": "Palabras personalizadas para mejorar la precisión de la transcripción, y snippets que se expanden en texto guardado."
+    },
     "cloudMigration": {
       "title": "Bienvenido a OpenWhispr Cloud",
       "description": "Cambiamos tu transcripción a OpenWhispr Cloud para resultados más rápidos y precisos. Tu configuración anterior se guardó: puedes volver cuando quieras en Ajustes.",

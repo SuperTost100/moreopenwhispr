@@ -708,6 +708,10 @@
       "pageTitle": "設定",
       "pageSubtitle": "偏好設定、快捷鍵、語音轉文字、語言模型、隱私與系統。"
     },
+    "dictionary": {
+      "pageTitle": "字典",
+      "pageSubtitle": "提升轉錄準確度的自訂字詞，以及會展開為已儲存文字的片段。"
+    },
     "cloudMigration": {
       "title": "歡迎使用 OpenWhispr Cloud",
       "description": "我們已將轉錄切換至 OpenWhispr Cloud，提供更快、更準確的結果。你之前的設定已儲存，隨時可在設定中切換回來。",
