@@ -579,6 +579,16 @@
     }
   },
   "controlPanel": {
+    "shell": {
+      "forkDisclosureNoAccount": "Nenhuma conta necessária.",
+      "forkDisclosureUnofficial": "Fork não oficial do {{upstreamName}}.",
+      "forkDisclosureNotAffiliated": "Não afiliado ao Google."
+    },
+    "compactNav": {
+      "viewsMenu": "Mudar vista",
+      "viewsMenuLabel": "Navegação do app",
+      "moreLabel": "Mais"
+    },
     "updateRequiredByOrg": {
       "title": "Atualização obrigatória",
       "description": "Sua organização exige o OpenWhispr {{version}} ou mais recente. Atualize o aplicativo."
@@ -613,6 +623,10 @@
       "updatePayment": "Atualizar pagamento"
     },
     "history": {
+      "pageTitle": "Ditado",
+      "pageSubtitle": "Microfone, provedor, modo de limpeza e saída atuais.",
+      "recentTitle": "Ditados recentes",
+      "toolbarLabel": "Ações do histórico",
       "couldNotLoadTitle": "Não foi possível carregar seu histórico",
       "couldNotLoadDescription": "Ocorreu um erro ao carregar as transcrições. Feche e abra o app novamente.",
       "copiedTitle": "Copiado!",
@@ -669,6 +683,10 @@
       },
       "retryTranslationMode": "Modo de Tradução"
     },
+    "settings": {
+      "pageTitle": "Configurações",
+      "pageSubtitle": "Preferências, atalhos, voz para texto, modelos de linguagem, privacidade e sistema."
+    },
     "cloudMigration": {
       "title": "Boas-vindas ao OpenWhispr Cloud",
       "description": "Mudamos sua transcrição para o OpenWhispr Cloud para resultados mais rápidos e precisos. Suas configurações anteriores foram salvas — volte quando quiser em Configurações.",
@@ -691,6 +709,64 @@
       "title": "Modelos exigidos ausentes",
       "description": "Sua organização exige estes modelos neste dispositivo: {{models}}.",
       "download": "Baixar"
+    },
+    "processingRoute": {
+      "title": "Rota de processamento configurada",
+      "subtitle": "Cada etapa indica local e credencial.",
+      "subtitlePolicy": "Cada etapa reflete a política da organização e as configurações atuais.",
+      "ariaLabel": "Rota de processamento de ditado configurada",
+      "boundaries": {
+        "onDevice": "Neste dispositivo",
+        "audioLeavesDevice": "O áudio sai do dispositivo",
+        "apiKey": "Usa sua chave de API",
+        "customRoute": "Rota personalizada",
+        "providerRequest": "Solicitação ao provedor"
+      },
+      "stages": {
+        "capture": "Captura",
+        "transcribe": "Transcrever",
+        "cleanup": "Limpeza",
+        "delivery": "Entrega"
+      },
+      "details": {
+        "capture": {
+          "systemMic": "Seleção automática de microfone",
+          "builtInMic": "Microfone integrado",
+          "selectedMic": "Microfone selecionado",
+          "specificMic": "{{label}}"
+        },
+        "transcribe": {
+          "whisper": "Whisper · {{model}}",
+          "parakeet": "Parakeet · {{model}}",
+          "cohere": "Cohere · {{model}}",
+          "antigravitySmart": "Antigravity · transcrição inteligente",
+          "antigravityVerbatim": "Antigravity · transcrição literal",
+          "byok": "Transcrição {{provider}}",
+          "customHost": "Endpoint personalizado · {{host}}",
+          "customUnconfigured": "Endpoint personalizado não configurado",
+          "selfHosted": "Auto-hospedado · {{host}}",
+          "selfHostedUnconfigured": "Endpoint auto-hospedado não configurado",
+          "misconfigured": "A rota de transcrição não está totalmente configurada"
+        },
+        "cleanup": {
+          "disabled": "Limpeza desativada",
+          "skippedFast": "Modo rápido · segunda passagem ignorada",
+          "local": "Modelo local · {{model}}",
+          "selfHosted": "Auto-hospedado · {{host}}",
+          "selfHostedUnconfigured": "Endpoint auto-hospedado não configurado",
+          "enterprise": "Enterprise · {{provider}}",
+          "antigravityFast": "Antigravity · limpeza rápida",
+          "antigravityPolished": "Antigravity · limpeza refinada",
+          "customHost": "Endpoint personalizado · {{host}}",
+          "customUnconfigured": "Endpoint personalizado não configurado",
+          "cloud": "Limpeza OpenWhispr Cloud",
+          "byok": "Limpeza {{provider}}"
+        },
+        "delivery": {
+          "paste": "Colar no app em foco",
+          "clipboardOnly": "Apenas copiar para a área de transferência"
+        }
+      }
     }
   },
   "reasoning": {
@@ -3223,6 +3299,7 @@
     "agentDefault": "Adicionado por padrão"
   },
   "sidebar": {
+    "dictation": "Ditado",
     "home": "Início",
     "notes": "Notas",
     "upload": "Enviar",

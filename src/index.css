@@ -1766,3 +1766,802 @@ a:hover {
 .dark .rich-text-editor-content p.is-editor-empty:first-child::before {
   color: oklch(0.7 0 0 / 0.2);
 }
+
+/* Control panel shell — sidebar + compact nav (scoped to .cp-shell). */
+.cp-shell {
+  --cp-shell-sidebar-width: 224px;
+  --cp-shell-sidebar-bg: #f1f4f2;
+  --cp-shell-sidebar-border: #cdd5d1;
+  --cp-shell-nav-muted: #59645f;
+  --cp-shell-nav-hover-bg: #e8ecea;
+  --cp-shell-nav-active-bg: #ffffff;
+  --cp-shell-nav-active-ink: #18201d;
+  --cp-shell-nav-active-accent: var(--color-primary);
+  --cp-shell-disclosure-ink: #59645f;
+  --cp-shell-banner-bg: #ffffff;
+  --cp-shell-banner-border: #cdd5d1;
+  --cp-shell-compact-bg: #f1f4f2;
+  --cp-shell-compact-border: #cdd5d1;
+  --cp-shell-compact-trigger-bg: #ffffff;
+  font-family: var(--font-family-sans);
+}
+
+.dark .cp-shell {
+  --cp-shell-sidebar-bg: oklch(0.16 0.006 260);
+  --cp-shell-sidebar-border: oklch(0.44 0.008 260);
+  --cp-shell-nav-muted: oklch(0.72 0 0);
+  --cp-shell-nav-hover-bg: oklch(0.28 0.007 260);
+  --cp-shell-nav-active-bg: oklch(0.29 0.009 260);
+  --cp-shell-nav-active-ink: oklch(0.93 0 0);
+  --cp-shell-disclosure-ink: oklch(0.68 0 0);
+  --cp-shell-banner-bg: oklch(0.27 0.008 260);
+  --cp-shell-banner-border: oklch(0.34 0.007 260);
+  --cp-shell-compact-bg: oklch(0.24 0.006 260);
+  --cp-shell-compact-border: oklch(0.34 0.007 260);
+  --cp-shell-compact-trigger-bg: oklch(0.29 0.009 260);
+}
+
+.cp-shell-sidebar {
+  background: var(--cp-shell-sidebar-bg);
+  border-color: var(--cp-shell-sidebar-border);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-product-label {
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-fork-disclosure {
+  color: var(--cp-shell-disclosure-ink);
+  /* Each sentence sits on its own forced line (see the <br /> tags around it in
+     ControlPanelSidebar.tsx). The orphan-word fix itself is text, not CSS:
+     ControlPanelSidebar.tsx runs each translated sentence through
+     `preventOrphanWord()` (src/utils/orphanWord.ts), which:
+       1. always replaces a hyphen in the last word with a non-breaking
+          hyphen (stops German's "MoreOpenWhisperer-Fork." from splitting at
+          the hyphen), and
+       2. binds the last two words with a non-breaking space ONLY when the
+          last word is short (an actual orphan risk, e.g. "fork.") AND the
+          string has more than one space (so binding can't make the whole
+          sentence a single unbreakable run).
+     Rule (2)'s guard means every bound pair is short by construction, so
+     `overflow-wrap: break-word` below is a safe last-resort safety net for a
+     pathologically long single word — it no longer has a bound pair to
+     mis-break, because German (the one locale with only one space) is never
+     bound in the first place; verified by rendering. `pretty` still helps
+     rebalance the remaining soft-wrap points. */
+  text-wrap: pretty;
+  overflow-wrap: break-word;
+}
+
+.cp-shell-search-trigger {
+  background: var(--cp-shell-nav-active-bg);
+  border-color: var(--cp-shell-sidebar-border);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-search-trigger:hover {
+  background: var(--cp-shell-nav-hover-bg);
+}
+
+.cp-shell-nav-item {
+  color: var(--cp-shell-nav-muted);
+}
+
+.cp-shell-nav-item:hover {
+  background: var(--cp-shell-nav-hover-bg);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-nav-item--active {
+  background: var(--cp-shell-nav-active-bg);
+  box-shadow: inset 3px 0 0 var(--cp-shell-nav-active-accent);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-nav-item--active:hover {
+  background: var(--cp-shell-nav-active-bg);
+}
+
+.cp-shell-banner {
+  background: var(--cp-shell-banner-bg);
+  border-color: var(--cp-shell-banner-border);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-footer-item {
+  color: var(--cp-shell-nav-muted);
+}
+
+.cp-shell-footer-item:hover {
+  background: var(--cp-shell-nav-hover-bg);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-footer-divider {
+  background: var(--cp-shell-sidebar-border);
+}
+
+/* While the collapsed sidebar is hover-peeked open, park the floating collapse
+   toggle exactly where the inline toggle sits on the docked wordmark row
+   (ControlPanelSidebar.tsx: h-10 drag strip + pt-1 top padding = 44px from the
+   top; px-3.5 right padding + the aside's 1px border-r + the 28px button =
+   43px inset from the right) instead of its off-peek position over the
+   traffic-light gutter. The floating button itself never unmounts across the
+   peek transition — only its position changes — so the peek/hover state
+   machine in useCollapsibleSidebar is untouched. */
+.cp-shell-collapse-toggle--peek {
+  height: 28px;
+  top: 44px;
+  left: calc(var(--cp-shell-sidebar-width) - 1px - 14px - 28px);
+}
+
+.cp-shell-compact-nav {
+  background: var(--cp-shell-compact-bg);
+  border-bottom: 1px solid var(--cp-shell-compact-border);
+}
+
+.cp-shell-compact-nav-disclosure {
+  margin: 0;
+  border-bottom: 1px solid var(--cp-shell-compact-border);
+}
+
+.cp-shell-compact-nav-trigger {
+  background: var(--cp-shell-compact-trigger-bg);
+  border-color: var(--cp-shell-compact-border);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-compact-nav-trigger:hover {
+  background: var(--cp-shell-nav-hover-bg);
+}
+
+.cp-shell-compact-nav-icon-btn {
+  border-color: var(--cp-shell-compact-border);
+  background: var(--cp-shell-compact-trigger-bg);
+  color: var(--cp-shell-nav-active-ink);
+}
+
+.cp-shell-compact-nav-icon-btn:hover {
+  background: var(--cp-shell-nav-hover-bg);
+}
+
+@media (max-width: 799px) {
+  .cp-shell-drag-strip {
+    padding-left: env(titlebar-area-x, 0);
+  }
+}
+
+/* Control panel — configured processing route (scoped; does not replace app tokens). */
+.cp-processing-route {
+  --cp-route-space-1: 8px;
+  --cp-route-space-2: 16px;
+  --cp-route-space-3: 20px;
+  --cp-route-radius-panel: 12px;
+  --cp-route-radius-stage: 10px;
+  --cp-route-accent-width: 4px;
+  --cp-route-local-accent: #2f6f5e;
+  --cp-route-antigravity-accent: #5b57b7;
+  --cp-route-byok-accent: #3d6f8f;
+  --cp-route-custom-accent: #7a6848;
+  --cp-route-provider-accent: #5b57b7;
+  --cp-route-panel-bg: #f6f8f7;
+  --cp-route-stage-bg: #ffffff;
+  --cp-route-line: #cdd5d1;
+  --cp-route-ink: #18201d;
+  --cp-route-muted: #59645f;
+  margin-bottom: calc(var(--cp-route-space-1) * 2 + 6px);
+  padding: var(--cp-route-space-3);
+  border: 1px solid var(--cp-route-line);
+  border-radius: var(--cp-route-radius-panel);
+  background: var(--cp-route-panel-bg);
+  color: var(--cp-route-ink);
+}
+
+.dark .cp-processing-route {
+  --cp-route-local-accent: #6fae97;
+  --cp-route-antigravity-accent: #9a97e0;
+  --cp-route-byok-accent: #7eb3d4;
+  --cp-route-custom-accent: #c2a97a;
+  --cp-route-provider-accent: #9a97e0;
+  --cp-route-panel-bg: oklch(0.25 0.007 260);
+  --cp-route-stage-bg: oklch(0.27 0.008 260);
+  --cp-route-line: oklch(0.35 0.007 260);
+  --cp-route-ink: oklch(0.93 0 0);
+  --cp-route-muted: oklch(0.72 0 0);
+}
+
+.cp-processing-route__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--cp-route-space-2);
+  margin-bottom: var(--cp-route-space-2);
+}
+
+.cp-processing-route__title {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  line-height: 1.3;
+}
+
+.cp-processing-route__subtitle {
+  margin: 0;
+  color: var(--cp-route-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.cp-processing-route__stages {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--cp-route-line);
+  border-radius: var(--cp-route-radius-stage);
+  background: var(--cp-route-stage-bg);
+}
+
+.cp-processing-route__stage {
+  min-width: 0;
+  padding: var(--cp-route-space-2);
+  border-right: 1px solid var(--cp-route-line);
+  border-top: var(--cp-route-accent-width) solid transparent;
+  background: var(--cp-route-stage-bg);
+}
+
+.cp-processing-route__stage:last-child {
+  border-right: 0;
+}
+
+.cp-processing-route__stage--on-device {
+  border-top-color: var(--cp-route-local-accent);
+}
+
+.cp-processing-route__stage--on-device .cp-processing-route__boundary {
+  color: var(--cp-route-local-accent);
+}
+
+.cp-processing-route__stage--audio-leaves-device {
+  border-top-color: var(--cp-route-antigravity-accent);
+}
+
+.cp-processing-route__stage--audio-leaves-device .cp-processing-route__boundary {
+  color: var(--cp-route-antigravity-accent);
+}
+
+.cp-processing-route__stage--api-key {
+  border-top-color: var(--cp-route-byok-accent);
+}
+
+.cp-processing-route__stage--api-key .cp-processing-route__boundary {
+  color: var(--cp-route-byok-accent);
+}
+
+.cp-processing-route__stage--custom-route {
+  border-top-color: var(--cp-route-custom-accent);
+}
+
+.cp-processing-route__stage--custom-route .cp-processing-route__boundary {
+  color: var(--cp-route-custom-accent);
+}
+
+.cp-processing-route__stage--provider-request {
+  border-top-color: var(--cp-route-provider-accent);
+}
+
+.cp-processing-route__stage--provider-request .cp-processing-route__boundary {
+  color: var(--cp-route-provider-accent);
+}
+
+.cp-processing-route__stage--skipped .cp-processing-route__detail {
+  color: var(--cp-route-muted);
+}
+
+.cp-processing-route__boundary {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--cp-route-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.cp-processing-route__stage-title {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cp-processing-route__detail {
+  display: block;
+  color: var(--cp-route-muted);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 960px) {
+  .cp-processing-route__stages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cp-processing-route__stage:nth-child(2) {
+    border-right: 0;
+  }
+
+  .cp-processing-route__stage:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--cp-route-line);
+  }
+}
+
+@media (max-width: 640px) {
+  .cp-processing-route {
+    padding: 14px;
+  }
+
+  .cp-processing-route__head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cp-processing-route__stages {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-processing-route__stage {
+    border-right: 0;
+    border-bottom: 1px solid var(--cp-route-line);
+  }
+
+  .cp-processing-route__stage:last-child {
+    border-bottom: 0;
+  }
+}
+
+/* Control panel — Dictation history view (scoped). */
+.cp-history {
+  --cp-history-space-1: 8px;
+  --cp-history-space-2: 16px;
+  --cp-history-space-3: 24px;
+  --cp-history-space-4: 32px;
+  --cp-history-radius: 10px;
+  --cp-history-radius-panel: 12px;
+  --cp-history-line: #cdd5d1;
+  --cp-history-ink: #18201d;
+  --cp-history-muted: #59645f;
+  --cp-history-panel-bg: #ffffff;
+  --cp-history-soft-bg: #f6f8f7;
+  --cp-history-hover-bg: #e8ecea;
+  --cp-history-info-border: #cdd5d1;
+  --cp-history-info-bg: #f6f8f7;
+  --cp-history-info-accent: var(--color-primary);
+  --cp-history-warning-border: #d9b84a;
+  --cp-history-warning-bg: #fdf8ea;
+  --cp-history-warning-ink: #7a5c00;
+  --cp-history-destructive: #a34c42;
+  --cp-history-destructive-bg: #f9ecea;
+  --cp-history-sticky-bg: #eef1ef;
+  padding: var(--cp-history-space-3) var(--cp-history-space-2) var(--cp-history-space-4);
+  color: var(--cp-history-ink);
+}
+
+.dark .cp-history {
+  --cp-history-line: oklch(0.35 0.007 260);
+  --cp-history-ink: oklch(0.93 0 0);
+  --cp-history-muted: oklch(0.72 0 0);
+  --cp-history-panel-bg: oklch(0.27 0.008 260);
+  --cp-history-soft-bg: oklch(0.25 0.007 260);
+  --cp-history-hover-bg: oklch(0.28 0.007 260);
+  --cp-history-info-border: oklch(0.35 0.007 260);
+  --cp-history-info-bg: oklch(0.25 0.007 260);
+  --cp-history-warning-border: oklch(0.62 0.09 85);
+  --cp-history-warning-bg: oklch(0.28 0.03 85 / 0.35);
+  --cp-history-warning-ink: oklch(0.86 0.06 85);
+  --cp-history-destructive: oklch(0.72 0.12 25);
+  --cp-history-destructive-bg: oklch(0.28 0.04 25 / 0.45);
+  --cp-history-sticky-bg: oklch(0.22 0.006 260);
+}
+
+.cp-history__inner {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.cp-history__page-head {
+  margin-bottom: var(--cp-history-space-3);
+}
+
+.cp-history__page-title {
+  margin: 0 0 var(--cp-history-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-history__page-subtitle {
+  margin: 0;
+  color: var(--cp-history-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.cp-history__banner {
+  position: relative;
+  margin-bottom: var(--cp-history-space-2);
+  padding: var(--cp-history-space-2);
+  border: 1px solid var(--cp-history-info-border);
+  border-radius: var(--cp-history-radius-panel);
+  background: var(--cp-history-info-bg);
+}
+
+.cp-history__banner-dismiss {
+  position: absolute;
+  top: var(--cp-history-space-1);
+  right: var(--cp-history-space-1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--cp-history-radius);
+  background: transparent;
+  color: var(--cp-history-muted);
+  cursor: pointer;
+}
+
+.cp-history__banner-dismiss:hover {
+  background: var(--cp-history-hover-bg);
+  color: var(--cp-history-ink);
+}
+
+.cp-history__banner-dismiss:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cp-history__banner-body {
+  display: flex;
+  gap: 12px;
+  padding-right: calc(44px + var(--cp-history-space-1));
+}
+
+.cp-history__banner-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--cp-history-radius);
+  background: color-mix(in srgb, var(--cp-history-info-accent) 12%, transparent);
+  color: var(--cp-history-info-accent);
+}
+
+.cp-history__banner-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.cp-history__banner-title {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cp-history__banner-description {
+  margin: 0 0 var(--cp-history-space-1);
+  color: var(--cp-history-muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.cp-history__banner-action {
+  min-height: 44px;
+}
+
+.cp-history__layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cp-history-space-3);
+}
+
+.cp-history__main {
+  min-width: 0;
+  flex: 1;
+}
+
+.cp-history__meetings {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.cp-history__meetings-sticky {
+  position: static;
+}
+
+@media (min-width: 1100px) {
+  .cp-history__layout {
+    flex-direction: row;
+  }
+
+  .cp-history__meetings {
+    width: 16rem;
+  }
+
+  .cp-history__meetings-sticky {
+    position: sticky;
+    top: var(--cp-history-space-2);
+  }
+}
+
+.cp-history__list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cp-history-space-2);
+  margin-bottom: var(--cp-history-space-2);
+}
+
+.cp-history__list-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cp-history__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--cp-history-space-1);
+}
+
+.cp-history__toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--cp-history-radius);
+  background: transparent;
+  color: var(--cp-history-muted);
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.cp-history__toolbar-btn:hover {
+  background: var(--cp-history-hover-bg);
+  color: var(--cp-history-ink);
+}
+
+.cp-history__toolbar-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.cp-history__toolbar-btn--destructive:hover {
+  background: var(--cp-history-destructive-bg);
+  color: var(--cp-history-destructive);
+}
+
+.cp-history__retention-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: var(--cp-history-space-2);
+  padding: 10px 14px;
+  border: 1px solid var(--cp-history-warning-border);
+  border-radius: var(--cp-history-radius-panel);
+  background: var(--cp-history-warning-bg);
+  color: var(--cp-history-warning-ink);
+}
+
+.cp-history__retention-warning p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.cp-history__retention-icon {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.cp-history__panel {
+  border: 1px solid var(--cp-history-line);
+  border-radius: var(--cp-history-radius-panel);
+  background: var(--cp-history-soft-bg);
+}
+
+.cp-history__panel-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cp-history-space-1);
+  padding: var(--cp-history-space-4) var(--cp-history-space-2);
+  color: var(--cp-history-muted);
+  font-size: 0.875rem;
+}
+
+.cp-history__panel--loading .cp-history__panel-center {
+  padding-top: var(--cp-history-space-3);
+  padding-bottom: var(--cp-history-space-3);
+}
+
+.cp-history__spinner {
+  animation: cp-history-spin 1s linear infinite;
+}
+
+@keyframes cp-history-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cp-history__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--cp-history-space-4) var(--cp-history-space-2);
+  text-align: center;
+}
+
+.cp-history__empty-art {
+  margin-bottom: 20px;
+  color: var(--cp-history-ink);
+  opacity: 0.55;
+}
+
+.dark .cp-history__empty-art {
+  opacity: 0.75;
+}
+
+.cp-history__empty-title {
+  margin: 0 0 var(--cp-history-space-1);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cp-history__empty-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cp-history-space-1);
+  color: var(--cp-history-muted);
+  font-size: 0.8125rem;
+}
+
+.cp-history__empty-sep {
+  opacity: 0.45;
+}
+
+.cp-history__hotkey {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--cp-history-line);
+  border-radius: 6px;
+  background: var(--cp-history-panel-bg);
+  color: var(--cp-history-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.cp-history__groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cp-history-space-2);
+}
+
+.cp-history__date-head {
+  position: sticky;
+  top: -1px;
+  z-index: 10;
+  margin: 0 calc(-1 * var(--cp-history-space-2));
+  padding: var(--cp-history-space-2) var(--cp-history-space-2) var(--cp-history-space-1);
+  background: var(--cp-history-sticky-bg);
+}
+
+.cp-history__date-label {
+  margin: 0;
+  color: var(--cp-history-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.cp-history__items {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 640px) {
+  .cp-history {
+    padding-top: var(--cp-history-space-2);
+  }
+
+  .cp-history__page-title {
+    font-size: 1.1875rem;
+  }
+
+  .cp-history__list-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cp-history__toolbar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-history__spinner {
+    animation: none;
+  }
+}
+
+/* Control-panel Settings view — page head above the rail+content split,
+   scoped to .cp-settings-view. The rail itself is styled by SidebarNavRail's
+   own "view" variant (src/components/ui/SidebarNavRail.tsx), not here. */
+.cp-settings-view {
+  --cp-settings-space-1: 8px;
+  --cp-settings-space-2: 16px;
+  --cp-settings-space-3: 24px;
+  --cp-settings-muted: #59645f;
+}
+
+.dark .cp-settings-view {
+  --cp-settings-muted: oklch(0.72 0 0);
+}
+
+.cp-settings-view__page-head {
+  padding: var(--cp-settings-space-3) var(--cp-settings-space-3) 0;
+}
+
+.cp-settings-view__page-title {
+  margin: 0 0 var(--cp-settings-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-settings-view__page-subtitle {
+  margin: 0;
+  color: var(--cp-settings-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .cp-settings-view__page-head {
+    padding: var(--cp-settings-space-2) var(--cp-settings-space-2) 0;
+  }
+
+  .cp-settings-view__page-title {
+    font-size: 1.1875rem;
+  }
+}

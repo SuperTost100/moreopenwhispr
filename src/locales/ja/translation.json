@@ -600,6 +600,16 @@
     }
   },
   "controlPanel": {
+    "shell": {
+      "forkDisclosureNoAccount": "アカウントは不要です。",
+      "forkDisclosureUnofficial": "非公式の {{upstreamName}} フォーク。",
+      "forkDisclosureNotAffiliated": "Google とは無関係です。"
+    },
+    "compactNav": {
+      "viewsMenu": "表示を切り替え",
+      "viewsMenuLabel": "アプリのナビゲーション",
+      "moreLabel": "その他"
+    },
     "updateRequiredByOrg": {
       "title": "アップデートが必要です",
       "description": "組織では OpenWhispr {{version}} 以降が必要です。アプリを更新してください。"
@@ -634,6 +644,10 @@
       "updatePayment": "お支払い方法を更新"
     },
     "history": {
+      "pageTitle": "音声入力",
+      "pageSubtitle": "現在のマイク、プロバイダー、クリーンアップモード、出力。",
+      "recentTitle": "最近の音声入力",
+      "toolbarLabel": "履歴の操作",
       "couldNotLoadTitle": "履歴を読み込めませんでした",
       "couldNotLoadDescription": "文字起こし履歴の読み込み中に問題が発生しました。アプリを閉じて再度開いてください。",
       "copiedTitle": "コピーしました！",
@@ -690,6 +704,10 @@
       },
       "retryTranslationMode": "翻訳モード"
     },
+    "settings": {
+      "pageTitle": "設定",
+      "pageSubtitle": "環境設定、ホットキー、音声認識、言語モデル、プライバシー、システム。"
+    },
     "cloudMigration": {
       "title": "OpenWhispr Cloud へようこそ",
       "description": "より高速で正確な文字起こしのために OpenWhispr Cloud に切り替えました。以前の設定は保存されています。設定からいつでも戻せます。",
@@ -712,6 +730,64 @@
       "title": "必須モデルがありません",
       "description": "組織では、このデバイスにこれらのモデルが必要です：{{models}}。",
       "download": "ダウンロード"
+    },
+    "processingRoute": {
+      "title": "設定済みの処理ルート",
+      "subtitle": "各段階で場所と認証情報を示します。",
+      "subtitlePolicy": "各段階は組織ポリシーと現在の設定を反映します。",
+      "ariaLabel": "設定済みのディクテーション処理ルート",
+      "boundaries": {
+        "onDevice": "このデバイス上",
+        "audioLeavesDevice": "音声がデバイス外へ送信",
+        "apiKey": "APIキーを使用",
+        "customRoute": "カスタムルート",
+        "providerRequest": "プロバイダーへのリクエスト"
+      },
+      "stages": {
+        "capture": "収録",
+        "transcribe": "文字起こし",
+        "cleanup": "整形",
+        "delivery": "配信"
+      },
+      "details": {
+        "capture": {
+          "systemMic": "マイクを自動選択",
+          "builtInMic": "内蔵マイク",
+          "selectedMic": "選択したマイク",
+          "specificMic": "{{label}}"
+        },
+        "transcribe": {
+          "whisper": "Whisper · {{model}}",
+          "parakeet": "Parakeet · {{model}}",
+          "cohere": "Cohere · {{model}}",
+          "antigravitySmart": "Antigravity · スマート文字起こし",
+          "antigravityVerbatim": "Antigravity · 逐語的文字起こし",
+          "byok": "{{provider}} 文字起こし",
+          "customHost": "カスタムエンドポイント · {{host}}",
+          "customUnconfigured": "カスタムエンドポイントが未設定",
+          "selfHosted": "セルフホスト · {{host}}",
+          "selfHostedUnconfigured": "セルフホストのエンドポイントが未設定",
+          "misconfigured": "文字起こしルートが完全に設定されていません"
+        },
+        "cleanup": {
+          "disabled": "整形を無効化",
+          "skippedFast": "高速モード · 2回目の処理をスキップ",
+          "local": "ローカルモデル · {{model}}",
+          "selfHosted": "セルフホスト · {{host}}",
+          "selfHostedUnconfigured": "セルフホストのエンドポイントが未設定",
+          "enterprise": "Enterprise · {{provider}}",
+          "antigravityFast": "Antigravity · 高速整形",
+          "antigravityPolished": "Antigravity · 丁寧な整形",
+          "customHost": "カスタムエンドポイント · {{host}}",
+          "customUnconfigured": "カスタムエンドポイントが未設定",
+          "cloud": "OpenWhispr Cloud 整形",
+          "byok": "{{provider}} 整形"
+        },
+        "delivery": {
+          "paste": "フォーカス中のアプリに貼り付け",
+          "clipboardOnly": "クリップボードへのコピーのみ"
+        }
+      }
     }
   },
   "reasoning": {
@@ -3223,6 +3299,7 @@
     }
   },
   "sidebar": {
+    "dictation": "ディクテーション",
     "home": "ホーム",
     "notes": "ノート",
     "upload": "アップロード",
