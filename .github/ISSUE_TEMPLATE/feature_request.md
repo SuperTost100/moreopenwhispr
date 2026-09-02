@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest something for MoreOpenWhispr
+about: Suggest something for MoreOpenWhisperer
 title: ""
 labels: ""
 assignees: ""

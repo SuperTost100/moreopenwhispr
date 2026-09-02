@@ -2,7 +2,7 @@
 "use strict";
 
 // Refresh ~/.gemini/antigravity-cli/antigravity-oauth-token before it dies.
-// Packed MoreOpenWhispr reads that file on every dictation and only uses the
+// Packed MoreOpenWhisperer reads that file on every dictation and only uses the
 // fast gateway while the access token is still valid.
 const { getAntigravityAccessToken } = require("../src/helpers/antigravityAuth");
 

@@ -4,7 +4,7 @@
 
 | Version | Supported |
 | --- | --- |
-| MoreOpenWhispr on `antigravity-fork` (currently 1.9.3) | yes |
+| MoreOpenWhisperer on `antigravity-fork` (currently 1.9.3) | yes |
 | Official OpenWhispr releases | Report to [OpenWhispr/openwhispr](https://github.com/OpenWhispr/openwhispr/security/advisories/new) |
 
 ## Reporting a vulnerability
@@ -13,7 +13,7 @@
 
 Use [GitHub's private vulnerability reporting](https://github.com/SuperTost100/moreopenwhispr/security/advisories/new) on this fork.
 
-There is no `security@openwhispr.com` inbox for MoreOpenWhispr. That address is upstream's.
+There is no `security@openwhispr.com` inbox for MoreOpenWhisperer. That address is upstream's.
 
 Expect an acknowledgement when someone is actually looking at the report. There is no 48-hour SLA on a one-person fork.
 

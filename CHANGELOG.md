@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 First public cut of this unofficial fork. Same 1.9.2 desktop app, without OpenWhispr Cloud accounts, with Antigravity as the default cloud STT/LLM path.
 
-- Product name **MoreOpenWhispr**, bundle id `com.moreopenwhispr.app`, Windows AppUserModelId matches so it sits beside official OpenWhispr
+- Product name **MoreOpenWhisperer**, bundle id `com.moreopenwhispr.app`, Windows AppUserModelId matches so it sits beside official OpenWhispr
 - Unsigned GitHub Releases for macOS (arm64 + x64), Windows (NSIS + portable), and Linux (AppImage, deb, rpm, tar.gz)
 - Docs for every OS, from-source builds, Antigravity setup, and the network allowlist without `api.openwhispr.com`
-- Windows/Linux installers use MoreOpenWhispr IDs and paths (`com.moreopenwhispr.app`, `/opt/MoreOpenWhispr`), not Gizmo Labs / OpenWhispr leftovers
+- Windows/Linux installers use MoreOpenWhisperer IDs and paths (`com.moreopenwhispr.app`, `/opt/MoreOpenWhisperer`), not Gizmo Labs / OpenWhispr leftovers
 
 ## [1.9.2] - 2026-08-29
 

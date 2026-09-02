@@ -1,8 +1,8 @@
-# Contributing to MoreOpenWhispr
+# Contributing to MoreOpenWhisperer
 
 Unofficial fork of [OpenWhispr](https://github.com/OpenWhispr/openwhispr). Shipping branch is `antigravity-fork`.
 
-Upstream's contributing guide still applies for how the Electron app is structured: [docs.openwhispr.com/contributing](https://docs.openwhispr.com/contributing). File MoreOpenWhispr PRs here, not there, unless the fix belongs upstream.
+Upstream's contributing guide still applies for how the Electron app is structured: [docs.openwhispr.com/contributing](https://docs.openwhispr.com/contributing). File MoreOpenWhisperer PRs here, not there, unless the fix belongs upstream.
 
 ## Filing issues
 

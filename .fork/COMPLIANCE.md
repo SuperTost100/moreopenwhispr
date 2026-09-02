@@ -1,4 +1,4 @@
-# Compliance checklist (MoreOpenWhispr)
+# Compliance checklist (MoreOpenWhisperer)
 
 Use this before tagging a GitHub Release. Not legal advice.
 
@@ -8,7 +8,7 @@ Upstream [LICENSE](../LICENSE) allows fork, modify, and distribute binaries if y
 
 This fork ships the repo `LICENSE` file and states unofficial-fork status in [README.md](../README.md).
 
-Do **not** imply official OpenWhispr, Gizmo Labs, or Google endorsement. App name is **MoreOpenWhispr** with bundle id `com.moreopenwhispr.app` (side-by-side with official OpenWhispr).
+Do **not** imply official OpenWhispr, Gizmo Labs, or Google endorsement. App name is **MoreOpenWhisperer** with bundle id `com.moreopenwhispr.app` (side-by-side with official OpenWhispr).
 
 ## Antigravity / Google
 

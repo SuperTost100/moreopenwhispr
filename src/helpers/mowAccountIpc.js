@@ -5,7 +5,7 @@ const { isMowBuild } = require("../config/mowProfile.cjs");
 
 const DISABLED = Object.freeze({
   success: false,
-  error: "OpenWhispr Cloud accounts are disabled in MoreOpenWhispr",
+  error: "OpenWhispr Cloud accounts are disabled in MoreOpenWhisperer",
   code: "MOW_ACCOUNTS_DISABLED",
 });
 

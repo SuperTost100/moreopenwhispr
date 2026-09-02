@@ -8,10 +8,10 @@ Verbose logging for "no audio detected", failed transcription, paste, meetings, 
 
 ```bash
 # macOS
-/Applications/MoreOpenWhispr.app/Contents/MacOS/MoreOpenWhispr --log-level=debug
+/Applications/MoreOpenWhisperer.app/Contents/MacOS/MoreOpenWhisperer --log-level=debug
 
 # Windows
-MoreOpenWhispr.exe --log-level=debug
+MoreOpenWhisperer.exe --log-level=debug
 
 # Linux (deb/rpm binary is still named open-whispr)
 open-whispr --log-level=debug

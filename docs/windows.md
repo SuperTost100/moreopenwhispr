@@ -1,6 +1,6 @@
 # Windows
 
-MoreOpenWhispr runs from the system tray. Press the hotkey, speak, and the text pastes into the focused window.
+MoreOpenWhisperer runs from the system tray. Press the hotkey, speak, and the text pastes into the focused window.
 
 ## What you need
 
@@ -29,13 +29,13 @@ Hold-to-talk uses a native low-level keyboard hook (`windows-key-listener.exe`).
 
 ## Meetings
 
-System audio comes from `windows-system-audio-helper.exe` (WASAPI process loopback). It hears every app on every output device and skips MoreOpenWhispr's own process tree. No extra permission prompt.
+System audio comes from `windows-system-audio-helper.exe` (WASAPI process loopback). It hears every app on every output device and skips MoreOpenWhisperer's own process tree. No extra permission prompt.
 
 If the helper is silent while speakers are clearly playing, the app switches that recording to Chromium loopback after a few seconds. Chromium loopback only hears the **default** output device.
 
 ## Antigravity
 
-`agy` must be on PATH for the signed-in user. A GUI session does not see a PATH you only set in a developer PowerShell profile. Install the CLI, run `agy auth login`, then start MoreOpenWhispr. [antigravity.md](antigravity.md).
+`agy` must be on PATH for the signed-in user. A GUI session does not see a PATH you only set in a developer PowerShell profile. Install the CLI, run `agy auth login`, then start MoreOpenWhisperer. [antigravity.md](antigravity.md).
 
 ## Firewall
 
