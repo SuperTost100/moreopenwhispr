@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="src/assets/logo.svg" alt="MoreOpenWhispr" width="120" />
+  <img src="src/assets/logo.svg" alt="MoreOpenWhisperer" width="120" />
 </p>
 
-<h1 align="center">MoreOpenWhispr</h1>
+<h1 align="center">MoreOpenWhisperer</h1>
 
 <p align="center">
   <a href="https://github.com/SuperTost100/moreopenwhispr/blob/antigravity-fork/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/moreopenwhispr?style=flat" alt="License" /></a>
@@ -29,13 +29,13 @@
 
 ---
 
-MoreOpenWhispr is the OpenWhispr desktop app with the SaaS layer cut out. Dictation, meetings, notes, calendars, and the voice assistant stay. OpenWhispr Cloud sign-in, Pro upsells, hosted MCP, and telemetry go away. Transcription defaults to your [Antigravity](docs/antigravity.md) subscription (`agy`), or you point it at Whisper, Parakeet, Cohere, or a provider key you already pay for.
+MoreOpenWhisperer is the OpenWhispr desktop app with the SaaS layer cut out. Dictation, meetings, notes, calendars, and the voice assistant stay. OpenWhispr Cloud sign-in, Pro upsells, hosted MCP, and telemetry go away. Transcription defaults to your [Antigravity](docs/antigravity.md) subscription (`agy`), or you point it at Whisper, Parakeet, Cohere, or a provider key you already pay for.
 
 Not OpenWhispr. Not Gizmo Labs. Not Google. MIT, same as upstream.
 
 ## Download
 
-Unsigned builds. macOS will ask you to right-click → Open the first time. If it says the app is damaged, that is Gatekeeper on an unsigned download, not a broken file: `xattr -cr /Applications/MoreOpenWhispr.app` then open it again. Windows SmartScreen may warn too. That is expected until a release is signed.
+Unsigned builds. macOS will ask you to right-click → Open the first time. If it says the app is damaged, that is Gatekeeper on an unsigned download, not a broken file: `xattr -cr /Applications/MoreOpenWhisperer.app` then open it again. Windows SmartScreen may warn too. That is expected until a release is signed.
 
 | Platform              | File                                                                                                                                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -72,7 +72,7 @@ These exist on [official OpenWhispr](https://github.com/OpenWhispr/openwhispr) b
 - Account, billing, workspace, referrals, usage analytics, team spaces
 - Telemetry (the toggle is gone; it stays off)
 
-|                 | MoreOpenWhispr           | OpenWhispr                  |
+|                 | MoreOpenWhisperer           | OpenWhispr                  |
 | --------------- | ------------------------ | --------------------------- |
 | Cloud account   | Removed                  | Optional free + Pro         |
 | STT / LLM       | Antigravity, BYOK, local | Those plus OpenWhispr Cloud |

@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something is broken in MoreOpenWhispr
+about: Something is broken in MoreOpenWhisperer
 title: ""
 labels: ""
 assignees: ""
@@ -20,7 +20,7 @@ What happened, in one short paragraph.
 **Desktop**
 
 - OS: [macOS / Windows / Linux distro + session: X11, GNOME Wayland, Hyprland, …]
-- MoreOpenWhispr version: [from Settings → System, or `package.json`]
+- MoreOpenWhisperer version: [from Settings → System, or `package.json`]
 - Transcription path: [Antigravity / BYOK provider / local Whisper or Parakeet]
 - Install: [Release `.dmg` `.exe` AppImage / built from source]
 

@@ -1,6 +1,6 @@
 # Network allowlist
 
-Outbound hosts MoreOpenWhispr may contact. For firewall, proxy, and DNS filters.
+Outbound hosts MoreOpenWhisperer may contact. For firewall, proxy, and DNS filters.
 
 All connections are client-initiated over TLS. No inbound ports. There is **no** OpenWhispr Cloud API in this fork.
 

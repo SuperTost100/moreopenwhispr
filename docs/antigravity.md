@@ -1,6 +1,6 @@
 # Antigravity
 
-MoreOpenWhispr can send dictation and LLM work through your existing Antigravity (`agy`) login instead of OpenWhispr Cloud or a BYOK key.
+MoreOpenWhisperer can send dictation and LLM work through your existing Antigravity (`agy`) login instead of OpenWhispr Cloud or a BYOK key.
 
 This is **your** Google/Antigravity subscription. The app is a local client. It is not a Google product, and it is not a way to get unlimited free transcription.
 
@@ -58,7 +58,7 @@ Hosts: `oauth2.googleapis.com`, `daily-cloudcode-pa.googleapis.com`, `cloudcode-
 
 1. `agy auth login` again. Expired tokens are the usual cause.
 2. Confirm `which agy` in a **login** shell, not only in your IDE.
-3. Quota 429s are Google's, not MoreOpenWhispr's. Switch to local Whisper/Parakeet or a BYOK key.
+3. Quota 429s are Google's, not MoreOpenWhisperer's. Switch to local Whisper/Parakeet or a BYOK key.
 4. Debug log: [DEBUG.md](../DEBUG.md).
 
 ## Maintainer notes

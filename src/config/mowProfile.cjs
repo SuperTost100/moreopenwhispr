@@ -8,7 +8,7 @@ const repoUrl = `https://github.com/${githubOwner}/${githubRepo}`;
 
 const MOW_PROFILE = {
   enabled: true,
-  productName: "MoreOpenWhispr",
+  productName: "MoreOpenWhisperer",
   shortName: "MOW",
   upstreamName: "OpenWhispr",
   upstreamUrl: "https://github.com/OpenWhispr/openwhispr",

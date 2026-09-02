@@ -2,6 +2,7 @@
 // late — the flag has to come from a relaunch.
 const { XWAYLAND_FLAG, shouldForceXWayland } = require("./src/helpers/xwayland");
 const { isMowBuild, MOW_PROFILE } = require("./src/config/mowProfile.cjs");
+const { resolveUserDataDirectoryName } = require("./src/helpers/userDataDirectory.js");
 
 if (shouldForceXWayland(process.argv)) {
   const { spawn } = require("child_process");
@@ -83,11 +84,15 @@ const APP_CHANNEL = resolveAppChannel();
 process.env.OPENWHISPR_CHANNEL = APP_CHANNEL;
 
 function configureChannelUserDataPath() {
-  if (APP_CHANNEL === "production") {
+  const directoryName = resolveUserDataDirectoryName({
+    isMowBuild: isMowBuild(),
+    channel: APP_CHANNEL,
+  });
+  if (!directoryName) {
     return;
   }
 
-  const isolatedPath = path.join(app.getPath("appData"), `OpenWhispr-${APP_CHANNEL}`);
+  const isolatedPath = path.join(app.getPath("appData"), directoryName);
   app.setPath("userData", isolatedPath);
 }
 

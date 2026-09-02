@@ -1,9 +1,9 @@
 {
   "appId": "com.moreopenwhispr.app",
   "afterPack": "scripts/afterPack.js",
-  "productName": "MoreOpenWhispr",
+  "productName": "MoreOpenWhisperer",
   "protocols": {
-    "name": "MoreOpenWhispr Protocol",
+    "name": "MoreOpenWhisperer Protocol",
     "schemes": ["openwhispr"]
   },
   "directories": {
@@ -162,11 +162,11 @@
     "extendInfo": {
       "LSUIElement": false,
       "CFBundleIconName": "openwhispr",
-      "NSMicrophoneUsageDescription": "MoreOpenWhispr uses the microphone to capture your voice for transcription.",
-      "NSAudioCaptureUsageDescription": "MoreOpenWhispr uses system audio to capture other participants' audio from calls and meetings.",
-      "NSAccessibilityUsageDescription": "MoreOpenWhispr needs accessibility permissions to paste transcribed text into other applications.",
-      "NSCalendarsUsageDescription": "MoreOpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events.",
-      "NSCalendarsFullAccessUsageDescription": "MoreOpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events."
+      "NSMicrophoneUsageDescription": "MoreOpenWhisperer uses the microphone to capture your voice for transcription.",
+      "NSAudioCaptureUsageDescription": "MoreOpenWhisperer uses system audio to capture other participants' audio from calls and meetings.",
+      "NSAccessibilityUsageDescription": "MoreOpenWhisperer needs accessibility permissions to paste transcribed text into other applications.",
+      "NSCalendarsUsageDescription": "MoreOpenWhisperer reads your calendar to detect upcoming meetings and link meeting notes to events.",
+      "NSCalendarsFullAccessUsageDescription": "MoreOpenWhisperer reads your calendar to detect upcoming meetings and link meeting notes to events."
     }
   },
   "win": {
@@ -254,7 +254,7 @@
     "include": "resources/nsis/installer.nsh"
   },
   "dmg": {
-    "title": "MoreOpenWhispr",
+    "title": "MoreOpenWhisperer",
     "icon": "src/assets/icon.icns",
     "window": {
       "width": 540,

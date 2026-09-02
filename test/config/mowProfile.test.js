@@ -34,7 +34,7 @@ describe("mowProfile", () => {
     );
     assert.equal(MOW_PROFILE.issuesUrl, `${MOW_PROFILE.repoUrl}/issues`);
     assert.match(mowRepoUrl("issues"), /\/issues$/);
-    assert.equal(rewriteUpstreamBrand("OpenWhispr dictation"), "MoreOpenWhispr dictation");
+    assert.equal(rewriteUpstreamBrand("OpenWhispr dictation"), "MoreOpenWhisperer dictation");
     assert.equal(rewriteUpstreamBrand(12), 12);
   });
 

@@ -4,10 +4,10 @@ const githubOwner = "SuperTost100";
 const githubRepo = "moreopenwhispr";
 const repoUrl = `https://github.com/${githubOwner}/${githubRepo}` as const;
 
-/** MoreOpenWhispr (MOW): no OpenWhispr Cloud accounts, billing, sync, or telemetry. */
+/** MoreOpenWhisperer (MOW): no OpenWhispr Cloud accounts, billing, sync, or telemetry. */
 export const MOW_PROFILE = {
   enabled: true,
-  productName: "MoreOpenWhispr",
+  productName: "MoreOpenWhisperer",
   shortName: "MOW",
   upstreamName: "OpenWhispr",
   upstreamUrl: "https://github.com/OpenWhispr/openwhispr",

@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#eef1ef">
-  <meta name="description" content="UI redesign plan for the MoreOpenWhispr desktop app.">
-  <title>MoreOpenWhispr UI redesign plan</title>
+  <meta name="description" content="UI redesign plan for the MoreOpenWhisperer desktop app.">
+  <title>MoreOpenWhisperer UI redesign plan</title>
   <style>
     :root {
       --page: #eef1ef;
@@ -831,7 +831,7 @@
   <a class="skip-link" href="#main">Skip to the plan</a>
 
   <header class="page-header">
-    <div class="wordmark">MoreOpenWhispr <small>UI redesign plan</small></div>
+    <div class="wordmark">MoreOpenWhisperer <small>UI redesign plan</small></div>
     <nav class="page-nav" aria-label="Plan sections">
       <a href="#concept">Concept</a>
       <a href="#product">Product changes</a>
@@ -844,7 +844,7 @@
     <section class="intro" aria-labelledby="page-title">
       <div>
         <h1 id="page-title">Make the desktop app easier to scan and easier to trust</h1>
-        <p class="intro-copy">Keep the parts of Wispr Flow that work: stable navigation, clear settings rows, and enough space to read a page. Do not copy its account, billing, referral, or gamification UI. MoreOpenWhispr should show which provider handles the audio, which credential it uses, and when data leaves the computer.</p>
+        <p class="intro-copy">Keep the parts of Wispr Flow that work: stable navigation, clear settings rows, and enough space to read a page. Do not copy its account, billing, referral, or gamification UI. MoreOpenWhisperer should show which provider handles the audio, which credential it uses, and when data leaves the computer.</p>
       </div>
       <aside class="scope-note">
         <strong>First implementation group</strong>
@@ -864,7 +864,7 @@
 
       <div class="app-layout">
         <aside class="app-sidebar" aria-label="Proposed app navigation">
-          <div class="app-name">MoreOpenWhispr</div>
+          <div class="app-name">MoreOpenWhisperer</div>
           <div class="app-nav">
             <div class="app-nav-item active">Dictation</div>
             <div class="app-nav-item">Assistant</div>
@@ -1062,7 +1062,7 @@
       </div>
 
       <ol class="roadmap">
-        <li><h3>Resolve fork identity</h3><p>Reconcile MoreOpenWhispr in the current build with Whispr Antigravity in the fork docs. Check bundle ID, signing identity, publisher, release target, docs URL, and no-endorsement copy.<span class="file-list">mowProfile.ts, electron-builder.json, .fork/COMPLIANCE.md</span></p></li>
+        <li><h3>Resolve fork identity</h3><p>Use MoreOpenWhisperer consistently across the current build and fork docs. Check bundle ID, signing identity, publisher, release target, docs URL, and no-endorsement copy.<span class="file-list">mowProfile.ts, electron-builder.json, .fork/COMPLIANCE.md</span></p></li>
         <li><h3>Set shared CSS variables</h3><p>Add the colors, spacing, radii, focus style, row height, and dark mappings to the existing Tailwind v4 variables. Consolidate duplicate setting-row components.<span class="file-list">src/index.css, ui/SettingsSection.tsx, ui/button.tsx, ui/card.tsx</span></p></li>
         <li><h3>Update the control panel</h3><p>Keep activeView, lazy imports, policy filtering, and collapse behavior. Change the sidebar and Dictation history first. Add the processing route with a pure view model.<span class="file-list">ControlPanel.tsx, ControlPanelSidebar.tsx, HistoryView.tsx</span></p></li>
         <li><h3>Move Settings into the control panel</h3><p>Keep every legacy section and subtab alias. Reuse the current SettingsPage logic and replace only its outer layout and repeated rows.<span class="file-list">SettingsModal.tsx, SettingsPage.tsx, settings/*</span></p></li>
@@ -1092,7 +1092,7 @@
         <table>
           <thead><tr><th>Question</th><th>Current evidence</th><th>Decision needed</th></tr></thead>
           <tbody>
-            <tr><td>What is the final product name?</td><td>The current code and build use MoreOpenWhispr and MOW. Fork docs still use Whispr Antigravity and different distribution metadata.</td><td>Choose one name and update the build, docs, signing, publishing, and no-endorsement text together.</td></tr>
+            <tr><td>What is the final product name?</td><td>The final public product name is MoreOpenWhisperer; MOW remains an internal symbol. Distribution metadata and fork docs must use the same public name.</td><td>Choose one name and update the build, docs, signing, publishing, and no-endorsement text together.</td></tr>
             <tr><td>Should Settings stop using a modal?</td><td>The current modal adds a second sidebar. Many links already open a section by ID.</td><td>Approve Settings as a normal control-panel view while keeping every existing section alias.</td></tr>
             <tr><td>How much ships in the first pass?</td><td>ControlPanel and Settings provide most of the visual change. Notes and the dictation pill have more state and window constraints.</td><td>Approve CSS variables, control panel, Dictation history, and Settings as the first group.</td></tr>
           </tbody>

@@ -54,7 +54,7 @@ function hostAppBundlePath() {
 
 function revealHostAppInFinder() {
   if (process.platform !== "darwin") return;
-  // Packaged MoreOpenWhispr registers in TCC under its own name; Finder reveal
+  // Packaged MoreOpenWhisperer registers in TCC under its own name; Finder reveal
   // is only for dev Electron.app where users hunt the bundle with +.
   const bundle = hostAppBundlePath();
   if (!bundle.endsWith("Electron.app")) return;

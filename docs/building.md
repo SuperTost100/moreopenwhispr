@@ -1,4 +1,4 @@
-# Building MoreOpenWhispr
+# Building MoreOpenWhisperer
 
 Node.js **24** only (`.nvmrc`). CI uses 24. Do not regenerate `package-lock.json` with another major.
 
@@ -57,7 +57,7 @@ Dir-only unpackaged tree (macOS example):
 
 ```bash
 npm run pack
-# dist/mac-arm64/MoreOpenWhispr.app
+# dist/mac-arm64/MoreOpenWhisperer.app
 ```
 
 `prebuild:*` downloads whisper.cpp, llama-server, sherpa-onnx, Qdrant, yt-dlp, meeting AEC, diarization models. Set `GITHUB_TOKEN` if GitHub rate-limits you.
@@ -110,12 +110,12 @@ Manual full pack without a tag: Actions → Build and Notarize → Run workflow.
 
 ## Side-by-side with official OpenWhispr
 
-| | MoreOpenWhispr | OpenWhispr |
+| | MoreOpenWhisperer | OpenWhispr |
 | --- | --- | --- |
 | Bundle id | `com.moreopenwhispr.app` | upstream id |
-| App name | MoreOpenWhispr | OpenWhispr |
+| App name | MoreOpenWhisperer | OpenWhispr |
 | Windows AppUserModelId | `com.moreopenwhispr.app` | `com.gizmolabs.openwhispr` |
-| userData | `MoreOpenWhispr` | `OpenWhispr` |
+| userData | `MoreOpenWhispr` (legacy MOW directory) | `OpenWhispr` |
 | Model cache | `~/.cache/openwhispr/` (shared) | same folder |
 
 They can both be installed. They share the model cache on purpose.

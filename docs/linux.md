@@ -23,31 +23,31 @@ There is no OpenWhispr Cloud sign-in in this fork, so the official "browser sign
 ### deb
 
 ```bash
-sudo apt install ./MoreOpenWhispr-*-linux-x64.deb
+sudo apt install ./MoreOpenWhisperer-*-linux-x64.deb
 ```
 
 ### rpm
 
 ```bash
-sudo dnf install ./MoreOpenWhispr-*-linux-x64.rpm
+sudo dnf install ./MoreOpenWhisperer-*-linux-x64.rpm
 ```
 
 ### AppImage
 
 ```bash
-chmod +x MoreOpenWhispr-*.AppImage
-./MoreOpenWhispr-*.AppImage
+chmod +x MoreOpenWhisperer-*.AppImage
+./MoreOpenWhisperer-*.AppImage
 ```
 
 ### tar.gz
 
 ```bash
-tar -xzf MoreOpenWhispr-*-linux-*.tar.gz
-cd MoreOpenWhispr-*/
+tar -xzf MoreOpenWhisperer-*-linux-*.tar.gz
+cd MoreOpenWhisperer-*/
 ./open-whispr
 ```
 
-The linux executable name stays `open-whispr` (electron-builder `name`). The product name in the UI is MoreOpenWhispr.
+The linux executable name stays `open-whispr` (electron-builder `name`). The product name in the UI is MoreOpenWhisperer.
 
 ## Microphone
 

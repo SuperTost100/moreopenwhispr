@@ -1,6 +1,6 @@
 # macOS
 
-MoreOpenWhispr on a Mac lives in the menu bar. It waits for a hotkey and types into whatever you are already using.
+MoreOpenWhisperer on a Mac lives in the menu bar. It waits for a hotkey and types into whatever you are already using.
 
 ## What you need
 
@@ -11,11 +11,11 @@ MoreOpenWhispr on a Mac lives in the menu bar. It waits for a hotkey and types i
 ## Install
 
 1. Grab the Apple Silicon or Intel `.dmg` from [Releases](https://github.com/SuperTost100/moreopenwhispr/releases/latest). Apple menu → About This Mac tells you which chip you have.
-2. Open the disk image and drag **MoreOpenWhispr** into Applications. Leave it on the mounted image and odd things happen later.
+2. Open the disk image and drag **MoreOpenWhisperer** into Applications. Leave it on the mounted image and odd things happen later.
 3. The first launch is unsigned. Finder: right-click the app → **Open** → Open. System Settings → Privacy & Security also has an Open Anyway button if Gatekeeper blocked it. If macOS says the app is **damaged**, that is the same unsigned-download check. In Terminal:
 
    ```bash
-   xattr -cr /Applications/MoreOpenWhispr.app
+   xattr -cr /Applications/MoreOpenWhisperer.app
    ```
 
    Then open it from Applications.
@@ -56,12 +56,12 @@ Builds on this fork are unsigned, so there is no Apple notarized auto-update fro
 To uninstall:
 
 ```bash
-rm -rf /Applications/MoreOpenWhispr.app
+rm -rf /Applications/MoreOpenWhisperer.app
 rm -rf ~/.cache/openwhispr
 rm -rf ~/Library/Application\ Support/MoreOpenWhispr
 ```
 
-The cache folder still uses the upstream `openwhispr` name. App support data uses `MoreOpenWhispr`.
+The cache folder still uses the upstream `openwhispr` name. App support data stays in the legacy `MoreOpenWhispr` directory for compatibility.
 
 ## Related
 

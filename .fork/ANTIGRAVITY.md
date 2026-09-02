@@ -2,7 +2,7 @@
 
 Subscription-only AI via Antigravity OAuth + Cloud Code Assist gateway. OpenWhispr pipelines, prompts, and tools stay upstream; only the model transport is forked.
 
-Public setup: [docs/antigravity.md](../docs/antigravity.md). Product name: **MoreOpenWhispr** (`com.moreopenwhispr.app`).
+Public setup: [docs/antigravity.md](../docs/antigravity.md). Product name: **MoreOpenWhisperer** (`com.moreopenwhispr.app`).
 
 ## Architecture (dictation speed)
 

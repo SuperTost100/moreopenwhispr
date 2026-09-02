@@ -8,7 +8,7 @@
 ; scoped inbound BLOCK rule suppresses the prompt and closes the port to the
 ; network; loopback is never filtered, so transcription is unaffected.
 ; netsh needs elevation — per-user installs skip this silently.
-!define SHERPA_FIREWALL_RULE "MoreOpenWhispr Local Transcription Server (sherpa-onnx)"
+!define SHERPA_FIREWALL_RULE "MoreOpenWhisperer Local Transcription Server (sherpa-onnx)"
 
 ; Electron writes the launch-at-login entry itself, so nothing in the generated
 ; uninstaller knows to remove it, and Windows keeps listing a startup item that
@@ -41,7 +41,7 @@
     StrCpy $0 "$PROFILE\.cache\openwhispr\models"
     IfFileExists "$0\*.*" 0 +3
       RMDir /r "$0"
-      DetailPrint "Removed MoreOpenWhispr cached models"
+      DetailPrint "Removed MoreOpenWhisperer cached models"
     StrCpy $1 "$PROFILE\.cache\openwhispr"
     RMDir "$1"
   ${endIf}

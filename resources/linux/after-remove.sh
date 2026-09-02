@@ -1,5 +1,5 @@
 #!/bin/bash
-# Post-remove script for MoreOpenWhispr (deb)
+# Post-remove script for MoreOpenWhisperer (deb)
 # Best-effort: must never fail package removal, and must never run on upgrade.
 
 set -uo pipefail
@@ -32,7 +32,7 @@ MODELS_DIR="$CACHE_DIR/models"
 
 if [ -d "$MODELS_DIR" ]; then
   rm -rf "$MODELS_DIR" 2>/dev/null || true
-  echo "Removed MoreOpenWhispr cached models"
+  echo "Removed MoreOpenWhisperer cached models"
 fi
 
 if [ -d "$CACHE_DIR" ]; then

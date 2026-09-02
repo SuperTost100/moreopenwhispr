@@ -5,10 +5,10 @@
   <key>CFBundleIdentifier</key>
   <string>com.moreopenwhispr.calendar-listener</string>
   <key>CFBundleName</key>
-  <string>MoreOpenWhispr Calendar Listener</string>
+  <string>MoreOpenWhisperer Calendar Listener</string>
   <key>NSCalendarsUsageDescription</key>
-  <string>MoreOpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
+  <string>MoreOpenWhisperer reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
   <key>NSCalendarsFullAccessUsageDescription</key>
-  <string>MoreOpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
+  <string>MoreOpenWhisperer reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
 </dict>
 </plist>
