@@ -712,6 +712,14 @@
       "pageTitle": "Dizionario",
       "pageSubtitle": "Parole personalizzate per una trascrizione più precisa, e snippet che si trasformano in testo salvato."
     },
+    "upload": {
+      "pageTitle": "Carica",
+      "pageSubtitle": "File audio e link, trascritti in note con rilevamento parlanti opzionale."
+    },
+    "chat": {
+      "pageTitle": "Chat",
+      "pageSubtitle": "Conversazioni con accesso alle tue note, trascrizioni, al calendario e alla ricerca sul web."
+    },
     "cloudMigration": {
       "title": "Benvenuto in OpenWhispr Cloud",
       "description": "Abbiamo spostato la trascrizione su OpenWhispr Cloud per risultati più rapidi e accurati. Le impostazioni precedenti sono state salvate: puoi tornare indietro in qualsiasi momento dalle Impostazioni.",

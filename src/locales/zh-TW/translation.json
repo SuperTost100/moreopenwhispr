@@ -712,6 +712,14 @@
       "pageTitle": "字典",
       "pageSubtitle": "提升轉錄準確度的自訂字詞，以及會展開為已儲存文字的片段。"
     },
+    "upload": {
+      "pageTitle": "上傳",
+      "pageSubtitle": "將音訊檔案或連結轉錄為筆記，可選說話者偵測。"
+    },
+    "chat": {
+      "pageTitle": "聊天",
+      "pageSubtitle": "可存取筆記、轉錄、行事曆和網頁搜尋的對話。"
+    },
     "cloudMigration": {
       "title": "歡迎使用 OpenWhispr Cloud",
       "description": "我們已將轉錄切換至 OpenWhispr Cloud，提供更快、更準確的結果。你之前的設定已儲存，隨時可在設定中切換回來。",

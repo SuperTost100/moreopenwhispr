@@ -712,6 +712,14 @@
       "pageTitle": "Wörterbuch",
       "pageSubtitle": "Eigene Wörter für eine genauere Transkription und Snippets, die sich in gespeicherten Text verwandeln."
     },
+    "upload": {
+      "pageTitle": "Hochladen",
+      "pageSubtitle": "Audiodateien und Links, transkribiert in Notizen mit optionaler Sprechererkennung."
+    },
+    "chat": {
+      "pageTitle": "Chat",
+      "pageSubtitle": "Unterhaltungen mit Zugriff auf Ihre Notizen, Transkripte, den Kalender und die Websuche."
+    },
     "cloudMigration": {
       "title": "Willkommen bei OpenWhispr Cloud",
       "description": "Wir haben die Transkription auf OpenWhispr Cloud umgestellt für schnellere und genauere Ergebnisse. Ihre bisherigen Einstellungen sind gespeichert – wechseln Sie jederzeit in den Einstellungen zurück.",

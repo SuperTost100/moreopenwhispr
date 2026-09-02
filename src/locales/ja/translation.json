@@ -712,6 +712,14 @@
       "pageTitle": "辞書",
       "pageSubtitle": "文字起こしの精度を高める単語と、保存したテキストに変換されるスニペット。"
     },
+    "upload": {
+      "pageTitle": "アップロード",
+      "pageSubtitle": "音声ファイルやリンクをノートに文字起こし。話者検出はオプションです。"
+    },
+    "chat": {
+      "pageTitle": "チャット",
+      "pageSubtitle": "ノート、文字起こし、カレンダー、ウェブ検索にアクセスできる会話。"
+    },
     "cloudMigration": {
       "title": "OpenWhispr Cloud へようこそ",
       "description": "より高速で正確な文字起こしのために OpenWhispr Cloud に切り替えました。以前の設定は保存されています。設定からいつでも戻せます。",

@@ -918,460 +918,476 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
   };
 
   return (
-    <div className="flex flex-col items-center h-full overflow-y-auto px-6">
-      <div
-        className="w-full max-w-md shrink-0 my-auto"
-        style={{ animation: "float-up 0.4s ease-out" }}
-      >
-        <div className="max-w-[320px] mx-auto">
-          {state === "idle" && providerReady === false && (
-            <NoProviderView t={t} onOpenSettings={() => onOpenSettings?.("uploadTranscription")} />
-          )}
-
-          {state === "idle" && providerReady !== false && (
-            <>
-              <IdleView
+    <section className="cp-upload flex flex-col h-full" aria-labelledby="cp-upload-page-title">
+      <header className="cp-upload__page-head">
+        <h1 id="cp-upload-page-title" className="cp-upload__page-title">
+          {t("controlPanel.upload.pageTitle")}
+        </h1>
+        <p className="cp-upload__page-subtitle">{t("controlPanel.upload.pageSubtitle")}</p>
+      </header>
+      <div className="flex flex-col items-center flex-1 min-h-0 overflow-y-auto px-6">
+        <div
+          className="w-full max-w-md shrink-0 my-auto"
+          style={{ animation: "float-up 0.4s ease-out" }}
+        >
+          <div className="max-w-[320px] mx-auto">
+            {state === "idle" && providerReady === false && (
+              <NoProviderView
                 t={t}
-                getActiveModelLabel={getActiveModelLabel}
-                handleDrop={handleDrop}
-                handleBrowse={handleBrowse}
-                isDragOver={isDragOver}
-                setIsDragOver={setIsDragOver}
+                onOpenSettings={() => onOpenSettings?.("uploadTranscription")}
               />
+            )}
 
-              <div className="flex items-center gap-3 my-3">
-                <div className="h-px flex-1 bg-foreground/5 dark:bg-white/5" />
-                <span className="text-[10px] text-foreground/20 uppercase tracking-wider">
-                  {t("notes.upload.orDivider")}
-                </span>
-                <div className="h-px flex-1 bg-foreground/5 dark:bg-white/5" />
-              </div>
-
-              {urlExpanded ? (
-                <div>
-                  <textarea
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder={t("notes.upload.pasteUrls")}
-                    rows={4}
-                    className={cn(uploadFieldClass, "w-full px-3 py-2 resize-none")}
-                    autoFocus
-                  />
-                  <div className="flex items-center gap-2 mt-2 justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setUrlExpanded(false);
-                        setUrlInput("");
-                      }}
-                      className="h-7 text-xs text-foreground/30"
-                    >
-                      {t("notes.upload.cancel")}
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={handleBatchUrlSubmit}
-                      disabled={!urlInput.trim()}
-                      className="h-7 text-xs"
-                    >
-                      {t("notes.upload.addToQueue")}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="relative">
-                  {isYouTubeUrl(urlInput) ? (
-                    <svg
-                      viewBox="0 0 28 20"
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[13px] z-10 pointer-events-none"
-                    >
-                      <rect width="28" height="20" rx="4" fill="#FF0000" />
-                      <polygon points="11,4 11,16 21,10" fill="white" />
-                    </svg>
-                  ) : /\.(mp3|wav|m4a|ogg|flac|aac|webm|opus)(\?|$)/i.test(urlInput) ? (
-                    <FileAudio
-                      size={13}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground/20 z-10 pointer-events-none"
-                    />
-                  ) : (
-                    <Link2
-                      size={13}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground/20 z-10 pointer-events-none"
-                    />
-                  )}
-                  <input
-                    type="url"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleUrlSubmit();
-                      }
-                    }}
-                    onFocus={() => {
-                      if (urlInput.includes("\n")) setUrlExpanded(true);
-                    }}
-                    onPaste={(e) => {
-                      const pasted = e.clipboardData.getData("text");
-                      if (pasted.includes("\n")) {
-                        e.preventDefault();
-                        setUrlInput(pasted);
-                        setUrlExpanded(true);
-                      }
-                    }}
-                    placeholder={t("notes.upload.urlPlaceholder")}
-                    className={cn(uploadFieldClass, "w-full h-8 pl-8 pr-9")}
-                  />
-                  <button
-                    onClick={handleUrlSubmit}
-                    disabled={!urlInput.trim()}
-                    aria-label={t("notes.upload.urlSubmit")}
-                    className={cn(
-                      "absolute right-px top-px bottom-px w-7 rounded-r-[7px] flex items-center justify-center transition-colors",
-                      "border-l border-foreground/6 dark:border-white/6",
-                      urlInput.trim()
-                        ? "text-foreground/40 hover:text-foreground/60 hover:bg-foreground/[0.03] dark:hover:bg-white/[0.03]"
-                        : "text-foreground/10"
-                    )}
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {batchUrlNotice && (
-            <p className="text-[10px] text-amber-500/60 mt-2 text-center">{batchUrlNotice}</p>
-          )}
-
-          {batch.hasQueue && (
-            <div className="mt-3">
-              <BatchQueueView
-                queue={batch.queue}
-                byokMaxFileSizeMb={byokMaxFileSizeMb}
-                completedCount={batch.completedCount}
-                failedCount={batch.failedCount}
-                totalCount={batch.totalCount}
-                isProcessing={batch.isProcessing}
-                onRemoveItem={batch.removeItem}
-                onCancelAll={batch.cancelAll}
-                onClearQueue={() => {
-                  setBatchUrlNotice(null);
-                  batch.clearQueue();
-                }}
-                onOpenNote={(noteId) =>
-                  onNoteCreated?.(noteId, batchFolderId ? Number(batchFolderId) : null)
-                }
-              />
-
-              {!batch.isProcessing && batch.queue.some((i) => i.status === "queued") && (
-                <div className="mt-3 space-y-2">
-                  {folders.length > 0 && (
-                    <FolderSelect
-                      t={t}
-                      folders={folders}
-                      value={batchFolderId}
-                      onChange={setBatchFolderId}
-                    />
-                  )}
-                  <div className="flex justify-center">
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={startBatchProcessing}
-                      disabled={
-                        !uploadAllowedByPolicy ||
-                        state === "downloading" ||
-                        state === "transcribing"
-                      }
-                      className="h-8 text-xs px-5"
-                    >
-                      {t("notes.upload.transcribe")}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {state === "selected" && file && (
-            <SelectedView
-              t={t}
-              file={file}
-              getActiveModelLabel={getActiveModelLabel}
-              reset={reset}
-              handleTranscribe={handleTranscribe}
-              transcribeDisabled={batch.isProcessing || !uploadAllowedByPolicy}
-              requiresUpgrade={!!requiresUpgrade}
-              fileTooLarge={fileTooLarge}
-              isLargeFile={isLargeFile}
-              isOpenWhisprCloud={isOpenWhisprCloud}
-              byokTooLarge={byokTooLarge}
-              byokMaxFileSizeMb={byokMaxFileSizeMb}
-              requiresAccount={requiresAccount}
-              isProUser={!!isProUser}
-              onUpgrade={() => usage?.openCheckout()}
-              onCreateAccount={handleCreateAccount}
-              onSwitchToCloud={switchToCloud}
-            />
-          )}
-
-          {state === "downloading" && downloadProgress && (
-            <div
-              className="flex flex-col items-center"
-              style={{ animation: "float-up 0.3s ease-out" }}
-            >
-              <div className="flex items-end justify-center gap-[3px] h-10 mb-5">
-                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="w-[3px] rounded-full bg-primary/40 dark:bg-primary/50 origin-bottom"
-                    style={{
-                      height: "100%",
-                      animation: `waveform-bar ${0.8 + i * 0.12}s ease-in-out infinite`,
-                      animationDelay: `${i * 0.08}s`,
-                    }}
-                  />
-                ))}
-              </div>
-
-              <div className="w-full max-w-[200px] h-[3px] rounded-full bg-foreground/5 dark:bg-white/5 overflow-hidden mb-3">
-                <div
-                  className={cn(
-                    "h-full rounded-full bg-primary/50 transition-[width] duration-500 ease-out",
-                    // Percent 0 = size unknown (no content-length): pulse instead
-                    // of sitting on an empty bar.
-                    (downloadProgress.stage !== "downloading" || !downloadProgress.percent) &&
-                      "animate-pulse"
-                  )}
-                  style={{
-                    width:
-                      downloadProgress.stage === "downloading" && downloadProgress.percent
-                        ? `${Math.min(downloadProgress.percent, 100)}%`
-                        : "100%",
-                  }}
+            {state === "idle" && providerReady !== false && (
+              <>
+                <IdleView
+                  t={t}
+                  getActiveModelLabel={getActiveModelLabel}
+                  handleDrop={handleDrop}
+                  handleBrowse={handleBrowse}
+                  isDragOver={isDragOver}
+                  setIsDragOver={setIsDragOver}
                 />
+
+                <div className="flex items-center gap-3 my-3">
+                  <div className="h-px flex-1 bg-foreground/5 dark:bg-white/5" />
+                  <span className="text-[10px] text-foreground/20 uppercase tracking-wider">
+                    {t("notes.upload.orDivider")}
+                  </span>
+                  <div className="h-px flex-1 bg-foreground/5 dark:bg-white/5" />
+                </div>
+
+                {urlExpanded ? (
+                  <div>
+                    <textarea
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      placeholder={t("notes.upload.pasteUrls")}
+                      rows={4}
+                      className={cn(uploadFieldClass, "w-full px-3 py-2 resize-none")}
+                      autoFocus
+                    />
+                    <div className="flex items-center gap-2 mt-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setUrlExpanded(false);
+                          setUrlInput("");
+                        }}
+                        className="h-7 text-xs text-foreground/30"
+                      >
+                        {t("notes.upload.cancel")}
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={handleBatchUrlSubmit}
+                        disabled={!urlInput.trim()}
+                        className="h-7 text-xs"
+                      >
+                        {t("notes.upload.addToQueue")}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    {isYouTubeUrl(urlInput) ? (
+                      <svg
+                        viewBox="0 0 28 20"
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-[18px] h-[13px] z-10 pointer-events-none"
+                      >
+                        <rect width="28" height="20" rx="4" fill="#FF0000" />
+                        <polygon points="11,4 11,16 21,10" fill="white" />
+                      </svg>
+                    ) : /\.(mp3|wav|m4a|ogg|flac|aac|webm|opus)(\?|$)/i.test(urlInput) ? (
+                      <FileAudio
+                        size={13}
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground/20 z-10 pointer-events-none"
+                      />
+                    ) : (
+                      <Link2
+                        size={13}
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground/20 z-10 pointer-events-none"
+                      />
+                    )}
+                    <input
+                      type="url"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleUrlSubmit();
+                        }
+                      }}
+                      onFocus={() => {
+                        if (urlInput.includes("\n")) setUrlExpanded(true);
+                      }}
+                      onPaste={(e) => {
+                        const pasted = e.clipboardData.getData("text");
+                        if (pasted.includes("\n")) {
+                          e.preventDefault();
+                          setUrlInput(pasted);
+                          setUrlExpanded(true);
+                        }
+                      }}
+                      placeholder={t("notes.upload.urlPlaceholder")}
+                      className={cn(uploadFieldClass, "w-full h-8 pl-8 pr-9")}
+                    />
+                    <button
+                      onClick={handleUrlSubmit}
+                      disabled={!urlInput.trim()}
+                      aria-label={t("notes.upload.urlSubmit")}
+                      className={cn(
+                        "absolute right-px top-px bottom-px w-7 rounded-r-[7px] flex items-center justify-center transition-colors",
+                        "border-l border-foreground/6 dark:border-white/6",
+                        urlInput.trim()
+                          ? "text-foreground/40 hover:text-foreground/60 hover:bg-foreground/[0.03] dark:hover:bg-white/[0.03]"
+                          : "text-foreground/10"
+                      )}
+                    >
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {batchUrlNotice && (
+              <p className="text-[10px] text-amber-500/60 mt-2 text-center">{batchUrlNotice}</p>
+            )}
+
+            {batch.hasQueue && (
+              <div className="mt-3">
+                <BatchQueueView
+                  queue={batch.queue}
+                  byokMaxFileSizeMb={byokMaxFileSizeMb}
+                  completedCount={batch.completedCount}
+                  failedCount={batch.failedCount}
+                  totalCount={batch.totalCount}
+                  isProcessing={batch.isProcessing}
+                  onRemoveItem={batch.removeItem}
+                  onCancelAll={batch.cancelAll}
+                  onClearQueue={() => {
+                    setBatchUrlNotice(null);
+                    batch.clearQueue();
+                  }}
+                  onOpenNote={(noteId) =>
+                    onNoteCreated?.(noteId, batchFolderId ? Number(batchFolderId) : null)
+                  }
+                />
+
+                {!batch.isProcessing && batch.queue.some((i) => i.status === "queued") && (
+                  <div className="mt-3 space-y-2">
+                    {folders.length > 0 && (
+                      <FolderSelect
+                        t={t}
+                        folders={folders}
+                        value={batchFolderId}
+                        onChange={setBatchFolderId}
+                      />
+                    )}
+                    <div className="flex justify-center">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={startBatchProcessing}
+                        disabled={
+                          !uploadAllowedByPolicy ||
+                          state === "downloading" ||
+                          state === "transcribing"
+                        }
+                        className="h-8 text-xs px-5"
+                      >
+                        {t("notes.upload.transcribe")}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {state === "selected" && file && (
+              <SelectedView
+                t={t}
+                file={file}
+                getActiveModelLabel={getActiveModelLabel}
+                reset={reset}
+                handleTranscribe={handleTranscribe}
+                transcribeDisabled={batch.isProcessing || !uploadAllowedByPolicy}
+                requiresUpgrade={!!requiresUpgrade}
+                fileTooLarge={fileTooLarge}
+                isLargeFile={isLargeFile}
+                isOpenWhisprCloud={isOpenWhisprCloud}
+                byokTooLarge={byokTooLarge}
+                byokMaxFileSizeMb={byokMaxFileSizeMb}
+                requiresAccount={requiresAccount}
+                isProUser={!!isProUser}
+                onUpgrade={() => usage?.openCheckout()}
+                onCreateAccount={handleCreateAccount}
+                onSwitchToCloud={switchToCloud}
+              />
+            )}
+
+            {state === "downloading" && downloadProgress && (
+              <div
+                className="flex flex-col items-center"
+                style={{ animation: "float-up 0.3s ease-out" }}
+              >
+                <div className="flex items-end justify-center gap-[3px] h-10 mb-5">
+                  {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="w-[3px] rounded-full bg-primary/40 dark:bg-primary/50 origin-bottom"
+                      style={{
+                        height: "100%",
+                        animation: `waveform-bar ${0.8 + i * 0.12}s ease-in-out infinite`,
+                        animationDelay: `${i * 0.08}s`,
+                      }}
+                    />
+                  ))}
+                </div>
+
+                <div className="w-full max-w-[200px] h-[3px] rounded-full bg-foreground/5 dark:bg-white/5 overflow-hidden mb-3">
+                  <div
+                    className={cn(
+                      "h-full rounded-full bg-primary/50 transition-[width] duration-500 ease-out",
+                      // Percent 0 = size unknown (no content-length): pulse instead
+                      // of sitting on an empty bar.
+                      (downloadProgress.stage !== "downloading" || !downloadProgress.percent) &&
+                        "animate-pulse"
+                    )}
+                    style={{
+                      width:
+                        downloadProgress.stage === "downloading" && downloadProgress.percent
+                          ? `${Math.min(downloadProgress.percent, 100)}%`
+                          : "100%",
+                    }}
+                  />
+                </div>
+
+                <p className="text-xs text-foreground/50 font-medium">
+                  {downloadProgress.stage === "resolving"
+                    ? t("notes.upload.urlResolving")
+                    : t("notes.upload.urlDownloading")}
+                </p>
+
+                {downloadProgress.title && (
+                  <p className="text-xs text-foreground/20 mt-1 truncate max-w-50">
+                    {downloadProgress.title}
+                  </p>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelDownload}
+                  className="mt-3 h-7 text-xs text-foreground/30"
+                >
+                  {t("notes.upload.urlCancelDownload")}
+                </Button>
+              </div>
+            )}
+
+            {state === "transcribing" && (
+              <TranscribingView
+                t={t}
+                progress={progress}
+                getTranscribingLabel={getTranscribingLabel}
+                file={file}
+                chunkProgress={chunkProgress}
+                onCancel={cancelTranscription}
+              />
+            )}
+
+            {state === "complete" && result && (
+              <CompleteView
+                t={t}
+                result={result}
+                partialWarning={partialWarning}
+                folders={folders}
+                selectedFolderId={selectedFolderId}
+                handleFolderChange={handleFolderChange}
+                noteId={noteId}
+                onNoteCreated={onNoteCreated}
+                reset={reset}
+              />
+            )}
+
+            {state === "error" && error && (
+              <ErrorView t={t} error={error} reset={reset} onRetry={handleRetry} />
+            )}
+          </div>
+
+          {(state === "idle" || state === "selected") && (
+            <div
+              className={cn(
+                "max-w-[320px] mx-auto mt-4",
+                state === "idle" && providerReady === false && "cp-upload__empty-card"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-foreground/40 font-medium">
+                    {t("notes.upload.speakerDetection")}
+                  </p>
+                  <p className="text-[10px] text-foreground/20 mt-0.5">
+                    {t("notes.upload.speakerDetectionDescription")}
+                  </p>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={diarizationEnabled}
+                  aria-label={t("notes.upload.speakerDetection")}
+                  onClick={async () => {
+                    if (diarizationDownloading) return;
+                    const next = !diarizationEnabled;
+                    setDiarizationEnabled(next);
+                    // BYOK-native diarization needs no local models — don't download them.
+                    if (
+                      next &&
+                      !diarizationModelsReady &&
+                      !shouldUseByokDiarize(buildTranscriptionConfig(), true)
+                    ) {
+                      const ready = await ensureDiarizationModels();
+                      if (!ready) setDiarizationEnabled(false);
+                    }
+                  }}
+                  className={cn(
+                    "relative w-7 h-4 rounded-full transition-colors shrink-0",
+                    diarizationDownloading
+                      ? "bg-primary/50 animate-pulse"
+                      : diarizationEnabled
+                        ? "bg-primary"
+                        : "bg-muted"
+                  )}
+                  disabled={diarizationDownloading}
+                >
+                  <div
+                    className={cn(
+                      "absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform",
+                      diarizationEnabled ? "translate-x-3" : ""
+                    )}
+                  />
+                </button>
               </div>
 
-              <p className="text-xs text-foreground/50 font-medium">
-                {downloadProgress.stage === "resolving"
-                  ? t("notes.upload.urlResolving")
-                  : t("notes.upload.urlDownloading")}
-              </p>
+              {diarizationEnabled &&
+                !useLocalWhisper &&
+                !isOpenWhisprCloud &&
+                !isSelfHosted &&
+                cloudTranscriptionProvider === "openai" && (
+                  <p className="text-[10px] text-foreground/25 mt-1.5">
+                    {t("notes.upload.openaiDiarizeNote")}
+                  </p>
+                )}
+              {diarizationEnabled &&
+                !useLocalWhisper &&
+                !isOpenWhisprCloud &&
+                !isSelfHosted &&
+                cloudTranscriptionProvider === "mistral" && (
+                  <p className="text-[10px] text-foreground/25 mt-1.5">
+                    {t("notes.upload.mistralDiarizeNote")}
+                  </p>
+                )}
+              {diarizationEnabled &&
+                !useLocalWhisper &&
+                !isOpenWhisprCloud &&
+                !isSelfHosted &&
+                cloudTranscriptionProvider === "groq" && (
+                  <p className="text-[10px] text-amber-500/60 mt-1.5">
+                    {t("notes.upload.groqDiarizeNote")}
+                  </p>
+                )}
 
-              {downloadProgress.title && (
-                <p className="text-xs text-foreground/20 mt-1 truncate max-w-50">
-                  {downloadProgress.title}
+              {diarizationDownloading && (
+                <p className="text-[10px] text-primary/50 mt-1.5">
+                  {t("notes.upload.downloadingModels")}
                 </p>
               )}
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCancelDownload}
-                className="mt-3 h-7 text-xs text-foreground/30"
-              >
-                {t("notes.upload.urlCancelDownload")}
-              </Button>
+              {diarizationEnabled && isOpenWhisprCloud && (
+                <p className="text-[10px] text-foreground/25 mt-1.5">
+                  {t("notes.upload.diarizationRunsLocally")}
+                </p>
+              )}
+
+              {diarizationEnabled && diarizationModelsReady && (
+                <div className="mt-2">
+                  <label
+                    htmlFor="upload-num-speakers"
+                    className="block text-xs font-medium text-foreground/50"
+                  >
+                    {t("notes.upload.numSpeakersLabel")}
+                  </label>
+                  <input
+                    id="upload-num-speakers"
+                    type="number"
+                    min="2"
+                    max={MAX_SPEAKER_COUNT}
+                    value={diarizationNumSpeakers}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") {
+                        setDiarizationNumSpeakers("");
+                        return;
+                      }
+                      const n = Math.max(2, Math.min(MAX_SPEAKER_COUNT, Number(raw)));
+                      setDiarizationNumSpeakers(String(isNaN(n) ? "" : n));
+                    }}
+                    placeholder={t("notes.upload.numSpeakersPlaceholder")}
+                    className={cn(
+                      uploadFieldClass,
+                      "mt-1 w-full h-8 px-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    )}
+                  />
+                  <p className="text-[10px] text-foreground/25 mt-1.5">
+                    {t("notes.upload.numSpeakersHint")}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-
-          {state === "transcribing" && (
-            <TranscribingView
-              t={t}
-              progress={progress}
-              getTranscribingLabel={getTranscribingLabel}
-              file={file}
-              chunkProgress={chunkProgress}
-              onCancel={cancelTranscription}
-            />
-          )}
-
-          {state === "complete" && result && (
-            <CompleteView
-              t={t}
-              result={result}
-              partialWarning={partialWarning}
-              folders={folders}
-              selectedFolderId={selectedFolderId}
-              handleFolderChange={handleFolderChange}
-              noteId={noteId}
-              onNoteCreated={onNoteCreated}
-              reset={reset}
-            />
-          )}
-
-          {state === "error" && error && (
-            <ErrorView t={t} error={error} reset={reset} onRetry={handleRetry} />
           )}
         </div>
 
-        {(state === "idle" || state === "selected") && (
-          <div className="max-w-[320px] mx-auto mt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-foreground/40 font-medium">
-                  {t("notes.upload.speakerDetection")}
-                </p>
-                <p className="text-[10px] text-foreground/20 mt-0.5">
-                  {t("notes.upload.speakerDetectionDescription")}
-                </p>
-              </div>
-              <button
-                role="switch"
-                aria-checked={diarizationEnabled}
-                aria-label={t("notes.upload.speakerDetection")}
-                onClick={async () => {
-                  if (diarizationDownloading) return;
-                  const next = !diarizationEnabled;
-                  setDiarizationEnabled(next);
-                  // BYOK-native diarization needs no local models — don't download them.
-                  if (
-                    next &&
-                    !diarizationModelsReady &&
-                    !shouldUseByokDiarize(buildTranscriptionConfig(), true)
-                  ) {
-                    const ready = await ensureDiarizationModels();
-                    if (!ready) setDiarizationEnabled(false);
-                  }
+        <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>
+          <DialogContent className="sm:max-w-95">
+            <DialogHeader>
+              <DialogTitle>{t("notes.upload.newFolder")}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground/50">
+                {t("notes.upload.folderName")}
+              </label>
+              <Input
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                placeholder={t("notes.folders.folderName")}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreateFolder();
                 }}
-                className={cn(
-                  "relative w-7 h-4 rounded-full transition-colors shrink-0",
-                  diarizationDownloading
-                    ? "bg-primary/50 animate-pulse"
-                    : diarizationEnabled
-                      ? "bg-primary"
-                      : "bg-muted"
-                )}
-                disabled={diarizationDownloading}
-              >
-                <div
-                  className={cn(
-                    "absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform",
-                    diarizationEnabled ? "translate-x-3" : ""
-                  )}
-                />
-              </button>
+              />
             </div>
-
-            {diarizationEnabled &&
-              !useLocalWhisper &&
-              !isOpenWhisprCloud &&
-              !isSelfHosted &&
-              cloudTranscriptionProvider === "openai" && (
-                <p className="text-[10px] text-foreground/25 mt-1.5">
-                  {t("notes.upload.openaiDiarizeNote")}
-                </p>
-              )}
-            {diarizationEnabled &&
-              !useLocalWhisper &&
-              !isOpenWhisprCloud &&
-              !isSelfHosted &&
-              cloudTranscriptionProvider === "mistral" && (
-                <p className="text-[10px] text-foreground/25 mt-1.5">
-                  {t("notes.upload.mistralDiarizeNote")}
-                </p>
-              )}
-            {diarizationEnabled &&
-              !useLocalWhisper &&
-              !isOpenWhisprCloud &&
-              !isSelfHosted &&
-              cloudTranscriptionProvider === "groq" && (
-                <p className="text-[10px] text-amber-500/60 mt-1.5">
-                  {t("notes.upload.groqDiarizeNote")}
-                </p>
-              )}
-
-            {diarizationDownloading && (
-              <p className="text-[10px] text-primary/50 mt-1.5">
-                {t("notes.upload.downloadingModels")}
-              </p>
-            )}
-
-            {diarizationEnabled && isOpenWhisprCloud && (
-              <p className="text-[10px] text-foreground/25 mt-1.5">
-                {t("notes.upload.diarizationRunsLocally")}
-              </p>
-            )}
-
-            {diarizationEnabled && diarizationModelsReady && (
-              <div className="mt-2">
-                <label
-                  htmlFor="upload-num-speakers"
-                  className="block text-xs font-medium text-foreground/50"
-                >
-                  {t("notes.upload.numSpeakersLabel")}
-                </label>
-                <input
-                  id="upload-num-speakers"
-                  type="number"
-                  min="2"
-                  max={MAX_SPEAKER_COUNT}
-                  value={diarizationNumSpeakers}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    if (raw === "") {
-                      setDiarizationNumSpeakers("");
-                      return;
-                    }
-                    const n = Math.max(2, Math.min(MAX_SPEAKER_COUNT, Number(raw)));
-                    setDiarizationNumSpeakers(String(isNaN(n) ? "" : n));
-                  }}
-                  placeholder={t("notes.upload.numSpeakersPlaceholder")}
-                  className={cn(
-                    uploadFieldClass,
-                    "mt-1 w-full h-8 px-2.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  )}
-                />
-                <p className="text-[10px] text-foreground/25 mt-1.5">
-                  {t("notes.upload.numSpeakersHint")}
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+            <DialogFooter>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setShowNewFolderDialog(false);
+                  setNewFolderName("");
+                }}
+              >
+                {t("notes.upload.cancel")}
+              </Button>
+              <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
+                {t("notes.upload.create")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <Dialog open={showNewFolderDialog} onOpenChange={setShowNewFolderDialog}>
-        <DialogContent className="sm:max-w-95">
-          <DialogHeader>
-            <DialogTitle>{t("notes.upload.newFolder")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground/50">
-              {t("notes.upload.folderName")}
-            </label>
-            <Input
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-              placeholder={t("notes.folders.folderName")}
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreateFolder();
-              }}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setShowNewFolderDialog(false);
-                setNewFolderName("");
-              }}
-            >
-              {t("notes.upload.cancel")}
-            </Button>
-            <Button onClick={handleCreateFolder} disabled={!newFolderName.trim()}>
-              {t("notes.upload.create")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </section>
   );
 }
 
@@ -1383,7 +1399,7 @@ interface NoProviderViewProps {
 function NoProviderView({ t, onOpenSettings }: NoProviderViewProps) {
   return (
     <div
-      className="flex flex-col items-center gap-4 py-2"
+      className="cp-upload__empty-card flex flex-col items-center gap-4"
       style={{ animation: "float-up 0.4s ease-out" }}
     >
       <div className="w-10 h-10 rounded-[10px] bg-linear-to-b from-foreground/5 to-foreground/2 dark:from-white/8 dark:to-white/3 border border-foreground/8 dark:border-white/8 flex items-center justify-center">

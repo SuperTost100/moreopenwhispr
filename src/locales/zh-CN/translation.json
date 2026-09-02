@@ -712,6 +712,14 @@
       "pageTitle": "词典",
       "pageSubtitle": "提升转录准确度的自定义词语，以及会展开为已保存文本的片段。"
     },
+    "upload": {
+      "pageTitle": "上传",
+      "pageSubtitle": "将音频文件或链接转录为笔记，可选说话人检测。"
+    },
+    "chat": {
+      "pageTitle": "聊天",
+      "pageSubtitle": "可访问笔记、转录、日历和网页搜索的对话。"
+    },
     "cloudMigration": {
       "title": "欢迎使用 OpenWhispr 云端",
       "description": "我们已将转录切换到 OpenWhispr 云端，以获得更快、更准确的结果。你之前的设置已保存——随时可以在设置中切换回去。",

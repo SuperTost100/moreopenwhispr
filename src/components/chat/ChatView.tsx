@@ -148,36 +148,47 @@ export default function ChatView() {
           />
         </Suspense>
       )}
-      <div className="flex h-full">
-        <div className="w-56 min-w-50 shrink-0 border-r border-border/15 dark:border-white/6">
-          <ConversationList
-            activeConversationId={activeConversationId}
-            onSelectConversation={handleSelectConversation}
-            onNewChat={handleNewChat}
-            onOpenSearch={() => setShowSearch(true)}
-            onArchive={handleArchive}
-            onDelete={handleDelete}
-            refreshKey={refreshKey}
-          />
+      <section
+        className="cp-chat flex h-full min-h-0 flex-col"
+        aria-labelledby="cp-chat-page-title"
+      >
+        <header className="cp-chat__page-head">
+          <h1 id="cp-chat-page-title" className="cp-chat__page-title">
+            {t("controlPanel.chat.pageTitle")}
+          </h1>
+          <p className="cp-chat__page-subtitle">{t("controlPanel.chat.pageSubtitle")}</p>
+        </header>
+        <div className="flex flex-1 min-h-0">
+          <div className="w-48 min-w-44 shrink-0 border-r border-border/15 dark:border-white/6 bg-background dark:bg-surface-1">
+            <ConversationList
+              activeConversationId={activeConversationId}
+              onSelectConversation={handleSelectConversation}
+              onNewChat={handleNewChat}
+              onOpenSearch={() => setShowSearch(true)}
+              onArchive={handleArchive}
+              onDelete={handleDelete}
+              refreshKey={refreshKey}
+            />
+          </div>
+          <div className="flex-1 min-w-80 flex flex-col">
+            {hasActiveChat ? (
+              <>
+                <ChatMessages messages={persistence.messages} emptyState={<NewChatEmptyState />} />
+                <ChatInput
+                  agentState={streaming.agentState}
+                  partialTranscript=""
+                  onTextSubmit={handleTextSubmit}
+                  onCancel={streaming.cancelStream}
+                  autoFocus={isNewChat}
+                  voiceDraft
+                />
+              </>
+            ) : (
+              <EmptyChatState />
+            )}
+          </div>
         </div>
-        <div className="flex-1 min-w-80 flex flex-col">
-          {hasActiveChat ? (
-            <>
-              <ChatMessages messages={persistence.messages} emptyState={<NewChatEmptyState />} />
-              <ChatInput
-                agentState={streaming.agentState}
-                partialTranscript=""
-                onTextSubmit={handleTextSubmit}
-                onCancel={streaming.cancelStream}
-                autoFocus={isNewChat}
-                voiceDraft
-              />
-            </>
-          ) : (
-            <EmptyChatState />
-          )}
-        </div>
-      </div>
+      </section>
     </>
   );
 }
