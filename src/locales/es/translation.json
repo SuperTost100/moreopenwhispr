@@ -712,6 +712,14 @@
       "pageTitle": "Diccionario",
       "pageSubtitle": "Palabras personalizadas para mejorar la precisión de la transcripción, y snippets que se expanden en texto guardado."
     },
+    "upload": {
+      "pageTitle": "Subir",
+      "pageSubtitle": "Archivos de audio y enlaces, transcritos en notas con detección de hablantes opcional."
+    },
+    "chat": {
+      "pageTitle": "Chat",
+      "pageSubtitle": "Conversaciones con acceso a tus notas, transcripciones, el calendario y la búsqueda web."
+    },
     "cloudMigration": {
       "title": "Bienvenido a OpenWhispr Cloud",
       "description": "Cambiamos tu transcripción a OpenWhispr Cloud para resultados más rápidos y precisos. Tu configuración anterior se guardó: puedes volver cuando quieras en Ajustes.",

@@ -2664,3 +2664,106 @@ a:hover {
     font-size: 1.1875rem;
   }
 }
+
+/* Control-panel Upload Audio view (scoped). Page head above the existing
+   centered dropzone/recorder content — same padding-only head as
+   .cp-settings-view (the content below stays intentionally narrow/centered,
+   so it gets no 64rem __inner cap). .cp-upload__empty-card frames the
+   no-provider empty state (icon + CTA, and the speaker-detection toggle
+   below it) in a hairline card so neither reads as an orphaned control. */
+.cp-upload {
+  --cp-upload-space-1: 8px;
+  --cp-upload-space-2: 16px;
+  --cp-upload-space-3: 24px;
+  --cp-upload-radius-panel: 12px;
+  --cp-upload-line: #cdd5d1;
+  --cp-upload-muted: #59645f;
+  --cp-upload-card-bg: #f6f8f7;
+}
+
+.dark .cp-upload {
+  --cp-upload-line: oklch(0.35 0.007 260);
+  --cp-upload-muted: oklch(0.72 0 0);
+  --cp-upload-card-bg: oklch(0.25 0.007 260);
+}
+
+.cp-upload__page-head {
+  padding: var(--cp-upload-space-3) var(--cp-upload-space-3) 0;
+}
+
+.cp-upload__page-title {
+  margin: 0 0 var(--cp-upload-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-upload__page-subtitle {
+  margin: 0;
+  color: var(--cp-upload-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.cp-upload__empty-card {
+  border: 1px solid var(--cp-upload-line);
+  border-radius: var(--cp-upload-radius-panel);
+  background: var(--cp-upload-card-bg);
+  padding: var(--cp-upload-space-3) var(--cp-upload-space-2);
+}
+
+@media (max-width: 640px) {
+  .cp-upload__page-head {
+    padding: var(--cp-upload-space-2) var(--cp-upload-space-2) 0;
+  }
+
+  .cp-upload__page-title {
+    font-size: 1.1875rem;
+  }
+}
+
+/* Control-panel Chat view (scoped). Page head above the existing two-pane
+   layout (conversation list + messages), same padding-only head as
+   .cp-settings-view — the conversation list keeps its own border-r hairline
+   below the head, exactly how SidebarNavRail's "view" variant separates the
+   settings rail from its content. */
+.cp-chat {
+  --cp-chat-space-1: 8px;
+  --cp-chat-space-2: 16px;
+  --cp-chat-space-3: 24px;
+  --cp-chat-muted: #59645f;
+}
+
+.dark .cp-chat {
+  --cp-chat-muted: oklch(0.72 0 0);
+}
+
+.cp-chat__page-head {
+  padding: var(--cp-chat-space-3) var(--cp-chat-space-3) var(--cp-chat-space-2);
+}
+
+.cp-chat__page-title {
+  margin: 0 0 var(--cp-chat-space-1);
+  font-size: 1.3125rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.cp-chat__page-subtitle {
+  margin: 0;
+  color: var(--cp-chat-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .cp-chat__page-head {
+    padding: var(--cp-chat-space-2) var(--cp-chat-space-2) var(--cp-chat-space-1);
+  }
+
+  .cp-chat__page-title {
+    font-size: 1.1875rem;
+  }
+}
