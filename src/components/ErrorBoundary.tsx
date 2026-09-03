@@ -58,7 +58,12 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-6">
           <div className="max-w-md text-center space-y-4">
-            <h1 className="text-lg font-semibold text-foreground">
+            {/* text-lg/font-semibold never actually applied here: a global `h1`
+                rule in index.css used to force 2.5rem/700 regardless. Pinned
+                explicitly so removing that rule doesn't change this screen.
+                font-bold needs `!`: the unlayered `h1,h2,...,h6` font-weight:600
+                rule further up in index.css still beats a plain utility. */}
+            <h1 className="text-[2.5rem] font-bold! text-foreground">
               {i18n.t("errorBoundary.title")}
             </h1>
             <p className="text-sm text-muted-foreground">{i18n.t("errorBoundary.description")}</p>
