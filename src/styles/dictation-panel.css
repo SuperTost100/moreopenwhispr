@@ -267,7 +267,9 @@
 /* Agent Mode keeps the identical glow in its purple identity. */
 .processing-signal-glow[data-agent="true"] {
   --signal-bright: #a78bfa;
-  --signal-core: #8787ff;
+  /* Same value as the agent brand token, which has no dark override, so the
+     glow keeps its deliberate identical-in-both-themes palette. */
+  --signal-core: var(--color-agent-brand);
   --signal-deep: #7c3aed;
   --signal-head: #f2edff;
 }
