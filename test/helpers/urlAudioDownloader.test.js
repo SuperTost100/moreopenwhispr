@@ -931,7 +931,10 @@ test("downloadDirect defers a cancelled download's rejection until the write str
         assert.equal(settled, null, "cancel must not settle while the open is still pending");
 
         releaseOpen();
-        await done;
+        // A cancellation path that destroys the write stream without it ever
+        // emitting 'close' would leave `done` pending forever; fail loudly
+        // instead of hanging the whole suite.
+        await resolvesWithin(done, 2000);
         assert.equal(settled.code, "DOWNLOAD_CANCELLED");
         assert.deepEqual(order, ["close", "rejected"]);
       }
