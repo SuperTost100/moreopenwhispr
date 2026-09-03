@@ -113,7 +113,7 @@ export default function EmailVerificationStep({
           // rule in index.css still beats a plain utility.
           className={
             embedded
-              ? "mt-6 text-[2.5rem] font-bold! tracking-tight"
+              ? "mt-6 text-2xl font-semibold! tracking-tight"
               : "onboarding-display-title mt-9"
           }
         >
