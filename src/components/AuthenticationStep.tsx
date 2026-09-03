@@ -123,8 +123,13 @@ export default function AuthenticationStep({
   // The fixed top offsets centre content in the compact setup window;
   // inside the SignInDialog the dialog supplies its own padding.
   const frameInset = (topClass: string) => (embedded ? "pt-1" : `px-5 ${topClass}`);
+  // text-2xl/font-semibold never actually applied here: a global `h1` rule in
+  // index.css used to force 2.5rem/700 regardless. Pinned explicitly so
+  // removing that rule doesn't change this (embedded, e.g. SignInDialog) title.
+  // font-bold needs `!`: the unlayered `h1,h2,...,h6` font-weight:600 rule in
+  // index.css still beats a plain utility.
   const titleClass = embedded
-    ? "text-2xl font-semibold tracking-tight"
+    ? "text-[2.5rem] font-bold! tracking-tight"
     : "onboarding-display-title";
   const { isSignedIn, isLoaded, user } = useAuth();
   const [authMode, setAuthMode] = useState<AuthMode>(null);

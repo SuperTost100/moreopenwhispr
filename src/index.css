@@ -809,11 +809,6 @@ h6 {
   line-height: 1.15;
 }
 
-h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-}
-
 .onboarding-display-title {
   font-size: 2rem; /* 32px */
   font-weight: 500; /* Inter Medium */
@@ -2774,12 +2769,14 @@ a:hover {
    document name), not a generic "Notes" label. This scope styles that
    heading, its paired subtitle, and the overview's explainer banner + ask
    bar to the same neutral hairline-card language as the other cp-* views.
-   .cp-notes__page-title exists because the bare `h1` rule near the top of
-   this file hard-sets font-size: 2.5rem — a plain element selector a
-   Tailwind text-* utility class can't reliably out-cascade — so the page
-   title needs its own class the same way every other cp-* view's title does.
-   Scoped to ContainerOverview + the folder-tree rail; the note editor and
-   SpacesTree's own drag-and-drop internals are untouched. */
+   .cp-notes__page-title exists because a bare `h1` rule used to sit near the
+   top of this file and hard-set font-size: 2.5rem — a plain element selector
+   a Tailwind text-* utility class couldn't reliably out-cascade — so the page
+   title needed its own class the same way every other cp-* view's title does.
+   That global rule is gone now (removed at the source instead), but the
+   scoped class stays: it's still the established convention for these
+   page titles. Scoped to ContainerOverview + the folder-tree rail; the note
+   editor and SpacesTree's own drag-and-drop internals are untouched. */
 .cp-notes {
   --cp-notes-space-1: 8px;
   --cp-notes-space-2: 16px;

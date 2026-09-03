@@ -12,7 +12,12 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
       <Markdown
         components={{
           h1: ({ children }) => (
-            <h1 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h1>
+            // text-lg never actually applied here: a global `h1` rule in
+            // index.css used to force 2.5rem regardless. Pinned explicitly so
+            // removing that rule doesn't change already-rendered markdown.
+            // font-bold needs `!`: the unlayered `h1,h2,...,h6` font-weight:600
+            // rule in index.css still beats a plain utility.
+            <h1 className="text-[2.5rem] font-bold! mb-2 mt-3 first:mt-0">{children}</h1>
           ),
           h2: ({ children }) => (
             <h2 className="text-base font-semibold mb-2 mt-3 first:mt-0">{children}</h2>
