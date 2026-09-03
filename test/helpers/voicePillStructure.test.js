@@ -248,7 +248,10 @@ test("Agent Mode uses the supplied mark, a purple perimeter glow, and a neutral 
   // The agent glow is the same Signal treatment re-palettes to the agent's
   // purple around the brand color.
   assert.match(styles, /\.processing-signal-glow\[data-agent="true"\]\s*\{/);
-  assert.match(styles, /--signal-core: #8787ff/);
+  // The glow references the brand token rather than repeating its value, so
+  // assert the indirection and the colour it resolves to.
+  assert.match(styles, /--signal-core: var\(--color-agent-brand\)/);
+  assert.match(styles, /--color-agent-brand: #8787ff/);
   assert.doesNotMatch(styles, /agent-waveform-background|agent-waveform-highlight/);
   // Listening stays glow-free; the purple Signal glow is reserved for the
   // post-recording thinking state so "hearing you" and "working" read apart.
