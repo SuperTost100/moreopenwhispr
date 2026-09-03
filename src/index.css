@@ -1762,48 +1762,70 @@ a:hover {
   color: oklch(0.7 0 0 / 0.2);
 }
 
+/* Shared control-panel (cp-*) tokens. The seven cp-* views below were themed
+   one at a time and ended up each declaring their own copy of the same few
+   values (muted text, hairline border, soft panel background, ink, nav hover
+   background). These live here once; a view keeps its own `--cp-<view>-*`
+   name only where its value genuinely differs from the shared one, or where
+   it points at a base --color-* token instead (see e.g. --cp-route-stage-bg).
+   Not to be confused with --onboarding-*, which is a deliberately separate
+   token system (see the onboarding-canvas notes below) and is untouched
+   here. */
+:root {
+  --cp-muted: #59645f;
+  --cp-line: #cdd5d1;
+  --cp-soft-bg: #f6f8f7;
+  --cp-ink: #18201d;
+  --cp-hover-bg: #e8ecea;
+  --cp-radius-panel: 12px;
+}
+
+.dark {
+  --cp-muted: oklch(0.72 0 0);
+  --cp-line: oklch(0.35 0.007 260);
+  --cp-soft-bg: oklch(0.25 0.007 260);
+  --cp-ink: oklch(0.93 0 0);
+  --cp-hover-bg: oklch(0.28 0.007 260);
+}
+
 /* Control panel shell — sidebar + compact nav (scoped to .cp-shell). */
 .cp-shell {
   --cp-shell-sidebar-width: 224px;
   --cp-shell-sidebar-bg: #f1f4f2;
   --cp-shell-sidebar-border: #cdd5d1;
-  --cp-shell-nav-muted: #59645f;
-  --cp-shell-nav-hover-bg: #e8ecea;
-  --cp-shell-nav-active-bg: #ffffff;
-  --cp-shell-nav-active-ink: #18201d;
+  /* Matches --color-popover exactly in both modes — referenced directly
+     rather than re-declared. */
+  --cp-shell-nav-active-bg: var(--color-popover);
   --cp-shell-nav-active-accent: var(--color-primary);
   --cp-shell-disclosure-ink: #59645f;
   --cp-shell-banner-bg: #ffffff;
   --cp-shell-banner-border: #cdd5d1;
   --cp-shell-compact-bg: #f1f4f2;
-  --cp-shell-compact-border: #cdd5d1;
-  --cp-shell-compact-trigger-bg: #ffffff;
+  /* Same hairline as --cp-shell-banner-border in both modes (a shell-only
+     coincidence — its dark value differs from the cross-view --cp-line by
+     0.01L, so it stays local rather than joining that shared token). */
+  --cp-shell-compact-border: var(--cp-shell-banner-border);
+  --cp-shell-compact-trigger-bg: var(--color-popover);
   font-family: var(--font-family-sans);
 }
 
 .dark .cp-shell {
   --cp-shell-sidebar-bg: oklch(0.16 0.006 260);
   --cp-shell-sidebar-border: oklch(0.44 0.008 260);
-  --cp-shell-nav-muted: oklch(0.72 0 0);
-  --cp-shell-nav-hover-bg: oklch(0.28 0.007 260);
-  --cp-shell-nav-active-bg: oklch(0.29 0.009 260);
-  --cp-shell-nav-active-ink: oklch(0.93 0 0);
   --cp-shell-disclosure-ink: oklch(0.68 0 0);
   --cp-shell-banner-bg: oklch(0.27 0.008 260);
   --cp-shell-banner-border: oklch(0.34 0.007 260);
   --cp-shell-compact-bg: oklch(0.24 0.006 260);
-  --cp-shell-compact-border: oklch(0.34 0.007 260);
-  --cp-shell-compact-trigger-bg: oklch(0.29 0.009 260);
 }
 
 .cp-shell-sidebar {
   background: var(--cp-shell-sidebar-bg);
   border-color: var(--cp-shell-sidebar-border);
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-product-label {
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-fork-disclosure {
@@ -1832,26 +1854,26 @@ a:hover {
 .cp-shell-search-trigger {
   background: var(--cp-shell-nav-active-bg);
   border-color: var(--cp-shell-sidebar-border);
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-search-trigger:hover {
-  background: var(--cp-shell-nav-hover-bg);
+  background: var(--cp-hover-bg);
 }
 
 .cp-shell-nav-item {
-  color: var(--cp-shell-nav-muted);
+  color: var(--cp-muted);
 }
 
 .cp-shell-nav-item:hover {
-  background: var(--cp-shell-nav-hover-bg);
-  color: var(--cp-shell-nav-active-ink);
+  background: var(--cp-hover-bg);
+  color: var(--cp-ink);
 }
 
 .cp-shell-nav-item--active {
   background: var(--cp-shell-nav-active-bg);
   box-shadow: inset 3px 0 0 var(--cp-shell-nav-active-accent);
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-nav-item--active:hover {
@@ -1861,16 +1883,16 @@ a:hover {
 .cp-shell-banner {
   background: var(--cp-shell-banner-bg);
   border-color: var(--cp-shell-banner-border);
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-footer-item {
-  color: var(--cp-shell-nav-muted);
+  color: var(--cp-muted);
 }
 
 .cp-shell-footer-item:hover {
-  background: var(--cp-shell-nav-hover-bg);
-  color: var(--cp-shell-nav-active-ink);
+  background: var(--cp-hover-bg);
+  color: var(--cp-ink);
 }
 
 .cp-shell-footer-divider {
@@ -1904,21 +1926,21 @@ a:hover {
 .cp-shell-compact-nav-trigger {
   background: var(--cp-shell-compact-trigger-bg);
   border-color: var(--cp-shell-compact-border);
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-compact-nav-trigger:hover {
-  background: var(--cp-shell-nav-hover-bg);
+  background: var(--cp-hover-bg);
 }
 
 .cp-shell-compact-nav-icon-btn {
   border-color: var(--cp-shell-compact-border);
   background: var(--cp-shell-compact-trigger-bg);
-  color: var(--cp-shell-nav-active-ink);
+  color: var(--cp-ink);
 }
 
 .cp-shell-compact-nav-icon-btn:hover {
-  background: var(--cp-shell-nav-hover-bg);
+  background: var(--cp-hover-bg);
 }
 
 @media (max-width: 799px) {
@@ -1932,25 +1954,25 @@ a:hover {
   --cp-route-space-1: 8px;
   --cp-route-space-2: 16px;
   --cp-route-space-3: 20px;
-  --cp-route-radius-panel: 12px;
   --cp-route-radius-stage: 10px;
   --cp-route-accent-width: 4px;
   --cp-route-local-accent: #2f6f5e;
   --cp-route-antigravity-accent: #5b57b7;
   --cp-route-byok-accent: #3d6f8f;
   --cp-route-custom-accent: #7a6848;
+  /* Same value as --cp-route-antigravity-accent in both modes today, but a
+     different boundary concept ("audio leaves device" vs "provider
+     request") — see ConfiguredProcessingRoute.tsx. Kept separate on purpose,
+     not merged. */
   --cp-route-provider-accent: #5b57b7;
-  --cp-route-panel-bg: #f6f8f7;
-  --cp-route-stage-bg: #ffffff;
-  --cp-route-line: #cdd5d1;
-  --cp-route-ink: #18201d;
-  --cp-route-muted: #59645f;
+  /* Matches --color-card exactly in both modes. */
+  --cp-route-stage-bg: var(--color-card);
   margin-bottom: calc(var(--cp-route-space-1) * 2 + 6px);
   padding: var(--cp-route-space-3);
-  border: 1px solid var(--cp-route-line);
-  border-radius: var(--cp-route-radius-panel);
-  background: var(--cp-route-panel-bg);
-  color: var(--cp-route-ink);
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius-panel);
+  background: var(--cp-soft-bg);
+  color: var(--cp-ink);
 }
 
 .dark .cp-processing-route {
@@ -1959,11 +1981,6 @@ a:hover {
   --cp-route-byok-accent: #7eb3d4;
   --cp-route-custom-accent: #c2a97a;
   --cp-route-provider-accent: #9a97e0;
-  --cp-route-panel-bg: oklch(0.25 0.007 260);
-  --cp-route-stage-bg: oklch(0.27 0.008 260);
-  --cp-route-line: oklch(0.35 0.007 260);
-  --cp-route-ink: oklch(0.93 0 0);
-  --cp-route-muted: oklch(0.72 0 0);
 }
 
 .cp-processing-route__head {
@@ -1983,7 +2000,7 @@ a:hover {
 
 .cp-processing-route__subtitle {
   margin: 0;
-  color: var(--cp-route-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -1992,7 +2009,7 @@ a:hover {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   overflow: hidden;
-  border: 1px solid var(--cp-route-line);
+  border: 1px solid var(--cp-line);
   border-radius: var(--cp-route-radius-stage);
   background: var(--cp-route-stage-bg);
 }
@@ -2000,7 +2017,7 @@ a:hover {
 .cp-processing-route__stage {
   min-width: 0;
   padding: var(--cp-route-space-2);
-  border-right: 1px solid var(--cp-route-line);
+  border-right: 1px solid var(--cp-line);
   border-top: var(--cp-route-accent-width) solid transparent;
   background: var(--cp-route-stage-bg);
 }
@@ -2050,13 +2067,13 @@ a:hover {
 }
 
 .cp-processing-route__stage--skipped .cp-processing-route__detail {
-  color: var(--cp-route-muted);
+  color: var(--cp-muted);
 }
 
 .cp-processing-route__boundary {
   display: block;
   margin-bottom: 8px;
-  color: var(--cp-route-muted);
+  color: var(--cp-muted);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -2074,7 +2091,7 @@ a:hover {
 
 .cp-processing-route__detail {
   display: block;
-  color: var(--cp-route-muted);
+  color: var(--cp-muted);
   font-size: 0.8125rem;
   line-height: 1.4;
 }
@@ -2089,7 +2106,7 @@ a:hover {
   }
 
   .cp-processing-route__stage:nth-child(-n + 2) {
-    border-bottom: 1px solid var(--cp-route-line);
+    border-bottom: 1px solid var(--cp-line);
   }
 }
 
@@ -2109,7 +2126,7 @@ a:hover {
 
   .cp-processing-route__stage {
     border-right: 0;
-    border-bottom: 1px solid var(--cp-route-line);
+    border-bottom: 1px solid var(--cp-line);
   }
 
   .cp-processing-route__stage:last-child {
@@ -2124,35 +2141,22 @@ a:hover {
   --cp-history-space-3: 24px;
   --cp-history-space-4: 32px;
   --cp-history-radius: 10px;
-  --cp-history-radius-panel: 12px;
-  --cp-history-line: #cdd5d1;
-  --cp-history-ink: #18201d;
-  --cp-history-muted: #59645f;
-  --cp-history-panel-bg: #ffffff;
-  --cp-history-soft-bg: #f6f8f7;
-  --cp-history-hover-bg: #e8ecea;
-  --cp-history-info-border: #cdd5d1;
-  --cp-history-info-bg: #f6f8f7;
+  /* Matches --color-card exactly in both modes. */
+  --cp-history-panel-bg: var(--color-card);
   --cp-history-info-accent: var(--color-primary);
   --cp-history-warning-border: #d9b84a;
   --cp-history-warning-bg: #fdf8ea;
   --cp-history-warning-ink: #7a5c00;
+  /* A muted/soft destructive accent for history badges — deliberately not
+     the same as --color-destructive (which is fully saturated). */
   --cp-history-destructive: #a34c42;
   --cp-history-destructive-bg: #f9ecea;
   --cp-history-sticky-bg: #eef1ef;
   padding: var(--cp-history-space-3) var(--cp-history-space-2) var(--cp-history-space-4);
-  color: var(--cp-history-ink);
+  color: var(--cp-ink);
 }
 
 .dark .cp-history {
-  --cp-history-line: oklch(0.35 0.007 260);
-  --cp-history-ink: oklch(0.93 0 0);
-  --cp-history-muted: oklch(0.72 0 0);
-  --cp-history-panel-bg: oklch(0.27 0.008 260);
-  --cp-history-soft-bg: oklch(0.25 0.007 260);
-  --cp-history-hover-bg: oklch(0.28 0.007 260);
-  --cp-history-info-border: oklch(0.35 0.007 260);
-  --cp-history-info-bg: oklch(0.25 0.007 260);
   --cp-history-warning-border: oklch(0.62 0.09 85);
   --cp-history-warning-bg: oklch(0.28 0.03 85 / 0.35);
   --cp-history-warning-ink: oklch(0.86 0.06 85);
@@ -2180,7 +2184,7 @@ a:hover {
 
 .cp-history__page-subtitle {
   margin: 0;
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -2189,9 +2193,9 @@ a:hover {
   position: relative;
   margin-bottom: var(--cp-history-space-2);
   padding: var(--cp-history-space-2);
-  border: 1px solid var(--cp-history-info-border);
-  border-radius: var(--cp-history-radius-panel);
-  background: var(--cp-history-info-bg);
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius-panel);
+  background: var(--cp-soft-bg);
 }
 
 .cp-history__banner-dismiss {
@@ -2207,13 +2211,13 @@ a:hover {
   border: 0;
   border-radius: var(--cp-history-radius);
   background: transparent;
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   cursor: pointer;
 }
 
 .cp-history__banner-dismiss:hover {
-  background: var(--cp-history-hover-bg);
-  color: var(--cp-history-ink);
+  background: var(--cp-hover-bg);
+  color: var(--cp-ink);
 }
 
 .cp-history__banner-dismiss:focus-visible {
@@ -2253,7 +2257,7 @@ a:hover {
 
 .cp-history__banner-description {
   margin: 0 0 var(--cp-history-space-1);
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-size: 0.8125rem;
   line-height: 1.45;
 }
@@ -2329,15 +2333,15 @@ a:hover {
   border: 0;
   border-radius: var(--cp-history-radius);
   background: transparent;
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-size: 0.8125rem;
   line-height: 1.2;
   cursor: pointer;
 }
 
 .cp-history__toolbar-btn:hover {
-  background: var(--cp-history-hover-bg);
-  color: var(--cp-history-ink);
+  background: var(--cp-hover-bg);
+  color: var(--cp-ink);
 }
 
 .cp-history__toolbar-btn:focus-visible {
@@ -2357,7 +2361,7 @@ a:hover {
   margin-bottom: var(--cp-history-space-2);
   padding: 10px 14px;
   border: 1px solid var(--cp-history-warning-border);
-  border-radius: var(--cp-history-radius-panel);
+  border-radius: var(--cp-radius-panel);
   background: var(--cp-history-warning-bg);
   color: var(--cp-history-warning-ink);
 }
@@ -2375,9 +2379,9 @@ a:hover {
 }
 
 .cp-history__panel {
-  border: 1px solid var(--cp-history-line);
-  border-radius: var(--cp-history-radius-panel);
-  background: var(--cp-history-soft-bg);
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius-panel);
+  background: var(--cp-soft-bg);
 }
 
 .cp-history__panel-center {
@@ -2386,7 +2390,7 @@ a:hover {
   justify-content: center;
   gap: var(--cp-history-space-1);
   padding: var(--cp-history-space-4) var(--cp-history-space-2);
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
 }
 
@@ -2416,7 +2420,7 @@ a:hover {
 
 .cp-history__empty-art {
   margin-bottom: 20px;
-  color: var(--cp-history-ink);
+  color: var(--cp-ink);
   opacity: 0.55;
 }
 
@@ -2437,7 +2441,7 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: var(--cp-history-space-1);
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-size: 0.8125rem;
 }
 
@@ -2450,10 +2454,10 @@ a:hover {
   align-items: center;
   min-height: 20px;
   padding: 0 6px;
-  border: 1px solid var(--cp-history-line);
+  border: 1px solid var(--cp-line);
   border-radius: 6px;
   background: var(--cp-history-panel-bg);
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.75rem;
   font-weight: 500;
@@ -2476,7 +2480,7 @@ a:hover {
 
 .cp-history__date-label {
   margin: 0;
-  color: var(--cp-history-muted);
+  color: var(--cp-muted);
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -2525,11 +2529,6 @@ a:hover {
   --cp-settings-space-1: 8px;
   --cp-settings-space-2: 16px;
   --cp-settings-space-3: 24px;
-  --cp-settings-muted: #59645f;
-}
-
-.dark .cp-settings-view {
-  --cp-settings-muted: oklch(0.72 0 0);
 }
 
 .cp-settings-view__page-head {
@@ -2546,7 +2545,7 @@ a:hover {
 
 .cp-settings-view__page-subtitle {
   margin: 0;
-  color: var(--cp-settings-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -2568,13 +2567,8 @@ a:hover {
   --cp-integrations-space-2: 16px;
   --cp-integrations-space-3: 24px;
   --cp-integrations-space-4: 32px;
-  --cp-integrations-muted: #59645f;
   padding: var(--cp-integrations-space-3) var(--cp-integrations-space-2)
     var(--cp-integrations-space-4);
-}
-
-.dark .cp-integrations {
-  --cp-integrations-muted: oklch(0.72 0 0);
 }
 
 .cp-integrations__inner {
@@ -2596,7 +2590,7 @@ a:hover {
 
 .cp-integrations__page-subtitle {
   margin: 0;
-  color: var(--cp-integrations-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -2618,11 +2612,6 @@ a:hover {
   --cp-dictionary-space-1: 8px;
   --cp-dictionary-space-2: 16px;
   --cp-dictionary-space-3: 24px;
-  --cp-dictionary-muted: #59645f;
-}
-
-.dark .cp-dictionary {
-  --cp-dictionary-muted: oklch(0.72 0 0);
 }
 
 .cp-dictionary__inner {
@@ -2645,7 +2634,7 @@ a:hover {
 
 .cp-dictionary__page-subtitle {
   margin: 0;
-  color: var(--cp-dictionary-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -2670,16 +2659,6 @@ a:hover {
   --cp-upload-space-1: 8px;
   --cp-upload-space-2: 16px;
   --cp-upload-space-3: 24px;
-  --cp-upload-radius-panel: 12px;
-  --cp-upload-line: #cdd5d1;
-  --cp-upload-muted: #59645f;
-  --cp-upload-card-bg: #f6f8f7;
-}
-
-.dark .cp-upload {
-  --cp-upload-line: oklch(0.35 0.007 260);
-  --cp-upload-muted: oklch(0.72 0 0);
-  --cp-upload-card-bg: oklch(0.25 0.007 260);
 }
 
 .cp-upload__page-head {
@@ -2696,15 +2675,15 @@ a:hover {
 
 .cp-upload__page-subtitle {
   margin: 0;
-  color: var(--cp-upload-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
 
 .cp-upload__empty-card {
-  border: 1px solid var(--cp-upload-line);
-  border-radius: var(--cp-upload-radius-panel);
-  background: var(--cp-upload-card-bg);
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius-panel);
+  background: var(--cp-soft-bg);
   padding: var(--cp-upload-space-3) var(--cp-upload-space-2);
 }
 
@@ -2727,11 +2706,6 @@ a:hover {
   --cp-chat-space-1: 8px;
   --cp-chat-space-2: 16px;
   --cp-chat-space-3: 24px;
-  --cp-chat-muted: #59645f;
-}
-
-.dark .cp-chat {
-  --cp-chat-muted: oklch(0.72 0 0);
 }
 
 .cp-chat__page-head {
@@ -2748,7 +2722,7 @@ a:hover {
 
 .cp-chat__page-subtitle {
   margin: 0;
-  color: var(--cp-chat-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -2781,17 +2755,7 @@ a:hover {
   --cp-notes-space-1: 8px;
   --cp-notes-space-2: 16px;
   --cp-notes-radius: 8px;
-  --cp-notes-radius-panel: 12px;
-  --cp-notes-line: #cdd5d1;
-  --cp-notes-muted: #59645f;
-  --cp-notes-info-bg: #f6f8f7;
   --cp-notes-info-accent: var(--color-primary);
-}
-
-.dark .cp-notes {
-  --cp-notes-line: oklch(0.35 0.007 260);
-  --cp-notes-muted: oklch(0.72 0 0);
-  --cp-notes-info-bg: oklch(0.25 0.007 260);
 }
 
 .cp-notes__page-title {
@@ -2804,7 +2768,7 @@ a:hover {
 
 .cp-notes__page-subtitle {
   margin: 0;
-  color: var(--cp-notes-muted);
+  color: var(--cp-muted);
   font-size: 0.875rem;
   line-height: 1.45;
 }
@@ -2818,9 +2782,9 @@ a:hover {
 .cp-notes__banner {
   position: relative;
   padding: var(--cp-notes-space-2);
-  border: 1px solid var(--cp-notes-line);
-  border-radius: var(--cp-notes-radius-panel);
-  background: var(--cp-notes-info-bg);
+  border: 1px solid var(--cp-line);
+  border-radius: var(--cp-radius-panel);
+  background: var(--cp-soft-bg);
 }
 
 .cp-notes__banner-dismiss {
@@ -2836,12 +2800,12 @@ a:hover {
   border: 0;
   border-radius: var(--cp-notes-radius);
   background: transparent;
-  color: var(--cp-notes-muted);
+  color: var(--cp-muted);
   cursor: pointer;
 }
 
 .cp-notes__banner-dismiss:hover {
-  background: color-mix(in srgb, var(--cp-notes-muted) 14%, transparent);
+  background: color-mix(in srgb, var(--cp-muted) 14%, transparent);
 }
 
 .cp-notes__banner-dismiss:focus-visible {
@@ -2858,19 +2822,19 @@ a:hover {
 
 .cp-notes__banner-description {
   margin: 0 24px 0 0;
-  color: var(--cp-notes-muted);
+  color: var(--cp-muted);
   font-size: 0.8125rem;
   line-height: 1.45;
 }
 
 .cp-notes__ask-card {
-  border-radius: var(--cp-notes-radius-panel);
-  border: 1px solid var(--cp-notes-line);
-  background: var(--cp-notes-info-bg);
+  border-radius: var(--cp-radius-panel);
+  border: 1px solid var(--cp-line);
+  background: var(--cp-soft-bg);
 }
 
 .cp-notes__chip {
-  border-color: var(--cp-notes-line);
+  border-color: var(--cp-line);
 }
 
 .cp-notes__empty-art {
