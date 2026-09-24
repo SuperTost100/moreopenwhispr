@@ -12,7 +12,8 @@ import { CircleAlert, Cloud, Lock, Zap } from "./icons";
 import ApiKeyInput from "./ui/ApiKeyInput";
 import ModelCardList from "./ui/ModelCardList";
 import LocalModelPicker, { type LocalProvider } from "./LocalModelPicker";
-import { ProviderTabs, type ProviderTabItem } from "./ui/ProviderTabs";
+import type { ProviderTabItem } from "./ui/ProviderTabs";
+import { SettingsProviderChips } from "./settings/SettingsProviderChips";
 import OpenAICompatiblePanel from "./OpenAICompatiblePanel";
 import { API_ENDPOINTS } from "../config/constants";
 import {
@@ -267,7 +268,7 @@ function GpuStatusBadge() {
   if (activating) {
     return (
       <div className="flex items-center gap-1.5 mt-2 px-1">
-        <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0 bg-primary animate-pulse" />
+        <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0 bg-primary" />
         <span className="text-xs text-muted-foreground">{t("gpu.activating")}</span>
       </div>
     );
@@ -560,12 +561,11 @@ export default function ReasoningModelSelector({
         <div className="space-y-2">
           {modeTabs.length > 0 ? (
             <>
-              <ProviderTabs
+              <SettingsProviderChips
                 providers={modeTabs}
                 selectedId={effectiveMode}
                 onSelect={(id) => handleModeChange(id as "cloud" | "local")}
                 renderIcon={renderModeIcon}
-                colorScheme="purple"
               />
               <p className="text-xs text-muted-foreground text-center">
                 {effectiveMode === "local"
@@ -582,12 +582,11 @@ export default function ReasoningModelSelector({
       {effectiveMode === "cloud" && (
         <div className="space-y-2">
           {cloudProviderTabs.length > 0 && (
-            <ProviderTabs
+            <SettingsProviderChips
+              layout="grid"
               providers={cloudProviderTabs}
               selectedId={displayedCloudProvider}
               onSelect={handleCloudProviderChange}
-              colorScheme="purple"
-              wrap
             />
           )}
 

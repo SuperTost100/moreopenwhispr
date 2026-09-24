@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { ProviderTabs } from "./ui/ProviderTabs";
+import { SettingsProviderChips } from "./settings/SettingsProviderChips";
 import { DownloadProgressBar } from "./ui/DownloadProgressBar";
 import { ConfirmDialog } from "./ui/dialog";
 import ModelCardList, { type ModelCardOption } from "./ui/ModelCardList";
@@ -188,12 +188,11 @@ export default function LocalModelPicker({
 
   return (
     <div className={className}>
-      <ProviderTabs
+      <SettingsProviderChips
+        layout="grid"
         providers={providers}
         selectedId={selectedProvider}
         onSelect={onProviderSelect}
-        colorScheme={colorScheme}
-        wrap
       />
 
       {activeModels.length > 0 && (

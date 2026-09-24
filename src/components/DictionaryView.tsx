@@ -115,7 +115,7 @@ export default function DictionaryView() {
 
   const emptyState = (
     <div className="flex flex-col items-center text-center py-8">
-      <div className="w-10 h-10 rounded-[10px] bg-gradient-to-b from-primary/8 to-primary/4 dark:from-primary/12 dark:to-primary/6 border border-primary/10 dark:border-primary/15 flex items-center justify-center mb-3.5">
+      <div className="w-10 h-10 rounded-md bg-primary-soft border border-border flex items-center justify-center mb-3.5">
         <BookOpen size={17} strokeWidth={1.5} className="text-primary/50 dark:text-primary/60" />
       </div>
       <h4 className="text-xs font-semibold text-foreground mb-1">{t("dictionary.emptyTitle")}</h4>
@@ -196,7 +196,7 @@ export default function DictionaryView() {
                   {t("dictionary.add")}
                   <CornerDownLeft size={10} />
                 </button>
-                <div className="w-px h-3.5 bg-foreground/10 dark:bg-white/8" />
+                <div className="w-px h-3.5 bg-border" />
                 <button
                   onClick={() => setShowBulkImport(true)}
                   aria-label={t("dictionary.importWords")}
@@ -210,7 +210,7 @@ export default function DictionaryView() {
 
           {/* ─── Bulk import ─── */}
           {showBulkImport && (
-            <div className="rounded-md border border-primary/30 dark:border-primary/40 px-3 pt-2.5 pb-2">
+            <div className="rounded-md border border-border bg-card px-3 pt-2.5 pb-2">
               <Textarea
                 dir="auto"
                 autoFocus
@@ -250,7 +250,7 @@ export default function DictionaryView() {
           )}
 
           {/* ─── Agent name (always recognized) ─── */}
-          <div className="rounded-md border border-primary/15 dark:border-primary/20 bg-primary/3 dark:bg-primary/6 px-4 py-2.5 flex items-center justify-between gap-3">
+          <div className="rounded-md border border-primary bg-primary-soft px-4 py-2.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <Sparkles size={11} className="text-primary/70 shrink-0" />
               <span dir="auto" className="text-xs font-medium text-primary truncate">
@@ -263,7 +263,7 @@ export default function DictionaryView() {
           </div>
 
           {/* ─── Dictionary list ─── */}
-          <div className="rounded-md border border-foreground/8 dark:border-white/10 bg-foreground/[0.02] dark:bg-white/[0.03] px-4 py-3">
+          <div className="rounded-md border border-border bg-muted px-4 py-3">
             {userWords.length > 0 && (
               <>
                 <div className="flex items-center justify-between">

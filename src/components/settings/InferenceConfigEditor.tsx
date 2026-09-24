@@ -209,7 +209,7 @@ export default function InferenceConfigEditor({
 
   if (managed.kind === "managed") {
     return (
-      <div className="space-y-3 rounded-lg border border-primary/20 bg-primary/[0.03] p-3">
+      <div className="space-y-3 rounded-lg border border-border bg-muted p-3">
         <div className="flex items-start gap-2.5">
           <div className="rounded-md bg-primary/10 p-1.5 text-primary">
             <ShieldCheck className="h-4 w-4" />

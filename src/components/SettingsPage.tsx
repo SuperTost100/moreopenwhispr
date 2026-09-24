@@ -73,7 +73,7 @@ import { useClipboard } from "../hooks/useClipboard";
 import { useUpdater } from "../hooks/useUpdater";
 
 import PromptStudio from "./ui/PromptStudio";
-import { ProviderTabs } from "./ui/ProviderTabs";
+import { SettingsProviderChips } from "./settings/SettingsProviderChips";
 import { HotkeyListInput } from "./ui/HotkeyListInput";
 import { useHotkeyRegistration } from "../hooks/useHotkeyRegistration";
 import { useHotkeyModeInfo } from "../hooks/useHotkeyModeInfo";
@@ -195,7 +195,7 @@ const UI_LANGUAGE_OPTIONS: import("./ui/LanguageSelector").LanguageOption[] = [
 const RETENTION_DAY_OPTIONS = [1, 7, 14, 30, 60, 90];
 
 const RETENTION_SELECT_CLASS =
-  "h-7 rounded border border-border/70 bg-surface-1/80 px-2.5 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm hover:border-border-hover hover:bg-surface-2/70 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200";
+  "h-9 rounded-md border border-border bg-card px-2.5 text-xs font-medium text-foreground hover:border-border-hover hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-150";
 
 const noop = () => {};
 
@@ -207,9 +207,7 @@ function SettingsPanel({
   className?: string;
 }) {
   return (
-    <div
-      className={`rounded-lg border border-border/70 dark:border-border-subtle/70 bg-card/50 dark:bg-surface-2/50 backdrop-blur-sm divide-y divide-border/60 dark:divide-border-subtle/50 ${className}`}
-    >
+    <div className={`rounded-lg border border-border bg-card divide-y divide-border ${className}`}>
       {children}
     </div>
   );
@@ -1036,7 +1034,7 @@ function SpeechToTextTabs({
         title={t("settingsPage.speechToText.title")}
         description={t("settingsPage.speechToText.description")}
       />
-      <ProviderTabs
+      <SettingsProviderChips
         providers={subTabs}
         selectedId={tab}
         onSelect={(id) => setTab(id as SpeechTab)}
@@ -1093,7 +1091,7 @@ function LlmsTabs({
         title={t("settingsPage.llms.title")}
         description={t("settingsPage.llms.description")}
       />
-      <ProviderTabs
+      <SettingsProviderChips
         providers={subTabs}
         selectedId={tab}
         onSelect={(id) => setTab(id as LlmTab)}
@@ -3304,7 +3302,7 @@ export default function SettingsPage({
                           e.target.value as "bottom-right" | "center" | "bottom-left"
                         )
                       }
-                      className="h-7 rounded border border-border/70 bg-surface-1/80 px-2.5 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm hover:border-border-hover hover:bg-surface-2/70 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-1 transition-colors duration-200"
+                      className={RETENTION_SELECT_CLASS}
                     >
                       <option value="bottom-right">
                         {t("settingsPage.general.floatingIcon.bottomRight")}
