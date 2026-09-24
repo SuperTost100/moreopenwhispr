@@ -27,7 +27,7 @@ interface ChatInputProps {
 function RecordingIndicator() {
   return (
     <div className="relative flex items-center justify-center w-5 h-5 shrink-0">
-      <div className="absolute inset-0 rounded-full border-2 border-primary/40 animate-pulse" />
+      <div className="absolute inset-0 rounded-full border-2 border-primary/50" />
       <div className="w-2.5 h-2.5 rounded-full bg-primary" />
     </div>
   );
@@ -117,12 +117,11 @@ export function ChatInput({
     <div className={cn("shrink-0", className ?? "px-3 pb-3 pt-1")}>
       <div
         className={cn(
-          "flex items-center gap-2 min-h-11 ps-4 pe-1.5 rounded-full",
+          "flex items-center gap-2 min-h-11 ps-4 pe-1.5 rounded-lg",
           GLASS_SURFACE,
-          "border border-black/10 dark:border-white/14",
-          "transition-all duration-200",
+          "transition-colors duration-150",
           isIdle &&
-            "focus-within:border-black/15 dark:focus-within:border-white/22 focus-within:ring-[3px] focus-within:ring-primary/8"
+            "focus-within:border-border-hover focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
         )}
       >
         {isListening && (
@@ -178,7 +177,7 @@ export function ChatInput({
                 "flex items-center justify-center w-7 h-7 rounded-full shrink-0",
                 "animate-[scale-in_0.15s_ease-out_backwards]",
                 GRADIENT_CIRCLE,
-                "hover:brightness-110 active:scale-95",
+                "hover:bg-primary-hover active:scale-95",
                 "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30",
                 "transition-all duration-100"
               )}
@@ -242,7 +241,7 @@ export function ChatInput({
                   "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30",
                   "transition-all duration-100",
                   inputText.trim()
-                    ? "hover:brightness-110 active:scale-95"
+                    ? "hover:bg-primary-hover active:scale-95"
                     : "opacity-30 saturate-0 cursor-default"
                 )}
               >
@@ -265,7 +264,7 @@ export function ChatInput({
                   "transition-all duration-100",
                   voice.streamingOnlyProvider
                     ? "opacity-30 saturate-0 cursor-default"
-                    : "hover:brightness-110 active:scale-95"
+                    : "hover:bg-primary-hover active:scale-95"
                 )}
               >
                 <Mic size={14} />

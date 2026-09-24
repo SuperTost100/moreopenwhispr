@@ -101,7 +101,7 @@ export default function BatchQueueView({
             </Button>
           )}
         </div>
-        <div className="w-full h-[3px] rounded-full bg-foreground/5 dark:bg-white/5 overflow-hidden">
+        <div className="w-full h-[3px] rounded-full bg-muted overflow-hidden">
           <div
             className="h-full rounded-full bg-primary/50 transition-[width] duration-500 ease-out"
             style={{ width: `${overallProgress}%` }}
@@ -115,7 +115,7 @@ export default function BatchQueueView({
             key={item.id}
             className={cn(
               "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs",
-              "bg-surface-1/30 dark:bg-white/[0.02] border border-foreground/4 dark:border-white/10",
+              "bg-muted border border-foreground/4 border-border",
               item.status === "error" && "border-destructive/15"
             )}
           >

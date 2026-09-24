@@ -87,10 +87,10 @@ const MAX_BATCH_URLS = 50;
 
 const uploadFieldClass = cn(
   "rounded-lg text-xs",
-  "bg-surface-1/40 dark:bg-white/[0.03] backdrop-blur-sm",
-  "border border-foreground/6 dark:border-white/10",
+  "bg-muted ",
+  "border border-foreground/6 border-border",
   "text-foreground/70 placeholder:text-foreground/45",
-  "focus:outline-none focus:border-foreground/12 dark:focus:border-white/10",
+  "focus:outline-none focus:border-border-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
   "transition-colors"
 );
 
@@ -994,11 +994,11 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
                 />
 
                 <div className="flex items-center gap-3 my-3">
-                  <div className="h-px flex-1 bg-foreground/5 dark:bg-white/5" />
+                  <div className="h-px flex-1 bg-foreground/5 bg-muted" />
                   <span className="text-[10px] text-foreground/45 uppercase tracking-wider">
                     {t("notes.upload.orDivider")}
                   </span>
-                  <div className="h-px flex-1 bg-foreground/5 dark:bg-white/5" />
+                  <div className="h-px flex-1 bg-foreground/5 bg-muted" />
                 </div>
 
                 {urlExpanded ? (
@@ -1087,9 +1087,9 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
                       aria-label={t("notes.upload.urlSubmit")}
                       className={cn(
                         "absolute right-px top-px bottom-px w-7 rounded-r-[7px] flex items-center justify-center transition-colors",
-                        "border-l border-foreground/6 dark:border-white/6",
+                        "border-l border-foreground/6 border-border",
                         urlInput.trim()
-                          ? "text-foreground/40 hover:text-foreground/60 hover:bg-foreground/[0.03] dark:hover:bg-white/[0.03]"
+                          ? "text-foreground/40 hover:text-foreground/60 hover:bg-muted"
                           : "text-foreground/10"
                       )}
                     >
@@ -1196,7 +1196,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
                   ))}
                 </div>
 
-                <div className="w-full max-w-[200px] h-[3px] rounded-full bg-foreground/5 dark:bg-white/5 overflow-hidden mb-3">
+                <div className="w-full max-w-[200px] h-[3px] rounded-full bg-foreground/5 bg-muted overflow-hidden mb-3">
                   <div
                     className={cn(
                       "h-full rounded-full bg-primary/50 transition-[width] duration-500 ease-out",
@@ -1451,7 +1451,7 @@ function NoProviderView({ t, onOpenSettings }: NoProviderViewProps) {
       className="cp-upload__empty-card flex flex-col items-center gap-4"
       style={{ animation: "float-up 0.4s ease-out" }}
     >
-      <div className="w-10 h-10 rounded-[10px] bg-linear-to-b from-foreground/5 to-foreground/2 dark:from-white/8 dark:to-white/3 border border-foreground/8 dark:border-white/10 flex items-center justify-center">
+      <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
         <Settings
           size={17}
           strokeWidth={1.5}
@@ -1502,7 +1502,7 @@ function IdleView({
   return (
     <>
       <div className="flex flex-col items-center mb-5">
-        <div className="w-10 h-10 rounded-[10px] bg-linear-to-b from-foreground/5 to-foreground/[0.02] dark:from-white/8 dark:to-white/3 border border-foreground/8 dark:border-white/10 flex items-center justify-center mb-4">
+        <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center mb-4">
           <Upload
             size={17}
             strokeWidth={1.5}
@@ -1535,24 +1535,21 @@ function IdleView({
         onKeyDown={handleKeyDown}
         className={cn(
           "relative rounded-lg p-8 text-center cursor-pointer transition-[background-color,border-color,transform] duration-300 group",
-          "bg-surface-1/40 dark:bg-white/[0.03] backdrop-blur-sm",
-          "border border-foreground/6 dark:border-white/10",
-          "hover:bg-surface-1/60 dark:hover:bg-white/[0.05] hover:border-foreground/12 dark:hover:border-white/10",
+          "bg-muted ",
+          "border border-foreground/6 border-border",
+          "hover:bg-muted hover:border-border-hover",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30",
           isDragOver && "border-primary/30 bg-primary/[0.04] dark:bg-primary/[0.06] scale-[1.01]"
         )}
         style={isDragOver ? { animation: "drag-pulse 1.5s ease-in-out infinite" } : undefined}
       >
         <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/[0.02] dark:via-white/[0.03] to-transparent"
-            style={{ animation: "shimmer-slide 3s ease-in-out infinite" }}
-          />
+          <div className="hidden" style={{ animation: "shimmer-slide 3s ease-in-out infinite" }} />
         </div>
 
         {!isDragOver ? (
           <div className="flex flex-col items-center gap-2 relative">
-            <div className="w-8 h-8 rounded-full bg-foreground/[0.03] dark:bg-white/[0.04] flex items-center justify-center mb-1">
+            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center mb-1">
               <Upload
                 size={14}
                 className="text-foreground/45 dark:text-foreground/45 transition-colors"
@@ -1621,9 +1618,9 @@ function SelectedView({
 
   return (
     <div style={{ animation: "float-up 0.3s ease-out" }}>
-      <div className="rounded-lg border border-foreground/8 dark:border-white/10 bg-surface-1/40 dark:bg-white/[0.03] backdrop-blur-sm p-4 mb-3">
+      <div className="rounded-lg border border-foreground/8 border-border bg-muted p-4 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[8px] bg-primary/8 dark:bg-primary/12 border border-primary/10 dark:border-primary/15 flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-md bg-primary-soft border border-primary/20 flex items-center justify-center shrink-0">
             <FileAudio size={15} className="text-primary/60" />
           </div>
           <div className="min-w-0 flex-1">
@@ -1789,7 +1786,7 @@ function TranscribingView({
         ))}
       </div>
 
-      <div className="w-full max-w-[200px] h-[3px] rounded-full bg-foreground/5 dark:bg-white/5 overflow-hidden mb-3">
+      <div className="w-full max-w-[200px] h-[3px] rounded-full bg-foreground/5 bg-muted overflow-hidden mb-3">
         <div
           className="h-full rounded-full bg-primary/50 transition-[width] duration-500 ease-out"
           style={{ width: `${Math.min(progress, 100)}%` }}
@@ -2009,7 +2006,7 @@ interface ErrorViewProps {
 function ErrorView({ t, error, reset, onRetry }: ErrorViewProps) {
   return (
     <div style={{ animation: "float-up 0.3s ease-out" }}>
-      <div className="rounded-lg border border-destructive/15 dark:border-destructive/20 bg-destructive/[0.03] dark:bg-destructive/[0.05] backdrop-blur-sm p-4 mb-4">
+      <div className="rounded-lg border border-destructive/15 dark:border-destructive/20 bg-destructive/[0.03] dark:bg-destructive/[0.05] p-4 mb-4">
         <div className="flex items-start gap-2.5">
           <AlertCircle size={14} className="text-destructive/50 shrink-0 mt-0.5" />
           <p className="flex-1 text-xs text-destructive/70 leading-relaxed">{error}</p>

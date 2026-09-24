@@ -30,7 +30,7 @@ import { formatMmSs } from "../../utils/formatDuration";
 const platform = getCachedPlatform();
 
 const ACTION_BUTTON_CLASS =
-  "h-7 w-7 rounded-full text-muted-foreground/70 hover:text-foreground hover:bg-foreground/6 dark:hover:bg-white/6";
+  "h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted";
 
 function getShowInFolderKey(): string {
   if (platform === "win32") return "controlPanel.history.showInFolderWindows";
@@ -149,11 +149,7 @@ export default function TranscriptionItem({
     <div
       className={cn(
         "group/row px-4 py-3 transition-colors duration-150",
-        isFailed
-          ? "bg-destructive/5"
-          : isDiscarded
-            ? "bg-muted/20 opacity-80"
-            : "hover:bg-muted/20 dark:hover:bg-white/2",
+        isFailed ? "bg-destructive/5" : isDiscarded ? "bg-muted/20 opacity-80" : "hover:bg-muted",
         // Translation rows get a 2px primary accent; ps-[14px] keeps text aligned with the other rows.
         item.route_kind === "translation" && "border-s-2 border-s-primary/70 ps-[14px]"
       )}

@@ -208,7 +208,7 @@ function EmojiPickerPanel({ value, onSelect }: EmojiPickerContentProps) {
                           onClick={() => select(entry.emoji)}
                           className={cn(
                             "font-emoji flex size-8 items-center justify-center rounded-md text-[20px] leading-none transition-colors duration-100",
-                            isActive && "bg-foreground/8 dark:bg-white/10"
+                            isActive && "bg-muted"
                           )}
                         >
                           {entry.emoji}

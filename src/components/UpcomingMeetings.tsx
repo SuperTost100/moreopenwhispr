@@ -203,13 +203,8 @@ function EventRow({ event, isNow }: { event: CalendarEvent; isNow: boolean }) {
         </p>
         {isNow ? (
           <span className="mt-1 flex items-center gap-1.5">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-green-500 opacity-75" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
-            </span>
-            <span className="text-xs font-medium text-green-600 dark:text-green-400">
-              {t("upcoming.now")}
-            </span>
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
+            <span className="text-xs font-medium text-success">{t("upcoming.now")}</span>
           </span>
         ) : (
           <p className="mt-0.5 truncate text-xs tabular-nums text-muted-foreground">{timeRange}</p>
@@ -222,7 +217,7 @@ function EventRow({ event, isNow }: { event: CalendarEvent; isNow: boolean }) {
         <span
           // Overlaid so the row keeps its full width until hovered; the scrim fades the
           // covered end of a long title out instead of slicing it.
-          className="pointer-events-none absolute inset-y-0 end-0 flex items-center bg-linear-to-r from-transparent to-background to-[2rem] ps-8 pe-1 opacity-0 transition-opacity duration-150 group-hover/event:opacity-100 has-[:focus-visible]:opacity-100 dark:to-surface-2"
+          className="pointer-events-none absolute inset-y-0 end-0 flex items-center bg-card ps-8 pe-1 opacity-0 transition-opacity duration-150 group-hover/event:opacity-100 has-[:focus-visible]:opacity-100"
         >
           {joinButton}
         </span>
@@ -235,20 +230,15 @@ function DayCard({ group, isNowFn }: { group: DayGroup; isNowFn: (e: CalendarEve
   const { t, i18n } = useTranslation();
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border/70 dark:border-white/10",
-        !group.isToday && "overflow-clip"
-      )}
-    >
+    <div className={cn("rounded-xl border border-border", !group.isToday && "overflow-clip")}>
       <div
         className={cn(
           "flex items-center gap-1.5 px-2.5 py-2 text-xs font-medium",
           // Today's glass strip sits over the card's hairline on three sides so the blue meets
           // the rounded edge directly instead of being outlined in grey.
           group.isToday
-            ? cn(GRADIENT_CIRCLE, "-mx-px -mt-px rounded-t-2xl")
-            : "bg-surface-3 text-foreground dark:bg-surface-2"
+            ? cn(GRADIENT_CIRCLE, "-mx-px -mt-px rounded-t-xl")
+            : "bg-muted text-foreground"
         )}
       >
         <Calendar size={12} className="shrink-0" />
@@ -260,7 +250,7 @@ function DayCard({ group, isNowFn }: { group: DayGroup; isNowFn: (e: CalendarEve
           })}
         </span>
       </div>
-      <div className="rounded-b-[15px] bg-background px-2 dark:bg-surface-2/60">
+      <div className="rounded-b-xl bg-card px-2">
         {group.items.length === 0 ? (
           <p className="px-1 py-3 text-xs text-muted-foreground/70">
             {t("upcoming.noEventsToday")}

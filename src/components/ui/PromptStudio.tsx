@@ -324,7 +324,7 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-xs font-medium transition-colors duration-150 border-b-2 ${
                   isActive
                     ? "border-primary text-foreground bg-primary/5 dark:bg-primary/3"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-black/2 dark:hover:bg-white/2"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -340,13 +340,13 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
             <div className="px-5 py-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">
+                  <p className="text-xs font-medium text-muted-foreground text-xs font-medium">
                     {isCustomPrompt
                       ? t("promptStudio.view.customPrompt")
                       : t("promptStudio.view.defaultPrompt")}
                   </p>
                   {isCustomPrompt && (
-                    <span className="text-xs font-semibold uppercase tracking-wider px-1.5 py-px rounded-full bg-primary/10 text-primary">
+                    <span className="text-xs font-medium px-1.5 py-px rounded-sm bg-primary-soft text-primary">
                       {t("promptStudio.view.modified")}
                     </span>
                   )}
@@ -508,7 +508,7 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <p className="text-xs text-muted-foreground/70 uppercase tracking-wider">
+                      <p className="text-xs text-muted-foreground text-xs font-medium">
                         {t("promptStudio.test.modelLabel")}
                       </p>
                       <p dir="ltr" className="text-xs font-medium text-foreground font-mono">
@@ -517,7 +517,7 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
                     </div>
                     <div className="h-3 w-px bg-border/40" />
                     <div className="flex items-center gap-2">
-                      <p className="text-xs text-muted-foreground/70 uppercase tracking-wider">
+                      <p className="text-xs text-muted-foreground text-xs font-medium">
                         {t("promptStudio.test.providerLabel")}
                       </p>
                       <p dir="ltr" className="text-xs font-medium text-foreground">
@@ -534,7 +534,7 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
                     </p>
                     {testText && (
                       <span
-                        className={`text-xs font-medium uppercase tracking-wider px-1.5 py-px rounded ${
+                        className={`text-xs font-medium px-1.5 py-px rounded-sm ${
                           isTranslate || isAgent || isAgentAddressed
                             ? "bg-primary/10 text-primary dark:bg-primary/15"
                             : "bg-muted text-muted-foreground"
