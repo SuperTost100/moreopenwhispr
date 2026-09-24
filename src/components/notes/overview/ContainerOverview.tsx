@@ -103,7 +103,7 @@ export function ContainerOverview({
     <div className="cp-notes flex-1 overflow-y-auto min-h-0">
       <div className="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-5">
         <div className="flex flex-col items-center text-center gap-2 pt-4">
-          <div className="h-12 w-12 rounded-xl bg-foreground/4 dark:bg-white/5 border border-border/70 dark:border-white/10 flex items-center justify-center mb-1">
+          <div className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center mb-1">
             <ContainerIcon space={space} folder={folder} size={20} />
           </div>
           <h1 className="cp-notes__page-title text-foreground">
@@ -120,7 +120,7 @@ export function ContainerOverview({
             {notes.length > 0 && (
               <button
                 onClick={onNewNote}
-                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border/70 dark:border-white/10 text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-muted transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <Plus size={12} />
                 {t("notes.list.newNote")}
@@ -129,7 +129,7 @@ export function ContainerOverview({
             {canInvite && (
               <button
                 onClick={() => setShowInviteDialog(true)}
-                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border/70 dark:border-white/10 text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-muted transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <UserPlus size={12} />
                 {t("notes.overview.invite")}
@@ -152,7 +152,7 @@ export function ContainerOverview({
           onOpenNote={onOpenNote}
         />
 
-        <div className="border-t border-border/70 dark:border-white/10">
+        <div className="border-t border-border">
           <OverviewNoteList
             notes={notes}
             space={space}

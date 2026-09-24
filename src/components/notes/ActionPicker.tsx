@@ -63,10 +63,7 @@ export default function ActionPicker({
     <div
       className={cn(
         "flex items-center shrink-0 rounded-full overflow-hidden",
-        "bg-white/60 dark:bg-white/8",
-        "backdrop-blur-lg transform-gpu",
-        "border border-black/10 dark:border-white/14",
-        "shadow-(--shadow-glass)",
+        "bg-muted border border-border",
         disabled && "opacity-40 pointer-events-none"
       )}
     >
@@ -76,10 +73,10 @@ export default function ActionPicker({
         aria-label={t("notes.actions.runAction", { name: getActionName(activeAction, t) })}
         className={cn(
           "flex items-center gap-1.5 h-7 ps-3 pe-1.5",
-          "text-accent/70 dark:text-accent/60",
+          "text-primary",
           "transition-colors duration-150",
-          "hover:bg-accent/8 dark:hover:bg-accent/12",
-          "hover:text-accent/90 dark:hover:text-accent/80"
+          "hover:bg-primary-soft",
+          "hover:text-primary"
         )}
       >
         <Sparkles size={11} />
@@ -95,11 +92,11 @@ export default function ActionPicker({
             aria-label={t("notes.actions.selectAction")}
             className={cn(
               "flex items-center justify-center h-7 w-6 pe-0.5",
-              "border-s border-black/6 dark:border-white/10",
-              "text-accent/40 dark:text-accent/30",
+              "border-s border-border",
+              "text-primary/70",
               "transition-colors duration-150",
-              "hover:bg-accent/8 dark:hover:bg-accent/12",
-              "hover:text-accent/70"
+              "hover:bg-primary-soft",
+              "hover:text-primary"
             )}
           >
             <ChevronDown size={10} />
@@ -112,10 +109,10 @@ export default function ActionPicker({
               onClick={() => handleRun(action)}
               className={cn(
                 "text-xs gap-2.5 rounded-md px-2.5 py-1.5",
-                action.id === activeAction.id && "bg-accent/5"
+                action.id === activeAction.id && "bg-primary-soft"
               )}
             >
-              <Sparkles size={12} className="text-accent/50 shrink-0" />
+              <Sparkles size={12} className="text-primary/60 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">{getActionName(action, t)}</div>
                 {action.description && (

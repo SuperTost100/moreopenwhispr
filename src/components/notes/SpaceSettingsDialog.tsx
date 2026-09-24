@@ -24,7 +24,7 @@ import type { SpaceItem } from "../../types/electron";
 
 const DANGER_BUTTON_CLASS =
   "w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:border-destructive";
-const TAB_TRIGGER_CLASS = "h-6 px-2.5 text-xs rounded-[5px]";
+const TAB_TRIGGER_CLASS = "h-6 px-2.5 text-xs rounded-sm";
 
 export type SpaceSettingsTab = "general" | "members";
 
@@ -276,7 +276,7 @@ export default function SpaceSettingsDialog({
 
           {space.cloud_space_id ? (
             <Tabs defaultValue={initialTab}>
-              <TabsList className="h-7 p-0.5 rounded-[7px]">
+              <TabsList className="h-7 p-0.5 rounded-md">
                 <TabsTrigger value="general" className={TAB_TRIGGER_CLASS}>
                   {t("settingsPage.workspace.tab.general")}
                 </TabsTrigger>

@@ -26,8 +26,7 @@ export default function RealtimeTranscriptionBanner({
     <div
       className={cn(
         "flex items-center gap-2 px-3 h-8 shrink-0",
-        "backdrop-blur-xl bg-primary/[0.03] dark:bg-primary/[0.06]",
-        "border-b border-primary/10 dark:border-primary/15",
+        "bg-primary-soft border-b border-border",
         "animate-in slide-in-from-top-2 duration-300"
       )}
     >

@@ -109,7 +109,7 @@ export default function AddNotesToFolderDialog({
               placeholder={t("notes.addToFolder.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-8 rounded-md bg-foreground/[0.03] dark:bg-white/[0.04] border border-foreground/8 dark:border-white/10 ps-8 pe-3 text-xs text-foreground placeholder:text-foreground/45 outline-none focus:border-primary/30 transition-colors"
+              className="w-full h-8 rounded-md bg-muted border border-border ps-8 pe-3 text-xs text-foreground placeholder:text-foreground/45 outline-none focus:border-primary/30 transition-colors"
               autoFocus
             />
           </div>
@@ -138,11 +138,11 @@ export default function AddNotesToFolderDialog({
                       onClick={() => toggleNote(note.id)}
                       className={cn(
                         "w-full flex items-center gap-3 px-2 py-2 rounded-md transition-colors",
-                        "hover:bg-foreground/3 dark:hover:bg-white/3",
+                        "hover:bg-muted",
                         isSelected && "bg-primary/5 dark:bg-primary/8"
                       )}
                     >
-                      <div className="w-7 h-7 rounded-md bg-foreground/[0.03] dark:bg-white/[0.04] border border-foreground/6 dark:border-white/10 flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 rounded-md bg-muted border border-border flex items-center justify-center shrink-0">
                         <FileText size={12} className="text-foreground/45" />
                       </div>
                       <div className="flex-1 min-w-0 text-start">
@@ -152,10 +152,8 @@ export default function AddNotesToFolderDialog({
                       </div>
                       <div
                         className={cn(
-                          "w-4 h-4 rounded-[3px] border shrink-0 flex items-center justify-center transition-colors",
-                          isSelected
-                            ? "bg-primary border-primary"
-                            : "border-foreground/15 dark:border-white/15"
+                          "w-4 h-4 rounded-sm border shrink-0 flex items-center justify-center transition-colors",
+                          isSelected ? "bg-primary border-primary" : "border-foreground/15 "
                         )}
                       >
                         {isSelected && <Check size={10} className="text-white" strokeWidth={2.5} />}
@@ -168,7 +166,7 @@ export default function AddNotesToFolderDialog({
           )}
         </div>
 
-        <div className="px-4 py-3 border-t border-border/70 dark:border-white/10 flex justify-end">
+        <div className="px-4 py-3 border-t border-border flex justify-end">
           <Button
             variant="default"
             size="sm"

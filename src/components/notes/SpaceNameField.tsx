@@ -13,11 +13,10 @@ const FIELD_CLASS =
 const FIELD_EDITABLE_CLASS =
   "transition-[border-color,box-shadow] duration-200 focus-within:border-border-active focus-within:ring-2 focus-within:ring-ring/15";
 
-const TILE_CLASS =
-  "flex size-8 shrink-0 items-center justify-center rounded-sm bg-foreground/5 dark:bg-white/6";
+const TILE_CLASS = "flex size-8 shrink-0 items-center justify-center rounded-sm bg-muted";
 const TILE_EDITABLE_CLASS =
   "outline-none transition-colors hover:bg-foreground/10 focus-visible:ring-2 focus-visible:ring-primary/20 " +
-  "data-[state=open]:bg-foreground/10 dark:hover:bg-white/10 dark:data-[state=open]:bg-white/10";
+  "data-[state=open]:bg-foreground/10";
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 

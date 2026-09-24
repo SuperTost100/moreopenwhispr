@@ -75,9 +75,7 @@ export default function MeetingRecordingPill({
       <div
         className={cn(
           "flex items-center gap-2 h-9 px-3 rounded-xl",
-          "bg-card/95 dark:bg-surface-2/95",
-          "backdrop-blur-xl",
-          "border border-primary/25 dark:border-primary/30",
+          "bg-card border border-border",
           "shadow-elevated"
         )}
       >
@@ -90,7 +88,7 @@ export default function MeetingRecordingPill({
             "flex items-center gap-3 px-1 -mx-1 rounded-md",
             "transition-colors",
             "hover:bg-primary/8 active:bg-primary/14",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           )}
         >
           <div className="flex items-end gap-0.75 h-4">
@@ -119,7 +117,7 @@ export default function MeetingRecordingPill({
           className={cn(
             "flex items-center justify-center w-7 h-7 rounded-lg",
             "transition-colors duration-150",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             isStopping
               ? "bg-primary/6 text-primary/40 cursor-not-allowed"
               : "bg-primary/10 hover:bg-primary/18 active:bg-primary/25 text-primary"

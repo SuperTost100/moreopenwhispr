@@ -2,12 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { SendIcon } from "../ui/SendIcon";
-import { GLASS_SURFACE } from "../ui/glass";
-
-// While recording, the bar sits over the live streaming transcript, and every
-// partial would force backdrop-blur to re-blur the strip; the capsule trades
-// glass for a near-opaque surface until the recording ends.
-const RECORDING_SURFACE = "bg-surface-2/95 shadow-(--shadow-glass)";
+// Opaque capsule over the live transcript — no backdrop-filter while partials stream underneath.
+const ASK_CAPSULE_SURFACE = "bg-card border border-border";
 
 interface NoteBottomBarProps {
   /** Swaps the glass surface for an opaque one while the live transcript streams underneath. */
@@ -84,7 +80,7 @@ export default function NoteBottomBar({
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-4 pt-6 pointer-events-none bg-gradient-to-t from-background from-45% to-transparent"
+      className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-4 pt-8 pointer-events-none"
     >
       {callout && !hideInput && (
         <div className="pointer-events-auto mb-3 flex justify-center">{callout}</div>
@@ -94,18 +90,14 @@ export default function NoteBottomBar({
           aria-hidden={hideInput}
           className={cn(
             "flex-1 min-w-0 flex items-center h-11 gap-2 rounded-full",
-            isRecording ? RECORDING_SURFACE : GLASS_SURFACE,
-            "border",
-            // Named properties, not transition-all: the surface swap below must
-            // land instantly, or every recording start/stop tweens
-            // backdrop-filter for 500ms — the exact cost being removed.
+            ASK_CAPSULE_SURFACE,
             "transition-[max-width,opacity,padding,border-color,box-shadow] duration-500 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]",
             hideInput
               ? "max-w-0 opacity-0 ps-0 pe-0 border-transparent shadow-none pointer-events-none"
               : "max-w-[600px] opacity-100 ps-4 pe-1.5",
-            isExpanded
-              ? "border-black/15 dark:border-white/22 ring-[3px] ring-primary/8"
-              : !hideInput && "border-black/10 dark:border-white/14"
+            isExpanded &&
+              !hideInput &&
+              "border-border-hover ring-2 ring-ring/25 ring-offset-2 ring-offset-background"
           )}
         >
           <input

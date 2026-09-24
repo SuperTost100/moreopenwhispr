@@ -49,7 +49,7 @@ export function OverviewNoteList({
           {onAddExisting && (
             <button
               onClick={onAddExisting}
-              className="flex items-center gap-1.5 px-4 h-7 rounded-md border border-foreground/8 dark:border-white/10 text-xs text-foreground/45 hover:text-foreground/60 hover:border-foreground/15 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors"
+              className="flex items-center gap-1.5 px-4 h-7 rounded-md border border-border text-xs text-foreground/45 hover:text-foreground/60 hover:border-foreground/15 hover:bg-muted transition-colors"
             >
               {t("notes.addToFolder.addExisting")}
             </button>
@@ -63,7 +63,7 @@ export function OverviewNoteList({
     <div className="pb-6">
       {groups.map((group) => (
         <div key={group.label}>
-          <div className="pt-4 pb-1 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider select-none">
+          <div className="pt-4 pb-1 text-xs font-medium text-muted-foreground select-none">
             {group.label}
           </div>
           {group.items.map((note) => {
@@ -77,7 +77,7 @@ export function OverviewNoteList({
               <button
                 key={note.id}
                 onClick={() => onOpenNote(note.id)}
-                className="w-full flex items-center gap-3 px-2 py-2 -mx-2 rounded-md text-start hover:bg-foreground/4 dark:hover:bg-white/4 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+                className="w-full flex items-center gap-3 px-2 py-2 -mx-2 rounded-md text-start hover:bg-muted transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <FileText
                   size={14}

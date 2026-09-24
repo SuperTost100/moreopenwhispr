@@ -117,7 +117,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
 
         <div className="flex h-120">
           {/* Left panel — action list */}
-          <div className="w-56 shrink-0 border-e border-border dark:border-white/10 flex flex-col bg-card/50 dark:bg-surface-1/30">
+          <div className="w-56 shrink-0 border-e border-border flex flex-col bg-card/50">
             {/* List header */}
             <div className="flex items-center justify-between px-3 pt-3.5 pb-2">
               <span className="text-xs font-semibold tracking-tight text-foreground/70">
@@ -128,8 +128,8 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                 className={cn(
                   "p-1 rounded-md",
                   "text-muted-foreground/70 hover:text-foreground/70",
-                  "hover:bg-foreground/5 dark:hover:bg-white/6",
-                  "active:bg-foreground/8 dark:active:bg-white/8",
+                  "hover:bg-muted",
+                  "active:bg-muted",
                   "transition-colors duration-150"
                 )}
                 aria-label={t("notes.actions.addAction")}
@@ -148,7 +148,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                   </p>
                   <button
                     onClick={handleNewAction}
-                    className="text-xs text-accent/60 hover:text-accent/80 mt-2 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 rounded"
+                    className="text-xs text-accent/60 hover:text-accent/80 mt-2 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
                   >
                     {t("notes.actions.addAction")}
                   </button>
@@ -164,7 +164,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                         "transition-colors duration-150",
                         selectedId === action.id && !isCreating
                           ? "bg-accent/8 dark:bg-accent/10"
-                          : "hover:bg-foreground/3 dark:hover:bg-white/3"
+                          : "hover:bg-muted"
                       )}
                     >
                       <Sparkles
@@ -189,7 +189,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                             {getActionName(action, t)}
                           </span>
                           {action.is_builtin === 1 && (
-                            <span className="text-[10px] font-medium px-1 py-px rounded bg-foreground/5 dark:bg-white/6 text-muted-foreground/70 shrink-0">
+                            <span className="text-[10px] font-medium px-1 py-px rounded bg-muted text-muted-foreground/70 shrink-0">
                               {t("notes.actions.builtIn")}
                             </span>
                           )}
@@ -225,7 +225,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
             {showEditor ? (
               <>
                 {/* Editor header — pe-12 clears the dialog close X button */}
-                <div className="flex items-center justify-between ps-5 pe-12 pt-4 pb-3 border-b border-border/70 dark:border-white/10">
+                <div className="flex items-center justify-between ps-5 pe-12 pt-4 pb-3 border-b border-border">
                   <span className="text-xs font-medium text-muted-foreground/70">
                     {isCreating ? t("notes.actions.addAction") : t("notes.actions.editAction")}
                   </span>

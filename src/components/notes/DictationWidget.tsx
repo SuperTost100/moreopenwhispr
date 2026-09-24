@@ -44,9 +44,7 @@ export default function DictationWidget({
         <div
           className={cn(
             "flex items-center gap-4 h-12 px-5 rounded-xl pointer-events-auto",
-            "bg-primary/6 dark:bg-primary/10",
-            "backdrop-blur-xl",
-            "border border-primary/20 dark:border-primary/25",
+            "bg-primary-soft border border-border",
             "shadow-elevated"
           )}
           style={{
@@ -101,9 +99,7 @@ export default function DictationWidget({
         <div
           className={cn(
             "flex items-center gap-3 h-12 px-5 rounded-xl pointer-events-auto",
-            "bg-primary/6 dark:bg-primary/10",
-            "backdrop-blur-xl",
-            "border border-primary/15 dark:border-primary/20",
+            "bg-primary-soft border border-border",
             "shadow-elevated"
           )}
         >
@@ -118,14 +114,9 @@ export default function DictationWidget({
             onClick={onStart}
             className={cn(
               "flex items-center justify-center w-11 h-11 rounded-full",
-              "bg-primary/8 dark:bg-primary/12",
-              "backdrop-blur-xl",
-              "border border-primary/15 dark:border-primary/20",
-              "shadow-sm hover:shadow-md",
-              "text-primary/60 hover:text-primary",
-              "transition-all duration-200",
-              "hover:bg-primary/14 dark:hover:bg-primary/20",
-              "hover:scale-105",
+              "bg-primary-soft border border-border",
+              "text-primary hover:text-primary hover:bg-primary-soft/80",
+              "transition-colors duration-200",
               "active:scale-[0.97]"
             )}
             aria-label={t("notes.editor.transcribe")}

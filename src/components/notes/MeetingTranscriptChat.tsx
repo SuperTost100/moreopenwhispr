@@ -187,7 +187,7 @@ function AddContactButton({
         <button
           className={cn(
             "inline-flex items-center mb-0.5 px-1.5 py-0.5 rounded-md text-[11px] outline-none cursor-pointer",
-            "border border-dashed border-border/70 dark:border-white/15",
+            "border border-dashed border-border/70 ",
             "text-foreground/50 hover:text-foreground hover:border-border/90 dark:hover:border-white/30",
             "transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring"
           )}
@@ -471,7 +471,7 @@ function SpeakerLabel({
         <button
           className={cn(
             "inline-flex items-center text-[11px] font-medium mb-0.5 px-1.5 py-0.5 rounded-md outline-none cursor-pointer",
-            "border border-border/70 dark:border-white/20",
+            "border border-border/70 ",
             "hover:bg-foreground/5 hover:border-border/90 dark:hover:border-white/30",
             "transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring",
             SPEAKER_COLORS[colorIdx],
@@ -544,7 +544,7 @@ export function SelectionBar({
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="flex items-center gap-3 rounded-md border border-border/70 bg-surface-2/95 backdrop-blur px-3 py-1.5 text-xs shadow-lg"
+      className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-1.5 text-xs shadow-elevated"
       style={{ animation: "agent-message-in 150ms ease-out both" }}
     >
       <span className="text-foreground/70 tabular-nums">

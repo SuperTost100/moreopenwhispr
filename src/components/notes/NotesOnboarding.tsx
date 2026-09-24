@@ -113,7 +113,7 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
         style={{ animation: "float-up 0.4s ease-out" }}
       >
         <div className="flex flex-col items-center text-center">
-          <div className="w-10 h-10 rounded-[10px] bg-gradient-to-b from-accent/10 to-accent/[0.03] dark:from-accent/15 dark:to-accent/5 border border-accent/15 dark:border-accent/20 flex items-center justify-center mb-3">
+          <div className="w-10 h-10 rounded-lg bg-primary-soft border border-border flex items-center justify-center mb-3">
             <Sparkles size={17} strokeWidth={1.5} className="text-accent/60" />
           </div>
           <h2 className="text-sm font-semibold text-foreground mb-1">
@@ -129,9 +129,7 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
           <div
             className={cn(
               "rounded-lg border transition-colors duration-200",
-              isLLMConfigured
-                ? "border-success/20 bg-success/[0.03]"
-                : "border-foreground/8 dark:border-white/10 bg-surface-1/30 dark:bg-white/[0.02]"
+              isLLMConfigured ? "border-success/20 bg-success/[0.03]" : "border-border bg-muted/50"
             )}
           >
             <button
@@ -192,7 +190,7 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
               "rounded-lg border transition-colors duration-200",
               systemAudioGranted
                 ? "border-success/20 bg-success/[0.03]"
-                : "border-foreground/8 dark:border-white/10 bg-surface-1/30 dark:bg-white/[0.02]"
+                : "border-border bg-muted/50"
             )}
           >
             <div className="flex items-center justify-between w-full px-4 py-3">
@@ -241,7 +239,7 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
             </span>
           </div>
           {builtInAction && (
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-foreground/6 dark:border-white/10 bg-surface-1/20 dark:bg-white/[0.02]">
+            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border bg-muted/50">
               <div className="w-7 h-7 rounded-md bg-accent/8 dark:bg-accent/12 border border-accent/10 dark:border-accent/15 flex items-center justify-center shrink-0">
                 <Sparkles size={12} className="text-accent/60" />
               </div>
@@ -286,7 +284,7 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
         <div
           className={cn(
             "rounded-lg border transition-colors duration-200",
-            "border-foreground/8 dark:border-white/10 bg-surface-1/30 dark:bg-white/[0.02]"
+            "border-border bg-muted/50"
           )}
         >
           <button

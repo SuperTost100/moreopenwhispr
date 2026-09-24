@@ -126,7 +126,7 @@ export default function NoteParticipants({
             <>
               <Calendar size={14} className="shrink-0 text-foreground/60" />
               <span>{dateLabel}</span>
-              <span aria-hidden="true" className="mx-0.5 h-3.5 w-px bg-border dark:bg-white/15" />
+              <span aria-hidden="true" className="mx-0.5 h-3.5 w-px bg-border" />
             </>
           )}
           {localParticipants.length > 0 ? (

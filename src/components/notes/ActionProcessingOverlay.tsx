@@ -49,30 +49,19 @@ export default function ActionProcessingOverlay({
     <div
       className={cn(
         "absolute inset-0 z-[5] flex items-center justify-center",
-        "bg-background/60 dark:bg-background/70 backdrop-blur-md",
+        "bg-background/80",
         "transition-opacity duration-300",
         isFadingOut && "opacity-0 pointer-events-none"
       )}
       style={!isFadingOut ? { animation: "float-up 0.25s ease-out" } : undefined}
     >
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, transparent, transparent 3px, currentColor 3px, currentColor 4px)",
-        }}
-      />
-
-      <div
         className={cn(
-          "absolute left-0 right-0 h-[2px] pointer-events-none scanner-sweep-line",
-          isSuccess ? "bg-success/60" : "bg-accent/60"
+          "absolute left-0 right-0 h-px pointer-events-none",
+          isSuccess ? "bg-success/50" : "bg-primary/40"
         )}
         style={{
           animation: isSuccess ? "none" : "scanner-sweep 2.5s ease-in-out infinite",
-          boxShadow: isSuccess
-            ? "0 0 24px 8px color-mix(in oklch, var(--color-success) 20%, transparent)"
-            : "0 0 24px 8px color-mix(in oklch, var(--color-accent) 15%, transparent)",
           ...(isSuccess ? { top: "50%" } : {}),
         }}
       />
@@ -80,10 +69,8 @@ export default function ActionProcessingOverlay({
       <div
         className={cn(
           "relative flex flex-col items-center gap-2.5",
-          isSuccess
-            ? "bg-success/6 dark:bg-success/8 border-success/12 dark:border-success/15"
-            : "bg-accent/6 dark:bg-accent/8 border-accent/12 dark:border-accent/15",
-          "backdrop-blur-xl border rounded-xl px-6 py-3 shadow-elevated",
+          isSuccess ? "bg-success-soft border border-success/30" : "bg-card border border-border",
+          "rounded-xl px-6 py-3 shadow-elevated",
           "transition-colors duration-300"
         )}
       >
@@ -96,15 +83,15 @@ export default function ActionProcessingOverlay({
           </div>
         ) : (
           <>
-            <span className="text-xs font-medium text-accent/70 tracking-tight">{actionName}</span>
+            <span className="text-xs font-medium text-primary tracking-tight">{actionName}</span>
             {progress ? (
-              <span className="text-[11px] text-accent/50 tracking-tight">
+              <span className="text-[11px] text-muted-foreground tracking-tight">
                 {t("notes.actions.chunkProgress", { step: progress.step, total: progress.total })}
               </span>
             ) : null}
-            <div className="w-32 h-0.5 bg-accent/10 rounded-full overflow-hidden">
+            <div className="w-32 h-0.5 bg-muted rounded-full overflow-hidden">
               <div
-                className="h-full w-1/3 bg-accent/40 rounded-full"
+                className="h-full w-1/3 bg-primary/50 rounded-full"
                 style={{ animation: "indeterminate 1.5s ease-in-out infinite" }}
                 data-scanner-progress=""
               />
@@ -115,7 +102,7 @@ export default function ActionProcessingOverlay({
                 variant="ghost"
                 size="sm"
                 onClick={onCancel}
-                className="h-6 px-2 text-[11px] text-accent/60 hover:text-accent hover:bg-accent/8 dark:text-accent/60 dark:hover:text-accent dark:hover:bg-accent/8"
+                className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
               >
                 {t("common.cancel")}
               </Button>
