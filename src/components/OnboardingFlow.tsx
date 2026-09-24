@@ -992,7 +992,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               dense={assistant}
             />
             {!assistant && (
-              <div className="mx-auto mt-8 w-full max-w-md rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-3">
+              <div className="mx-auto mt-8 w-full max-w-md rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-3">
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0 text-start">
                     <p className="text-sm font-medium leading-5 text-[var(--onboarding-text-primary)]">
@@ -1260,7 +1260,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         {fatalError && (
           <div
             role="alert"
-            className="fixed left-1/2 top-14 z-40 flex -translate-x-1/2 items-center gap-2 rounded-full border border-destructive/20 bg-card px-4 py-2 text-sm text-destructive shadow-lg"
+            className="fixed left-1/2 top-14 z-40 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-destructive/20 bg-card px-4 py-2 text-sm text-destructive shadow-elevated"
           >
             <AlertCircle className="size-4" />
             {fatalError}

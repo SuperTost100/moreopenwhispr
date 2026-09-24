@@ -92,7 +92,7 @@ export function RequiredModelDownloadStep({
 
   return (
     <section className={`mt-5 ${SETUP_CARD_CLASS}`}>
-      <div className="onboarding-scroll-hidden max-h-72 overflow-y-auto rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)] px-3">
+      <div className="onboarding-scroll-hidden max-h-72 overflow-y-auto rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)] px-3">
         {required.map((modelId) => {
           const family = familyOf(modelId);
           const info = family === "parakeet" ? parakeetCatalog[modelId] : whisperCatalog[modelId];
@@ -130,7 +130,7 @@ export function RequiredModelDownloadStep({
               </div>
 
               {isDownloading ? (
-                <span className="relative -me-2 flex shrink-0 items-center gap-2 overflow-hidden rounded-[38px] border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-3 py-1.5 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-secondary)]">
+                <span className="relative -me-2 flex shrink-0 items-center gap-2 overflow-hidden rounded-sm border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-3 py-1.5 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-secondary)]">
                   <span
                     className="absolute inset-y-0 start-0 bg-[var(--onboarding-surface-tertiary)] transition-[width] duration-300 ease-out"
                     style={{ width: `${percentage}%` }}
@@ -152,7 +152,7 @@ export function RequiredModelDownloadStep({
                   {t("common.retry")}
                 </Button>
               ) : installed ? (
-                <span className="-me-2 flex h-7 shrink-0 items-center gap-1 rounded-full bg-[var(--onboarding-accent)] px-3 text-xs text-[var(--onboarding-accent-foreground)]">
+                <span className="-me-2 flex h-7 shrink-0 items-center gap-1 rounded-sm bg-[var(--onboarding-accent)] px-3 text-xs text-[var(--onboarding-accent-foreground)]">
                   <Check className="size-3.5" />
                   {t("onboarding.requiredModels.installed")}
                 </span>
@@ -169,7 +169,7 @@ export function RequiredModelDownloadStep({
       {hasFailures && (
         <div
           role="alert"
-          className="mt-3 flex w-full flex-col items-center rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-5 text-center"
+          className="mt-3 flex w-full flex-col items-center rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-5 text-center"
         >
           <span className="flex size-10 items-center justify-center rounded-full bg-[var(--onboarding-surface-secondary)] text-[var(--onboarding-accent)]">
             <AlertCircle className="size-5" />

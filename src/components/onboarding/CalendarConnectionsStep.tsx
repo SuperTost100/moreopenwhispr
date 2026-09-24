@@ -179,7 +179,7 @@ export default function CalendarConnectionsStep() {
           mode while the text tokens flipped light and the provider names
           vanished. Rows: no padding above the first, none below the last,
           hairline dividers between. */}
-      <div className="w-full max-w-[26rem] rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)] px-3.5 py-3">
+      <div className="w-full max-w-[26rem] rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)] px-3.5 py-3">
         {providers.map((provider, index) => (
           <div
             key={provider.id}
@@ -216,12 +216,13 @@ export default function CalendarConnectionsStep() {
                 {provider.description}
               </p>
             </div>
-            {/* Figma "Frame 25", both states: pad 6 14, radius 38, 14/140% medium
-                white. Deliberately a plain button, not the shadcn Button — that
-                default variant layers on shadow-sm, hover:shadow, a
-                border-primary/60 and font-semibold, none of which the spec has. */}
+            {/* Both states: pad 6 14, radius 6 (chip radius), 14/140% medium
+                white. The connected state is deliberately a plain span, not the
+                shadcn Button — that default variant layers on shadow-sm,
+                hover:shadow, a border-primary/60 and font-semibold, none of
+                which this row needs. */}
             {provider.connected ? (
-              <span className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[38px] bg-[var(--onboarding-accent)] px-3 py-1.5 text-xs font-medium leading-[1.4] text-[var(--onboarding-accent-foreground)]">
+              <span className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-sm bg-[var(--onboarding-accent)] px-3 py-1.5 text-xs font-medium leading-[1.4] text-[var(--onboarding-accent-foreground)]">
                 <CircleCheck className="size-3.5 shrink-0" strokeWidth={1.167} />
                 {t(`integrations.${provider.id}Calendar.connected`)}
               </span>
@@ -230,7 +231,7 @@ export default function CalendarConnectionsStep() {
                 type="button"
                 disabled={connecting !== null}
                 onClick={() => void connect(provider.id)}
-                className="h-8 shrink-0 gap-1.5 rounded-[38px] px-3 text-xs"
+                className="h-8 shrink-0 gap-1.5 rounded-md px-3 text-xs"
               >
                 {connecting === provider.id && (
                   <Loader2 className="size-3.5 shrink-0 animate-spin" />

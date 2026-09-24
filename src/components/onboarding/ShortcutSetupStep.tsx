@@ -162,7 +162,7 @@ export default function ShortcutSetupStep({
             ))}
         </div>
       ) : (
-        <div className="relative flex h-44 w-full items-center justify-center rounded-3xl border-2 border-dashed border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-5">
+        <div className="relative flex h-44 w-full items-center justify-center rounded-xl border-2 border-dashed border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-5">
           {captureInput}
           {errorMessage ||
             (heldModifiers ? (
@@ -196,7 +196,7 @@ export default function ShortcutSetupStep({
               type="button"
               onClick={clear}
               disabled={isConfirming}
-              className="onboarding-pressable rounded-full border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-1.5 text-sm text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)] disabled:cursor-default disabled:opacity-60"
+              className="onboarding-pressable rounded-md border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-1.5 text-sm text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)] disabled:cursor-default disabled:opacity-60"
             >
               {chooseAnotherLabel}
             </button>
@@ -210,7 +210,7 @@ export default function ShortcutSetupStep({
                 type="button"
                 onClick={() => void confirm(hotkey)}
                 disabled={isConfirming}
-                className={`onboarding-pressable rounded-full bg-[var(--onboarding-surface-tertiary)] text-[var(--onboarding-text-secondary)] hover:bg-[var(--onboarding-surface-tertiary-hover)] hover:text-[var(--onboarding-text-primary)] disabled:cursor-default ${
+                className={`onboarding-pressable rounded-md bg-[var(--onboarding-surface-tertiary)] text-[var(--onboarding-text-secondary)] hover:bg-[var(--onboarding-surface-tertiary-hover)] hover:text-[var(--onboarding-text-primary)] disabled:cursor-default ${
                   dense ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-sm"
                 }`}
               >

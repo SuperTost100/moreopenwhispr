@@ -18,7 +18,7 @@ import assistantPreview from "../../assets/onboarding-assistant-preview.webp";
  */
 export default function AssistantHotkeyPreview() {
   return (
-    <div className="mx-auto mt-3 h-56 w-full max-w-[30rem] shrink-0 overflow-hidden rounded-2xl">
+    <div className="mx-auto mt-3 h-56 w-full max-w-[30rem] shrink-0 overflow-hidden rounded-xl">
       <img
         src={assistantPreview}
         alt=""

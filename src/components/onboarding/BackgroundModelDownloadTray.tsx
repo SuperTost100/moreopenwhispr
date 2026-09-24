@@ -418,7 +418,7 @@ export default function BackgroundModelDownloadTray({
     // both contexts and match the Figma light values within a couple of hex
     // steps.
     <aside
-      className={`fixed z-[60] w-[341px] overflow-hidden rounded-[12px] border border-border bg-card text-card-foreground ${positionClass}`}
+      className={`fixed z-[60] w-[341px] overflow-hidden rounded-xl border border-border bg-card text-card-foreground ${positionClass}`}
       style={
         placement === "onboarding" ? ({ WebkitAppRegion: "no-drag" } as CSSProperties) : undefined
       }
@@ -473,11 +473,10 @@ export default function BackgroundModelDownloadTray({
             {download.error ? (
               <p className="truncate text-[0.625rem] text-destructive">{download.error}</p>
             ) : (
-              // Frame 2147259038: 12 tall track on #F7F7F7 at radius 9, brand fill
-              // at radius 11.
-              <div className="h-3 overflow-hidden rounded-[9px] bg-muted">
+              // A 12px-tall progress track, fully rounded, on the muted surface.
+              <div className="h-3 overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-[11px] bg-primary transition-[width] motion-reduce:transition-none"
+                  className="h-full rounded-full bg-primary transition-[width] motion-reduce:transition-none"
                   style={{ width: `${download.percentage}%` }}
                 />
               </div>

@@ -91,13 +91,12 @@ export function SetupStageStepper({ stepId }: { stepId: OnboardingStepId }) {
 }
 
 /**
- * The card actions run on the same two pills as the shell footer (Figma
- * "Frame 25" and "Frame 32"): 40 tall, radius 38, Inter Medium 14/140%, the
- * primary on the onboarding accent and the secondary stroke-only on
- * light/surface-stroke. Before this, each card carried its own hand-rolled
- * 32px-tall button — some on blue-500, some on neutral-950, all at regular
- * weight — so the step's own call to action read quieter than the Continue
- * button sitting right under it.
+ * The card actions run on the same two buttons as the shell footer: 36 tall,
+ * radius 8 (flat, no pill), Noto Sans medium 14/140%, the primary on the
+ * onboarding accent and the secondary stroke-only on light/surface-stroke.
+ * Before this, each card carried its own hand-rolled 32px-tall button — some
+ * on blue-500, some on neutral-950, all at regular weight — so the step's own
+ * call to action read quieter than the Continue button sitting right under it.
  */
 function StepPrimaryAction({
   onClick,
@@ -115,7 +114,7 @@ function StepPrimaryAction({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="h-9 rounded-[38px] px-5 text-sm"
+      className="h-9 rounded-md px-5 text-sm"
     >
       {children}
     </Button>
@@ -139,7 +138,7 @@ function StepSecondaryAction({
       variant="outline-flat"
       onClick={onClick}
       disabled={disabled}
-      className={`h-9 rounded-[38px]! border! border-[var(--onboarding-control-border)]! bg-transparent! px-5 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)] shadow-none! hover:bg-[var(--onboarding-surface-hover)]! ${className}`}
+      className={`h-9 rounded-md! border! border-[var(--onboarding-control-border)]! bg-transparent! px-5 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)] shadow-none! hover:bg-[var(--onboarding-surface-hover)]! ${className}`}
     >
       {children}
     </Button>
@@ -148,7 +147,7 @@ function StepSecondaryAction({
 
 /** The card each setup mode's step renders into. Top margin is per call site. */
 const SETUP_CARD_BASE_CLASS =
-  "mx-auto w-full rounded-[1.125rem] border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] text-[var(--onboarding-text-primary)]";
+  "mx-auto w-full rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] text-[var(--onboarding-text-primary)]";
 
 export const SETUP_CARD_CLASS = `${SETUP_CARD_BASE_CLASS} max-w-[30rem] px-3 py-4`;
 const LOCAL_MODEL_CARD_CLASS = `${SETUP_CARD_BASE_CLASS} max-w-[30rem] px-4 py-4`;
@@ -160,8 +159,8 @@ const LOCAL_SELECT_TRIGGER_CLASS =
   "h-12 rounded-xl border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)] px-3 text-sm text-[var(--onboarding-text-primary)]";
 
 /**
- * The dropdown sheet, Figma "Onboarding / Frame 16": radius 17 on
- * light/surface-stroke, 12 pad, `0 3 7.3 #0000001F` shadow. Radix's viewport
+ * The dropdown sheet: radius 12 on light/surface-stroke, 12 pad, the shared
+ * elevated shadow used by every popover/menu. Radix's viewport
  * carries its own 4px pad, which would stack with the panel's — zero it and let
  * the panel own the inset, so the rows run edge to edge inside it and the
  * scrollbar (styled in index.css) sits in the panel's gutter.
@@ -180,11 +179,11 @@ const LOCAL_SELECT_TRIGGER_CLASS =
  * light-only.
  */
 const SELECT_PANEL_CLASS =
-  "onboarding-select-panel rounded-[17px] border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-1.5 py-2 text-[var(--onboarding-text-primary)] shadow-[0_3px_7.3px_0_rgba(0,0,0,0.12)] [&_[data-radix-select-viewport]]:p-0";
+  "onboarding-select-panel rounded-xl border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-1.5 py-2 text-[var(--onboarding-text-primary)] shadow-elevated [&_[data-radix-select-viewport]]:p-0";
 
 /**
  * A row from the same frame: 12 of vertical padding, 20px mark at gap 10, label
- * Inter Medium 16/140%.
+ * Noto Sans medium 14/140%.
  *
  * The dividers and the rounded hover slab live in `.onboarding-select-item`
  * (index.css) so they can behave the way .onboarding-list-row's do — hairlines
@@ -589,7 +588,7 @@ export function ByokProviderStep({
                 accent token rather than blue-500, and the tick is hairline. Kept at
                 size-5 because this card is the denser text-xs layout. */}
             <span
-              className={`flex size-5 shrink-0 items-center justify-center rounded-[5.5px] border border-[var(--onboarding-control-border)] ${
+              className={`flex size-5 shrink-0 items-center justify-center rounded-sm border border-[var(--onboarding-control-border)] ${
                 selfHosted
                   ? "bg-[var(--onboarding-accent)] text-[var(--onboarding-accent-foreground)]"
                   : "bg-[var(--onboarding-surface)]"
@@ -1103,7 +1102,7 @@ export function LocalModelSetupStep({
 
       {/* A fixed list height keeps the card and footer stable while the visible
           scrollbar makes additional provider models discoverable. */}
-      <div className="onboarding-list-scroll mt-4 h-56 rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)]">
+      <div className="onboarding-list-scroll mt-4 h-56 rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)]">
         {models.map((model) => {
           const isDownloaded = downloadedModels.has(model.id);
           const download = activeDownload.downloads[model.id];
@@ -1138,14 +1137,14 @@ export function LocalModelSetupStep({
               </button>
 
               {isDownloading ? (
-                // Figma "Frame 25": white pill, #E3E3E3 stroke, radius 38, 6/12
-                // padding, gap 8, both labels Inter Medium 14/140% in
-                // text-secondary. Progress is a light/surface-tertiary fill
-                // growing from the left behind them, not a fixed-width segment
-                // around the percentage.
+                // A status chip: flat surface, hairline stroke, 6/12 padding,
+                // gap 8, both labels medium 14/140% in text-secondary.
+                // Progress is a light/surface-tertiary fill growing from the
+                // left behind them, not a fixed-width segment around the
+                // percentage.
                 // No aria-live: BackgroundModelDownloadTray is the one live region
                 // for download progress, so a second one here read every tick twice.
-                <span className="relative flex h-8 shrink-0 items-center gap-2 overflow-hidden rounded-full border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-3 text-sm font-medium leading-[1.4] tabular-nums text-[var(--onboarding-text-secondary)]">
+                <span className="relative flex h-8 shrink-0 items-center gap-2 overflow-hidden rounded-sm border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-3 text-sm font-medium leading-[1.4] tabular-nums text-[var(--onboarding-text-secondary)]">
                   {/* Figma draws the rect taller than the pill so it bleeds top
                       and bottom; inset-y-0 does that without a magic height. */}
                   <span
@@ -1162,7 +1161,7 @@ export function LocalModelSetupStep({
                 </span>
               ) : isSelected ? (
                 // Same token as the Use pill it replaces on click.
-                <span className="flex h-8 shrink-0 items-center gap-1.5 rounded-full bg-[var(--onboarding-accent)] px-3 text-sm text-[var(--onboarding-accent-foreground)]">
+                <span className="flex h-8 shrink-0 items-center gap-1.5 rounded-sm bg-[var(--onboarding-accent)] px-3 text-sm text-[var(--onboarding-accent-foreground)]">
                   <Check className="size-4" />
                   {t("onboarding.rehaul.local.selected")}
                 </span>

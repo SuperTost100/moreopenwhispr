@@ -134,12 +134,12 @@ function FounderAvatar() {
   );
 }
 
-// Figma "Frame 25"/"Frame 27": pill on surface/brand, radius 38, 10/20 padding,
-// Inter Medium 14/140% in light/surface-primary.
+// Same shape as the app's real chat bubbles (ChatMessage.tsx): radius 12 with
+// a tail notch, 10/20 padding, medium 14/140% in light/surface-primary.
 function FounderBubble({ children }: { children: ReactNode }) {
   return (
     <p
-      className="w-fit rounded-[38px] bg-[var(--onboarding-accent)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-accent-foreground)]"
+      className="w-fit rounded-lg rounded-ee-sm bg-[var(--onboarding-accent)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-accent-foreground)]"
       style={BUBBLE_IN}
     >
       {children}
@@ -235,10 +235,10 @@ function TypingBubble() {
   const { t } = useTranslation();
 
   return (
-    // Figma "Onboarding / Frame 25": pill on light/surface-stroke, radius 38,
+    // Matches FounderBubble's shape: light/surface-stroke fill, radius 12,
     // 10/20 padding, hugging the dots row.
     <div
-      className="flex items-center rounded-[38px] bg-[var(--onboarding-control-border)] px-4 py-2"
+      className="flex items-center rounded-lg rounded-es-sm bg-[var(--onboarding-control-border)] px-4 py-2"
       style={BUBBLE_IN}
       aria-label={t("onboarding.rehaul.demo.typing")}
     >
@@ -432,7 +432,7 @@ function EmailThread({ body, children }: { body: string; children: ReactNode }) 
   const senderName = t("onboarding.rehaul.assistantDemo.email.senderName");
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] text-start">
+    <article className="overflow-hidden rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] text-start">
       <header className="flex items-center gap-2.5 border-b border-[var(--onboarding-control-border)] px-4 py-2">
         <img
           src={gmailMark}
@@ -531,7 +531,7 @@ function VoiceSurface({
   return (
     <div
       // The assistant variant runs taller so a few-sentence reply fits unscrolled.
-      className={`relative flex flex-col rounded-[14px] border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] p-3 ${
+      className={`relative flex flex-col rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] p-3 ${
         embedded ? "h-52 min-w-0 flex-1" : "h-36"
       }`}
     >
@@ -576,7 +576,7 @@ function VoiceSurface({
         {isListening(status) && listeningLabel}
         {status === "processing" && !transcript && processingLabel}
         {ToolIcon && event?.tool && (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--onboarding-surface-secondary)] px-2 py-1 text-[var(--onboarding-text-primary)]">
+          <span className="inline-flex items-center gap-1.5 rounded-sm bg-[var(--onboarding-surface-secondary)] px-2 py-1 text-[var(--onboarding-text-primary)]">
             <ToolIcon className="size-3.5 shrink-0" aria-hidden="true" />
             {t(`agentMode.tools.${event.tool}Status`, {
               defaultValue: t(`agentMode.tools.${event.tool}Name`, { defaultValue: event.tool }),
