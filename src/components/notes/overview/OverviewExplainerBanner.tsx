@@ -27,7 +27,7 @@ export function OverviewExplainerBanner({ kind }: OverviewExplainerBannerProps) 
           setVisible(false);
         }}
         aria-label={t("notes.overview.banner.dismiss")}
-        className="cp-notes__banner-dismiss focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+        className="cp-notes__banner-dismiss focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
         <X size={12} />
       </button>

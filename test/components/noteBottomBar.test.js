@@ -26,26 +26,20 @@ async function renderBottomBar(t, props) {
   );
 }
 
-test("recording state renders no backdrop-filter surface over the live transcript", async (t) => {
-  const html = await renderBottomBar(t, { isRecording: true });
-
-  // The 1.9.0 CPU regression: every transcript partial re-blurred the strip.
-  assert.ok(!html.includes("backdrop-blur"), "no backdrop-blur while recording");
-  assert.ok(!html.includes("backdrop-saturate"), "no backdrop-saturate while recording");
-  assert.ok(html.includes("bg-surface-2/95"), "capsules use the near-opaque surface");
-  assert.ok(html.includes("shadow-(--shadow-glass)"), "capsules keep the glass rim shadow");
-});
-
-test("idle state keeps the liquid-glass capsule", async (t) => {
-  const html = await renderBottomBar(t, { isRecording: false });
-
-  assert.ok(html.includes("backdrop-blur-xl"));
-  assert.ok(html.includes("backdrop-saturate-150"));
+test("recording and idle ask capsules stay opaque (no backdrop-filter)", async (t) => {
+  for (const isRecording of [false, true]) {
+    const html = await renderBottomBar(t, { isRecording });
+    assert.ok(!html.includes("backdrop-blur"), `no backdrop-blur (isRecording=${isRecording})`);
+    assert.ok(
+      !html.includes("backdrop-saturate"),
+      `no backdrop-saturate (isRecording=${isRecording})`
+    );
+    assert.ok(html.includes("bg-card"), `opaque card surface (isRecording=${isRecording})`);
+  }
 });
 
 test("the ask capsule never transitions its surface between the two states", async (t) => {
-  // transition-all would tween backdrop-filter and background-color for 500ms
-  // on every recording start and stop, re-paying the cost this change removes.
+  // transition-all would tween background-color for 500ms on every recording start/stop.
   for (const isRecording of [false, true]) {
     const html = await renderBottomBar(t, { isRecording });
     assert.ok(

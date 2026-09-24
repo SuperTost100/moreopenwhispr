@@ -191,8 +191,8 @@ export default function SpaceMembersPanel({ space }: SpaceMembersPanelProps) {
               className={cn(
                 "flex w-full min-w-0 items-center gap-1.5 h-8 px-1.5 rounded-md",
                 "transition-colors duration-150 outline-none",
-                "hover:bg-foreground/4 dark:hover:bg-white/4",
-                "focus-visible:ring-1 focus-visible:ring-ring/30"
+                "hover:bg-muted",
+                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               )}
             >
               <ChevronRight

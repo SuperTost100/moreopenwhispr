@@ -900,7 +900,7 @@ export default function ShareNoteDialog({
                             type="button"
                             className={cn(
                               "h-6 w-6 flex items-center justify-center rounded-md",
-                              "hover:bg-foreground/8 dark:hover:bg-white/8",
+                              "hover:bg-muted",
                               "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                               "transition-colors"
                             )}
@@ -986,7 +986,7 @@ export default function ShareNoteDialog({
 
         {exportOptions.length > 0 && (
           <div className="mt-1 border-t border-border/70 pt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground/55">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("noteEditor.share.dialog.export")}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -998,7 +998,7 @@ export default function ShareNoteDialog({
                     option.onSelect();
                     onOpenChange(false);
                   }}
-                  className="flex items-center gap-2.5 rounded-xl border border-border/70 px-3 py-2.5 text-start text-xs font-medium text-foreground/80 transition-colors hover:bg-surface-3 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 dark:border-white/10 dark:hover:bg-surface-2"
+                  className="flex items-center gap-2.5 rounded-xl border border-border/70 px-3 py-2.5 text-start text-xs font-medium text-foreground/80 transition-colors hover:bg-surface-3 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:hover:bg-surface-2"
                 >
                   <FileText size={14} className="shrink-0 text-foreground/55" />
                   {option.label}
@@ -1121,7 +1121,7 @@ function AccessGrantRow({
                 aria-label={t("noteEditor.share.dialog.invitationActions")}
                 className={cn(
                   "h-7 px-2 flex items-center gap-1 rounded-md text-[11px] text-foreground/50",
-                  "hover:bg-foreground/8 dark:hover:bg-white/8",
+                  "hover:bg-muted",
                   "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                   "disabled:opacity-50 transition-colors"
                 )}

@@ -90,11 +90,11 @@ import {
 } from "../../stores/noteStore";
 
 const FOLDER_INPUT_CLASS =
-  "w-full h-6 bg-foreground/5 dark:bg-white/5 rounded px-2 text-xs text-foreground outline-none border border-primary/30 focus:border-primary/50";
+  "w-full h-6 bg-muted rounded px-2 text-xs text-foreground outline-none border border-primary/30 focus:border-primary/50";
 
 const ROW_BASE_CLASS =
   "group relative flex items-center gap-2 rounded-md cursor-pointer select-none " +
-  "transition-colors duration-150 outline-none focus-visible:ring-1 focus-visible:ring-ring/30";
+  "transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 // Button forces svg children to 16px; these 20px controls want the 12px icon they pass.
 const KEBAB_BUTTON_CLASS =
@@ -194,9 +194,7 @@ function SectionHeader({
   isDragOver?: boolean;
   isDropSuccess?: boolean;
 }) {
-  // All-caps has no descenders, so its optical centre sits ~1px above the line box.
-  const labelClassName =
-    "translate-y-px text-[11px] font-medium uppercase tracking-[0.08em] text-foreground/55 select-none";
+  const labelClassName = "translate-y-px text-xs font-medium text-muted-foreground select-none";
 
   return (
     <div
@@ -215,7 +213,7 @@ function SectionHeader({
           type="button"
           aria-expanded={expanded}
           onClick={onToggle}
-          className="flex h-full min-w-0 items-center gap-2 rounded-sm outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/30"
+          className="flex h-full min-w-0 items-center gap-2 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           <span
             aria-hidden="true"
@@ -447,9 +445,7 @@ function SpaceRow({
       className={cn(
         ROW_BASE_CLASS,
         "h-7 px-2",
-        isActive
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4",
+        isActive ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted",
         isDragOver && DROP_TARGET_CLASS,
         isDropSuccess && DROP_SUCCESS_CLASS
       )}
@@ -615,9 +611,7 @@ function FolderRow({
         ROW_BASE_CLASS,
         "h-7 pe-2",
         level === 1 ? "ps-2" : "ps-[14px]",
-        isActive
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4",
+        isActive ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted",
         isDragOver && DROP_TARGET_CLASS,
         isDropSuccess && DROP_SUCCESS_CLASS
       )}
@@ -892,9 +886,7 @@ function NoteLeaf({
         ROW_BASE_CLASS,
         "h-7 pe-2",
         indentClassName ?? (level === 3 ? "ps-10" : "ps-[14px]"),
-        isActive
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4",
+        isActive ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted",
         isDragging && "opacity-40"
       )}
     >
@@ -1090,12 +1082,7 @@ function SkeletonRows() {
     <div className="space-y-px" aria-hidden="true">
       {["w-3/5", "w-2/5", "w-1/2"].map((width) => (
         <div key={width} className="flex items-center h-7 ps-[18px] pe-2">
-          <div
-            className={cn(
-              "h-2.5 rounded-full bg-foreground/6 dark:bg-white/6 animate-pulse",
-              width
-            )}
-          />
+          <div className={cn("h-2.5 rounded-full bg-muted animate-pulse", width)} />
         </div>
       ))}
     </div>
@@ -1270,7 +1257,7 @@ export default function SpacesTree({
             undoToastIdRef.current = null;
             onUndo();
           }}
-          className="h-6 px-2 text-xs text-white/70 hover:text-white hover:bg-white/10"
+          className="h-6 px-2 text-xs"
         >
           {t("notes.spaces.undo")}
         </Button>
@@ -1992,7 +1979,7 @@ export default function SpacesTree({
                     </Button>
                   )}
                   {/* With one workspace the header + is unambiguous; with several,
-                      each workspace row carries its own + instead. */}
+ each workspace row carries its own + instead. */}
                   {canCreateTeamSpace && !showWorkspaceGroups && (
                     <Button
                       variant="ghost"

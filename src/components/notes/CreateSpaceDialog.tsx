@@ -252,9 +252,9 @@ export default function CreateSpaceDialog({
           ) : (
             <>
               {/* Anyone in several workspaces sees the target workspace, even
-                  when only one of them is manageable (no picker to infer from).
-                  Opening from a workspace row's + already chose the target, so
-                  it renders as fixed context rather than a picker. */}
+ when only one of them is manageable (no picker to infer from).
+ Opening from a workspace row's + already chose the target, so
+ it renders as fixed context rather than a picker. */}
               {workspaces.length > 1 && workspace && (
                 <div className="space-y-1.5">
                   {manageableWorkspaces.length > 1 && !initialWorkspaceId ? (
@@ -310,14 +310,14 @@ export default function CreateSpaceDialog({
               </div>
 
               {/* A workspace of one has nobody to add; the section only
-                  appears once the roster shows other people (or failed). */}
+ appears once the roster shows other people (or failed). */}
               {(peopleLoading || membersError || candidates.length > 0) && (
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-foreground/50">
                     {t("notes.spaces.members.addPeople")}
                   </p>
                   {peopleLoading ? (
-                    <div className="h-24 rounded-lg bg-foreground/5 dark:bg-white/5 animate-pulse" />
+                    <div className="h-24 rounded-lg bg-muted animate-pulse" />
                   ) : membersError ? (
                     <div className="rounded border border-border/70 dark:border-border-subtle/60 px-3 py-2.5 flex items-center justify-between gap-2">
                       <p className="text-xs text-muted-foreground">
@@ -357,8 +357,8 @@ export default function CreateSpaceDialog({
                       className={cn(
                         "flex w-full min-w-0 items-center gap-1.5 h-8 px-1.5 rounded-md",
                         "transition-colors duration-150 outline-none",
-                        "hover:bg-foreground/4 dark:hover:bg-white/4",
-                        "focus-visible:ring-1 focus-visible:ring-ring/30"
+                        "hover:bg-muted",
+                        "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       )}
                     >
                       <ChevronRight
@@ -409,8 +409,8 @@ export default function CreateSpaceDialog({
                               className={cn(
                                 "flex items-center gap-2 w-full px-2 h-8 rounded-md text-start",
                                 "transition-colors duration-150 outline-none",
-                                "hover:bg-foreground/4 dark:hover:bg-white/4",
-                                "focus-visible:ring-1 focus-visible:ring-ring/30"
+                                "hover:bg-muted",
+                                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                               )}
                             >
                               <span dir="auto" className="text-xs text-foreground truncate flex-1">

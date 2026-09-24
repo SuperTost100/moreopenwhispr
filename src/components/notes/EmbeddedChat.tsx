@@ -94,7 +94,7 @@ export default function EmbeddedChat({
     <div
       className={cn(
         "h-9 flex items-center px-3 shrink-0",
-        mode === "sidebar" && "border-b border-border/70 dark:border-white/10"
+        mode === "sidebar" && "border-b border-border"
       )}
     >
       {headerTitle}
@@ -153,12 +153,9 @@ export default function EmbeddedChat({
           "absolute bottom-4 left-5 right-5 z-20 mx-auto max-w-[600px]",
           "min-h-50",
           "flex flex-col",
-          "bg-background/95 dark:bg-surface-2/95",
-          "border border-black/15 dark:border-white/18",
-          "ring-1 ring-inset ring-white/60 dark:ring-white/8",
+          "bg-background border border-border",
           "rounded-xl",
           "shadow-elevated",
-          "backdrop-blur-2xl",
           "animate-[scale-in_200ms_ease-out]"
         )}
       >
@@ -171,8 +168,8 @@ export default function EmbeddedChat({
     <div
       className={cn(
         "w-85 shrink-0",
-        "border-s border-black/12 dark:border-white/14",
-        "bg-surface-1 dark:bg-surface-2",
+        "border-s border-border",
+        "bg-card",
         "flex flex-col",
         "min-h-0"
       )}

@@ -30,9 +30,9 @@ export default function NotesStructureIntroDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="rounded-xl border border-border/70 bg-foreground/[0.025] dark:bg-white/[0.025] p-3.5">
+          <div className="rounded-xl border border-border/70 bg-muted p-3.5">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-foreground/5 text-foreground/50 dark:bg-white/5">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
                 <Lock size={13} />
               </div>
               <div>

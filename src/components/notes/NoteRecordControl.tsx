@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Loader2, Mic, Square } from "../icons";
 import { cn } from "../lib/utils";
 import { LiveWaveform } from "../ui/LiveWaveform";
-import { GRADIENT_CIRCLE } from "../ui/gradientCircle";
 import { analyserRms } from "../../utils/audioLevel";
 import { formatMmSs } from "../../utils/formatDuration";
 import { getMicAnalyser, useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
@@ -18,7 +17,8 @@ function readMeetingMicLevel(): number {
 }
 
 // Same near-opaque surface the ask bar wears while recording, so the two capsules match.
-const RECORDING_SURFACE = "bg-surface-2/95 shadow-(--shadow-glass)";
+const RECORDING_SURFACE = "bg-card border border-border";
+const MIC_CIRCLE = "bg-primary text-primary-foreground";
 
 const WAVE_BAR_HEIGHTS = [6, 12, 9, 11];
 
@@ -93,7 +93,7 @@ export default function NoteRecordControl({
           <span
             className={cn(
               "flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full",
-              GRADIENT_CIRCLE,
+              MIC_CIRCLE,
               "transition-[filter] duration-150 group-hover:brightness-110"
             )}
           >
@@ -113,7 +113,7 @@ export default function NoteRecordControl({
           title={disabled ? t("common.managedByOrg") : undefined}
           className={cn(
             "flex h-[30px] w-[30px] items-center justify-center rounded-full",
-            GRADIENT_CIRCLE,
+            MIC_CIRCLE,
             "transition-[filter,transform] duration-150 hover:brightness-110 active:scale-95",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
             disabled && "pointer-events-none opacity-40 saturate-0",

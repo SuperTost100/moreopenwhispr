@@ -21,9 +21,9 @@ import CreateSpaceDialog from "./CreateSpaceDialog";
 // lifts on hover, under the same hairline. The note's Share control keeps its
 // own pill, so these apply to this instance of the shared split button rather
 // than to the definition both share.
-const SOFT_GROUP_CLASS = "bg-foreground/4 dark:bg-white/5";
+const SOFT_GROUP_CLASS = "bg-muted";
 const SOFT_SEGMENT_CLASS =
-  "hover:bg-foreground/6 focus-visible:bg-foreground/6 focus-visible:ring-1 focus-visible:ring-primary/30 dark:hover:bg-white/8 dark:focus-visible:bg-white/8";
+  "hover:bg-muted focus-visible:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 const SOFT_DIVIDER_CLASS = "bg-foreground/8";
 
 interface NewNoteMenuProps {
