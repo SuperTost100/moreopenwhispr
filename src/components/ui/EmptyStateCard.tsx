@@ -21,16 +21,16 @@ export default function EmptyStateCard({
   return (
     <div
       className={cn(
-        "flex flex-col items-center rounded-2xl border border-border/70 bg-card/50 px-6 py-10 text-center dark:border-white/10 dark:bg-surface-2/60",
+        "flex flex-col items-center rounded-lg border border-border bg-card px-6 py-10 text-center",
         className
       )}
     >
-      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-3 text-foreground/70 dark:bg-surface-3">
+      <span className="flex h-11 w-11 items-center justify-center rounded-md bg-muted text-muted-foreground">
         <Icon size={20} />
       </span>
       {title && <p className="mt-4 text-[15px] font-medium text-foreground">{title}</p>}
       {description && (
-        <p className="mt-1 max-w-xs text-[13px] leading-relaxed text-foreground/70">
+        <p className="mt-1 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
           {description}
         </p>
       )}

@@ -372,7 +372,7 @@ const Toast: React.FC<
     <div
       className={cn(
         "group toast-surface pointer-events-auto relative flex w-75",
-        "rounded-[5px]",
+        "rounded-md",
         "transition-[opacity,transform] duration-200 ease-out",
         isExiting
           ? "opacity-0 translate-x-2 rtl:-translate-x-2 scale-[0.98]"
@@ -449,7 +449,7 @@ const Toast: React.FC<
           className={cn(
             "absolute -start-2 -top-2 size-6 rounded-full",
             "flex items-center justify-center",
-            "bg-white/10 backdrop-blur-sm border border-white/10",
+            "bg-white/10 border border-white/10",
             "text-white/70 hover:text-white hover:bg-white/20",
             "opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100",
             "transition-all duration-150",

@@ -5,51 +5,70 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* OpenWhispr Theme — registers color tokens with Tailwind v4.
+  /* MoreOpenWhisperer redesign theme — registers color tokens with Tailwind v4.
+     Calm, flat, hairline-bordered palette (see mow-work/redesign-spec.md).
      These are the light-mode defaults; .dark overrides them below. */
-  /* Midpoint of the brand glass gradient (#5588F0 → #3466E2) so tints, rings and links match it. */
-  --color-primary: #4577e9;
+  --color-primary: #3f3b9e;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #f5f5f5;
-  --color-secondary-foreground: #171717;
-  --color-muted: #f5f5f5;
-  --color-muted-foreground: #525252;
-  --color-accent: oklch(0.55 0.22 285);
-  --color-accent-foreground: #ffffff;
-  /* Agent Mode identity, sourced from the supplied sparkle/leaf mark. */
-  --color-agent-brand: #8787ff;
-  --color-destructive: #dc2626;
+  /* Neutral fill, one step above muted; used for secondary-weight surfaces. */
+  --color-secondary: #f6f8f7;
+  --color-secondary-foreground: #18201d;
+  --color-muted: #f6f8f7;
+  --color-muted-foreground: #59645f;
+  /* Dropdown/menu hover fill — flat neutral, not a brand tint. */
+  --color-accent: #e8ecea;
+  --color-accent-foreground: #18201d;
+  /* Agent Mode identity — aliased to the antigravity route accent so the
+     dictation pill's signal glow and the processing-route chip agree. */
+  --color-agent-brand: #5b57b7;
+  --color-destructive: #a34c42;
   --color-destructive-foreground: #ffffff;
-  --color-border: #e5e5e5;
-  --color-input: #f9f6f1;
-  --color-ring: #4577e9;
-  --color-background: #ffffff;
-  --color-foreground: #171717;
+  --color-border: #cdd5d1;
+  --color-input: #ffffff;
+  --color-ring: #37329a;
+  --color-background: #eef1ef;
+  --color-foreground: #18201d;
   --color-card: #ffffff;
-  --color-card-foreground: #171717;
+  --color-card-foreground: #18201d;
   --color-popover: #ffffff;
-  --color-popover-foreground: #171717;
-  --color-link: #4577e9;
-  --color-success: #16a34a;
+  --color-popover-foreground: #18201d;
+  --color-link: #3f3b9e;
+  --color-success: #2f6f5e;
   --color-success-foreground: #ffffff;
-  --color-warning: #d97706;
+  --color-warning: #7a5c00;
   --color-warning-foreground: #ffffff;
-  --color-info: #4577e9;
+  --color-info: #3f3b9e;
   --color-info-foreground: #ffffff;
+  --color-primary-hover: #35318a;
+  --color-primary-soft: #eeedfa;
+  --color-warning-border: #d9b84a;
+  --color-warning-soft: #fdf8ea;
+  --color-success-soft: #e8f3ee;
+  --color-destructive-soft: #f8ecea;
+  --color-subtle-foreground: #7a857f;
 
-  /* Surface hierarchy — light mode equivalents */
-  --color-surface-0: #ffffff;
-  --color-surface-1: #fafafa;
+  /* Processing-route accents (ConfiguredProcessingRoute + agent identity). */
+  --color-route-local: #2f6f5e;
+  --color-route-antigravity: #5b57b7;
+  --color-route-byok: #3d6f8f;
+  --color-route-custom: #7a6848;
+
+  /* Surface hierarchy — light mode. Mapped onto the flat palette: no surface
+     tier is more "elevated" than another, they are just background, muted,
+     card and hover in different roles. */
+  --color-surface-0: #eef1ef;
+  --color-surface-1: #f6f8f7;
   --color-surface-2: #ffffff;
-  --color-surface-3: #f5f5f5;
-  --color-surface-raised: #f0f0f0;
-  /* Main-window backdrop behind the sidebar and the inset content container. */
-  --color-surface-window: #f7f7f7;
+  --color-surface-3: #e8ecea;
+  --color-surface-raised: #ffffff;
+  /* Sidebar fill, and the main-window backdrop behind it (same colour). */
+  --color-sidebar: #f1f4f2;
+  --color-surface-window: var(--color-sidebar);
 
-  /* Border states — light mode equivalents */
-  --color-border-subtle: #e5e5e5;
-  --color-border-hover: #d4d4d4;
-  --color-border-active: #4577e9;
+  /* Border states — light mode. */
+  --color-border-subtle: #cdd5d1;
+  --color-border-hover: #9eaaa4;
+  --color-border-active: #37329a;
 }
 
 :root {
@@ -62,37 +81,36 @@
      name and silently retimes every `ease-out` utility app-wide. */
   --onboarding-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 
-  /* Typography. Yowza is the brand face (Latin only, registered by brandFonts.ts
-     when the licensed files are in the build); Noto Sans carries CJK and
-     everything else, and is the fallback when Yowza is absent. */
+  /* Typography. Noto Sans everywhere — no display/brand face. Yowza and Inter
+     are gone from every stack per the redesign spec. */
   --font-family-sans:
-    "Yowza", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
-  --font-family-display: "Yowza Soft", var(--font-family-sans);
+    "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-family-display: var(--font-family-sans);
 
   /* Opacities */
   --opacity-subtle: 0.1;
   --opacity-medium: 0.5;
   --opacity-high: 0.9;
 
-  /* Border Radius — ultra-tight, premium macOS-style rounding */
-  --radius: 0.375rem; /* 6px - default for buttons, inputs */
-  --radius-sm: 0.25rem; /* 4px - minimal rounding */
-  --radius-md: 0.375rem; /* 6px - standard */
-  --radius-lg: 0.5rem; /* 8px - cards, panels */
-  --radius-xl: 0.625rem; /* 10px - large cards */
+  /* Border Radius — spec buckets: 6px chips/kbd/small inline inputs, 8px
+     buttons/inputs/menu items/list rows, 12px cards/panels/dialogs/popovers,
+     999px toggles/avatars/status dots/circular icon buttons (applied with
+     rounded-full utilities directly, not a --radius-* token). */
+  --radius: 0.5rem; /* 8px - default for buttons, inputs */
+  --radius-sm: 0.375rem; /* 6px - chips, kbd, small inline inputs */
+  --radius-md: 0.5rem; /* 8px - menu items, list rows */
+  --radius-lg: 0.75rem; /* 12px - cards, panels, dialogs, popovers */
+  --radius-xl: 0.75rem; /* 12px - large cards (same bucket as lg) */
   --radius-shell: 0.75rem; /* 12px - the inset content container in the main window */
 
-  /* Custom Light Mode Brand Colors (Parchment Theme) */
-  --color-parchment-bg: #f9f6f1;
-  --color-parchment-border: #ddd4c7;
-  --color-parchment-text: #2b1f14;
-  --color-parchment-accent: #c0a77d;
-  --color-brand-primary: #2b1f14;
-  --color-brand-accent: #4b2e2b;
-  --color-brand-highlight: #c0a77d;
-  --color-brand-link: #2e3659;
-  --color-pattern: #e7e5e4;
+  /* Elevation — the one soft shadow popovers/menus/dialogs get; everything
+     else uses a border instead. */
+  --shadow-elevated: 0 8px 24px rgb(24 32 29 / 0.1);
+  /* Alias kept for dictation-panel/CommandSearch call sites outside this
+     agent's file list (ExpandingPanelShell.tsx, DictationErrorCard.tsx,
+     CommandSearch.tsx) — same single elevation shadow, different name. */
+  --shadow-modal: var(--shadow-elevated);
 
   /* Model picker premium effects (light mode) */
   --shadow-metallic-light: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -107,66 +125,94 @@
   --shadow-brand-glass:
     inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.16),
     inset 0 -1px 1px rgba(0, 0, 0, 0.12);
-  /* The fill under that rim: Button default, mic/send circles, the onboarding brand tile. */
-  --gradient-brand-glass: linear-gradient(180deg, #5588f0 0%, #3466e2 100%);
+  /* The fill under that rim: mic/send circles, the onboarding brand tile.
+     Tracks --color-primary instead of the old brand blue; Button no longer
+     uses this (see button.tsx — flat primary fill, no glass rim). Still used
+     by other glass surfaces outside this agent's file list (see report). */
+  --gradient-brand-glass: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary) 82%, white) 0%,
+    var(--color-primary) 100%
+  );
   /* The brand tile floats over the onboarding hero, so it adds a soft coloured lift. */
-  --shadow-brand-tile: var(--shadow-brand-glass), 0 10px 24px -8px rgb(52 102 226 / 0.45);
+  --shadow-brand-tile:
+    var(--shadow-brand-glass),
+    0 10px 24px -8px color-mix(in srgb, var(--color-primary) 45%, transparent);
 }
 
 .dark {
-  /* Dark mode — charcoal surfaces with clear elevation hierarchy
-     Base L=0.22 (charcoal) with 0.05 steps between layers.
-     Hue 260 (neutral blue) with minimal chroma for sophistication. */
-  --color-background: oklch(0.22 0.006 260);
+  /* Dark mode — fork's oklch neutrals, hue 260. Flat, hairline-bordered,
+     no idle glow. See mow-work/redesign-spec.md. */
+  --color-background: oklch(0.19 0.006 260);
   --color-foreground: oklch(0.93 0 0);
-  --color-card: oklch(0.27 0.008 260);
+  --color-card: oklch(0.23 0.007 260);
   --color-card-foreground: oklch(0.93 0 0);
-  --color-popover: oklch(0.29 0.009 260);
+  --color-popover: oklch(0.23 0.007 260);
   --color-popover-foreground: oklch(0.93 0 0);
-  --color-primary: oklch(0.65 0.2 260);
-  --color-primary-foreground: oklch(0.99 0 0);
-  --color-secondary: oklch(0.28 0.007 260);
-  --color-secondary-foreground: oklch(0.9 0 0);
-  --color-muted: oklch(0.24 0.006 260);
-  --color-muted-foreground: oklch(0.65 0 0);
-  --color-accent: oklch(0.68 0.18 285);
-  --color-accent-foreground: oklch(0.99 0 0);
-  --color-destructive: oklch(0.62 0.22 25);
-  --color-destructive-foreground: oklch(0.99 0 0);
+  --color-primary: #a5a2ec;
+  --color-primary-foreground: #16152e;
+  --color-secondary: oklch(0.25 0.007 260);
+  --color-secondary-foreground: oklch(0.93 0 0);
+  --color-muted: oklch(0.25 0.007 260);
+  --color-muted-foreground: oklch(0.72 0 0);
+  --color-accent: oklch(0.28 0.007 260);
+  --color-accent-foreground: oklch(0.93 0 0);
+  --color-agent-brand: #9a97e0;
+  --color-destructive: oklch(0.72 0.12 25);
+  --color-destructive-foreground: oklch(0.16 0 0);
   --color-border: oklch(0.35 0.007 260);
-  --color-input: oklch(0.19 0.005 260);
-  --color-ring: oklch(0.65 0.2 260);
-  --color-success: oklch(0.7 0.18 145);
-  --color-success-foreground: oklch(0.99 0 0);
-  --color-warning: oklch(0.75 0.15 70);
-  --color-warning-foreground: oklch(0.15 0 0);
-  --color-info: oklch(0.68 0.18 240);
-  --color-info-foreground: oklch(0.99 0 0);
+  --color-input: oklch(0.23 0.007 260);
+  --color-ring: #b9b6f2;
+  --color-success: #6fae97;
+  --color-success-foreground: oklch(0.16 0 0);
+  --color-warning: oklch(0.86 0.06 85);
+  --color-warning-foreground: oklch(0.16 0 0);
+  --color-info: #a5a2ec;
+  --color-info-foreground: #16152e;
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 88%, white);
+  --color-primary-soft: oklch(0.3 0.05 280);
+  --color-warning-border: oklch(0.62 0.09 85);
+  --color-warning-soft: oklch(0.28 0.03 85 / 0.35);
+  --color-success-soft: color-mix(in oklch, var(--color-success) 22%, var(--color-card));
+  --color-destructive-soft: oklch(0.28 0.04 25 / 0.45);
+  --color-subtle-foreground: oklch(0.55 0 0);
 
-  /* Surface hierarchy — charcoal depth system (0.22 → 0.33) */
-  --color-surface-0: oklch(0.22 0.006 260);
+  /* Processing-route accents (dark). */
+  --color-route-local: #6fae97;
+  --color-route-antigravity: #9a97e0;
+  --color-route-byok: #7eb3d4;
+  --color-route-custom: #c2a97a;
+
+  /* Surface hierarchy — dark mode. */
+  --color-surface-0: oklch(0.19 0.006 260);
   --color-surface-1: oklch(0.25 0.007 260);
-  --color-surface-2: oklch(0.27 0.008 260);
-  --color-surface-3: oklch(0.3 0.009 260);
-  --color-surface-raised: oklch(0.33 0.01 260);
-  --color-surface-window: oklch(0.19 0.005 260);
+  --color-surface-2: oklch(0.23 0.007 260);
+  --color-surface-3: oklch(0.28 0.007 260);
+  --color-surface-raised: oklch(0.28 0.007 260);
+  --color-sidebar: oklch(0.16 0.006 260);
+  --color-surface-window: var(--color-sidebar);
 
   /* Border states */
-  --color-border-subtle: oklch(0.33 0.006 260);
-  --color-border-hover: oklch(0.42 0.01 260);
-  --color-border-active: oklch(0.5 0.15 260);
-  --color-link: oklch(0.67 0.1 250);
+  --color-border-subtle: oklch(0.35 0.007 260);
+  --color-border-hover: oklch(0.44 0.008 260);
+  --color-border-active: #b9b6f2;
+  --color-link: #a5a2ec;
 
-  /* Card depth shadows — softer for charcoal, with top highlight for premium depth */
-  --shadow-card: 0 1px 3px oklch(0 0 0 / 0.2), inset 0 1px 0 oklch(1 0 0 / 0.03);
-  --shadow-card-hover: 0 4px 12px oklch(0 0 0 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.04);
-  --shadow-elevated: 0 8px 24px oklch(0 0 0 / 0.3);
-  --shadow-modal: 0 24px 48px -12px oklch(0 0 0 / 0.4);
+  /* Elevation — borders, not shadows. Popovers/menus/dialogs get one flat
+     soft shadow; nothing else casts one. */
+  --shadow-card: none;
+  --shadow-card-hover: none;
+  --shadow-elevated: 0 8px 24px rgb(0 0 0 / 0.45);
 
   /* Premium effects */
   --shadow-metallic-dark: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.2);
+  /* Kept for ModelCardList/TranscriptionModelPicker (outside this agent's file
+     list); tracks --color-primary now instead of the old stale blue. Still an
+     idle glow — the spec bans those, flag for whichever agent owns those
+     files. */
   --shadow-selected-glow:
-    inset 0 0 0 1px oklch(0.65 0.2 260 / 0.2), 0 0 16px -4px oklch(0.65 0.2 260 / 0.2);
+    inset 0 0 0 1px color-mix(in oklch, var(--color-primary) 20%, transparent),
+    0 0 16px -4px color-mix(in oklch, var(--color-primary) 20%, transparent);
   --shadow-card-hover-subtle: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
 
   /* Liquid-glass edge — faint rim on charcoal, deeper lift */
@@ -291,42 +337,38 @@
    tokens are shared — the canvas keeps its own painted background below. */
 .onboarding-canvas,
 body:has(.onboarding-canvas) {
-  /* Inter sits behind Yowza as the onboarding fallback: both are Latin-only, so
-     zh-CN/zh-TW/ja glyphs must still fall through to Noto Sans. Overriding the
-     variable as well covers descendants that re-declare font-family from it. */
-  --font-family-sans:
-    "Yowza", "Inter Variable", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  /* Noto Sans everywhere — no Yowza, no Inter. Same --font-family-sans as
+     the rest of the app; nothing to override here anymore. */
   font-family: var(--font-family-sans);
   font-optical-sizing: auto;
 
-  /* Onboarding design tokens from the Figma library, except the accent: that is
-     the app's one brand blue, so both themes resolve it through --color-primary. */
+  /* Onboarding design tokens alias the foundation palette instead of
+     repeating the Figma greys, so onboarding tracks the same redesign as the
+     rest of the app. */
   --onboarding-accent: var(--color-primary);
   --onboarding-accent-foreground: #ffffff;
   /* Hover on a filled accent means "darker" on light and "lighter" on dark, so the
      mix target is a token rather than a literal `black` in the utility class. */
   --onboarding-accent-hover: color-mix(in srgb, var(--onboarding-accent) 88%, black);
-  --onboarding-text-primary: #000000;
-  --onboarding-text-secondary: #656565;
-  --onboarding-text-tertiary: #969393;
-  --onboarding-control-border: #e3e3e3;
-  /* The page/card fill everything else sits on. Split from surface-secondary so
-     the dark theme can move the base without dragging the filled greys with it. */
-  --onboarding-surface: #ffffff;
-  /* light/surface-secondary and light/surface-tertiary: the two filled greys the
+  --onboarding-text-primary: var(--color-foreground);
+  --onboarding-text-secondary: var(--color-muted-foreground);
+  --onboarding-text-tertiary: var(--color-subtle-foreground);
+  --onboarding-control-border: var(--color-border);
+  /* The page/card fill everything else sits on. */
+  --onboarding-surface: var(--color-background);
+  /* surface-secondary and surface-tertiary: the two filled greys the
      onboarding frames use (capture surfaces and the inline hint pills). */
-  --onboarding-surface-secondary: #f7f7f7;
-  --onboarding-surface-tertiary: #e6e6e6;
+  --onboarding-surface-secondary: var(--color-muted);
+  --onboarding-surface-tertiary: var(--color-surface-3);
   /* Hover step above the base surface (ghost rows, outline buttons) and above
      surface-tertiary (the neutral "Enable" pill). */
-  --onboarding-surface-hover: #fafafa;
-  --onboarding-surface-tertiary-hover: #d4d4d4;
+  --onboarding-surface-hover: var(--color-surface-1);
+  --onboarding-surface-tertiary-hover: var(--color-border-hover);
   /* The row hover slab, which is a fill painted *behind* a row's content rather
      than a control's own background — so it needs more separation from the base
      surface than surface-hover gives a bordered button, and it gets its own token
      instead of leaning on that one. */
-  --onboarding-row-hover: #f5f5f5;
+  --onboarding-row-hover: var(--color-surface-3);
   /* Inverted HUD: keycaps and the dictation pill preview, which are near-black on
      light and have to lift off the background rather than sink into it on dark. */
   --onboarding-inverse-surface: #0a0a0a;
@@ -335,8 +377,8 @@ body:has(.onboarding-canvas) {
   /* Status. Kept separate from the accent so a failed provider test never reads
      as a brand colour. */
   --onboarding-link: var(--color-link);
-  --onboarding-danger: #ef4444;
-  --onboarding-success: #22c55e;
+  --onboarding-danger: var(--color-destructive);
+  --onboarding-success: var(--color-success);
   /* Keycap. The cap is lit from above, so it needs its own top/bottom pair rather
      than reusing the surface tokens: in dark it has to sit *above* the page fill
      while still reading as a physical key. */
@@ -359,28 +401,18 @@ body:has(.onboarding-canvas) {
 .dark .onboarding-canvas,
 .dark:has(.onboarding-canvas),
 body.dark:has(.onboarding-canvas) {
-  /* White, same as light: a filled brand CTA reads as the brand in both themes,
-     and flipping its label to near-black made the dark-mode buttons look like a
-     different component. */
-  --onboarding-accent-foreground: #ffffff;
+  /* Text, border, surface, danger and success are gone from this block: the
+     light block above now aliases each of those to a foundation --color-*
+     token, and every one of those already flips value under .dark on its
+     own — repeating them here just fought that. */
+  --onboarding-accent-foreground: var(--color-primary-foreground);
   --onboarding-accent-hover: color-mix(in srgb, var(--onboarding-accent) 88%, white);
-  --onboarding-text-primary: #f5f5f5;
-  --onboarding-text-secondary: #a1a1a1;
-  --onboarding-text-tertiary: #7c7c7c;
-  --onboarding-control-border: #2e2e2e;
-  --onboarding-surface: #141414;
-  --onboarding-surface-secondary: #1c1c1c;
-  --onboarding-surface-tertiary: #292929;
-  --onboarding-surface-hover: #202020;
-  --onboarding-surface-tertiary-hover: #363636;
-  --onboarding-row-hover: #202020;
   /* The HUD inverts: on dark it is the one thing that gets *lighter* than the
-     page, or the keycaps disappear into it. */
+     page, or the keycaps disappear into it. No foundation token models this
+     (it is a deliberate inversion, not a themed surface), so it stays literal. */
   --onboarding-inverse-surface: #f5f5f5;
   --onboarding-inverse-surface-secondary: #d4d4d4;
   --onboarding-inverse-text: #0a0a0a;
-  --onboarding-danger: #f87171;
-  --onboarding-success: #4ade80;
   --onboarding-keycap-top: #3a3a3a;
   --onboarding-keycap-bottom: #262626;
   --onboarding-keycap-bevel: #4d4d4d;
@@ -523,7 +555,7 @@ body.dark:has(.onboarding-canvas) {
   flex-direction: column;
   min-height: 0;
   border: 1px solid var(--onboarding-control-border);
-  border-radius: 16px;
+  border-radius: 12px;
   background-color: var(--onboarding-surface);
   /* Clip to the radius, or the scroll child's square box lets its scrollbar and
      any full-bleed row paint outside the rounded corners. `clip` rather than
@@ -538,7 +570,7 @@ body.dark:has(.onboarding-canvas) {
 }
 
 /* The scroll lives on this inner element, never on .onboarding-list itself — a
-   scrollbar on the bordered box sits hard against its 16px corner radius, which
+   scrollbar on the bordered box sits hard against its 12px corner radius, which
    clips the ends of the thumb. */
 .onboarding-list-scroll {
   position: relative;
@@ -560,7 +592,7 @@ body.dark:has(.onboarding-canvas) {
   width: 5px;
 }
 
-/* Hold the thumb clear of the container's 16px corner arcs, so clipping never
+/* Hold the thumb clear of the container's 12px corner arcs, so clipping never
    shaves its ends. */
 .onboarding-list-scroll::-webkit-scrollbar-track {
   margin-block: 14px;
@@ -592,7 +624,7 @@ body.dark:has(.onboarding-canvas) {
 
 /* Dropdown rows are the same shape as .onboarding-list-row, so they get the same
    hover: a rounded slab that replaces the rules it touches, rather than a square
-   full-bleed band whose corners fight the panel's 17px radius and whose edges get
+   full-bleed band whose corners fight the panel's 12px radius and whose edges get
    crossed by the dividers.
 
    Why this is CSS and not Tailwind on the item: the base SelectItem's
@@ -937,7 +969,7 @@ a svg:hover,
   cursor: pointer;
 }
 
-/* Premium input styling with subtle depth */
+/* Inputs — flat, hairline border, no embossed shadow. */
 input:not(.input-inline),
 textarea:not(.input-inline) {
   border-radius: var(--radius);
@@ -947,65 +979,29 @@ textarea:not(.input-inline) {
     color 0.2s ease,
     box-shadow 0.2s ease;
   font-family: var(--font-family-sans);
-  box-shadow: inset 0 1px 2px oklch(from var(--color-foreground) l c h / 0.06);
-}
-
-/* Light mode inputs */
-:root input:not(.input-inline),
-:root textarea:not(.input-inline) {
-  background-color: var(--color-background);
-  border: 1px solid var(--color-border);
-  color: var(--color-foreground);
-}
-
-:root input:not(.input-inline):focus,
-:root textarea:not(.input-inline):focus {
-  border-color: var(--color-border-active);
-  box-shadow: 0 0 0 2px oklch(from var(--color-ring) l c h / 0.15);
-  background-color: var(--color-background);
-}
-
-/* Dark mode inputs — flat, no embossed shadow */
-.dark input:not(.input-inline),
-.dark textarea:not(.input-inline) {
+  box-shadow: none;
   background-color: var(--color-input);
   border: 1px solid var(--color-border);
   color: var(--color-foreground);
-  box-shadow: none;
 }
 
-.dark input:not(.input-inline):focus,
-.dark textarea:not(.input-inline):focus {
+input:not(.input-inline):focus,
+textarea:not(.input-inline):focus {
   border-color: var(--color-border-active);
   box-shadow: 0 0 0 2px oklch(from var(--color-ring) l c h / 0.15);
+  background-color: var(--color-input);
 }
 
-/* Card styling - elevated parchment */
+/* Card styling — flat, hairline border, no shadow or hover lift. */
 .card {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card, 0 1px 3px oklch(from var(--color-foreground) l c h / 0.08));
-  transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+  transition: border-color 0.2s ease;
 }
 
-.card:hover {
-  box-shadow: var(--shadow-card-hover, 0 4px 12px oklch(from var(--color-foreground) l c h / 0.1));
-  transform: translateY(-1px);
-}
-
-/* Dark mode cards — grounded, no lift, subtle border glow */
 .dark .card {
   border-color: var(--color-border-subtle);
-  box-shadow: var(--shadow-card);
-}
-
-.dark .card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transform: none;
-  border-color: var(--color-border-hover);
 }
 
 /* Link styling */
@@ -1020,28 +1016,6 @@ a:hover {
   color: var(--color-link);
   opacity: 0.8;
   cursor: pointer;
-}
-
-/* Status indicators */
-.status-active {
-  color: var(--color-brand-accent);
-  font-weight: 600;
-}
-
-.text-brand-primary {
-  color: var(--color-brand-primary);
-}
-
-.text-brand-accent {
-  color: var(--color-brand-accent);
-}
-
-.text-brand-highlight {
-  color: var(--color-brand-highlight);
-}
-
-.text-brand-link {
-  color: var(--color-brand-link);
 }
 
 /* ---- Premium UI Utilities ---- */
@@ -1085,14 +1059,12 @@ a:hover {
   filter: invert(1);
 }
 
-/* Toast — opaque dark HUD surface, same in light & dark mode */
+/* Toast — opaque dark HUD surface, same in light & dark mode. Flat: hairline
+   border and the one elevation shadow, no inset glow. */
 .toast-surface {
   background: oklch(0.15 0.006 260);
   border: 1px solid oklch(0.25 0.006 260);
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.04),
-    0 8px 24px -4px oklch(0 0 0 / 0.5),
-    0 2px 8px -2px oklch(0 0 0 / 0.3);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
 }
 
 /* Enter from the physical outer edge of the direction-aware toast stack. */
@@ -1852,50 +1824,42 @@ a:hover {
    token system (see the onboarding-canvas notes below) and is untouched
    here. */
 :root {
-  --cp-muted: #59645f;
-  --cp-line: #cdd5d1;
-  --cp-soft-bg: #f6f8f7;
-  --cp-ink: #18201d;
-  --cp-hover-bg: #e8ecea;
+  --cp-muted: var(--color-muted-foreground);
+  --cp-line: var(--color-border);
+  --cp-soft-bg: var(--color-muted);
+  --cp-ink: var(--color-foreground);
+  --cp-hover-bg: var(--color-surface-3);
   --cp-radius-panel: 12px;
 }
 
-.dark {
-  --cp-muted: oklch(0.72 0 0);
-  --cp-line: oklch(0.35 0.007 260);
-  --cp-soft-bg: oklch(0.25 0.007 260);
-  --cp-ink: oklch(0.93 0 0);
-  --cp-hover-bg: oklch(0.28 0.007 260);
-}
+/* No .dark override needed: every cp-* token above now aliases a foundation
+   --color-* token, which already flips in .dark. */
 
 /* Control panel shell — sidebar + compact nav (scoped to .cp-shell). */
 .cp-shell {
   --cp-shell-sidebar-width: 224px;
-  --cp-shell-sidebar-bg: #f1f4f2;
-  --cp-shell-sidebar-border: #cdd5d1;
+  --cp-shell-sidebar-bg: var(--color-sidebar);
+  --cp-shell-sidebar-border: var(--color-border);
   /* Matches --color-popover exactly in both modes — referenced directly
      rather than re-declared. */
   --cp-shell-nav-active-bg: var(--color-popover);
   --cp-shell-nav-active-accent: var(--color-primary);
-  --cp-shell-disclosure-ink: #59645f;
-  --cp-shell-banner-bg: #ffffff;
-  --cp-shell-banner-border: #cdd5d1;
-  --cp-shell-compact-bg: #f1f4f2;
-  /* Same hairline as --cp-shell-banner-border in both modes (a shell-only
-     coincidence — its dark value differs from the cross-view --cp-line by
-     0.01L, so it stays local rather than joining that shared token). */
+  --cp-shell-disclosure-ink: var(--color-muted-foreground);
+  --cp-shell-banner-bg: var(--color-card);
+  --cp-shell-banner-border: var(--color-border);
+  --cp-shell-compact-bg: var(--color-sidebar);
   --cp-shell-compact-border: var(--cp-shell-banner-border);
   --cp-shell-compact-trigger-bg: var(--color-popover);
   font-family: var(--font-family-sans);
 }
 
 .dark .cp-shell {
-  --cp-shell-sidebar-bg: oklch(0.16 0.006 260);
-  --cp-shell-sidebar-border: oklch(0.44 0.008 260);
-  --cp-shell-disclosure-ink: oklch(0.68 0 0);
-  --cp-shell-banner-bg: oklch(0.27 0.008 260);
-  --cp-shell-banner-border: oklch(0.34 0.007 260);
-  --cp-shell-compact-bg: oklch(0.24 0.006 260);
+  /* Sidebar/border/banner tokens above already flip via their aliased
+     foundation tokens. Dark-only distinction: the shell border reads
+     --color-border-hover here (a touch stronger than the cross-view hairline)
+     rather than --color-border, so it keeps some separation from the
+     surrounding charcoal card fills. */
+  --cp-shell-sidebar-border: var(--color-border-hover);
 }
 
 .cp-shell-sidebar {
@@ -2036,15 +2000,15 @@ a:hover {
   --cp-route-space-3: 20px;
   --cp-route-radius-stage: 10px;
   --cp-route-accent-width: 4px;
-  --cp-route-local-accent: #2f6f5e;
-  --cp-route-antigravity-accent: #5b57b7;
-  --cp-route-byok-accent: #3d6f8f;
-  --cp-route-custom-accent: #7a6848;
+  --cp-route-local-accent: var(--color-route-local);
+  --cp-route-antigravity-accent: var(--color-route-antigravity);
+  --cp-route-byok-accent: var(--color-route-byok);
+  --cp-route-custom-accent: var(--color-route-custom);
   /* Same value as --cp-route-antigravity-accent in both modes today, but a
      different boundary concept ("audio leaves device" vs "provider
      request") — see ConfiguredProcessingRoute.tsx. Kept separate on purpose,
      not merged. */
-  --cp-route-provider-accent: #5b57b7;
+  --cp-route-provider-accent: var(--color-route-antigravity);
   /* Matches --color-card exactly in both modes. */
   --cp-route-stage-bg: var(--color-card);
   margin-bottom: calc(var(--cp-route-space-1) * 2 + 6px);
@@ -2055,13 +2019,8 @@ a:hover {
   color: var(--cp-ink);
 }
 
-.dark .cp-processing-route {
-  --cp-route-local-accent: #6fae97;
-  --cp-route-antigravity-accent: #9a97e0;
-  --cp-route-byok-accent: #7eb3d4;
-  --cp-route-custom-accent: #c2a97a;
-  --cp-route-provider-accent: #9a97e0;
-}
+/* No .dark override needed: the route accents above already alias the
+   foundation --color-route-* tokens, which flip in .dark. */
 
 .cp-processing-route__head {
   display: flex;
@@ -2224,26 +2183,21 @@ a:hover {
   /* Matches --color-card exactly in both modes. */
   --cp-history-panel-bg: var(--color-card);
   --cp-history-info-accent: var(--color-primary);
-  --cp-history-warning-border: #d9b84a;
-  --cp-history-warning-bg: #fdf8ea;
-  --cp-history-warning-ink: #7a5c00;
-  /* A muted/soft destructive accent for history badges — deliberately not
-     the same as --color-destructive (which is fully saturated). */
-  --cp-history-destructive: #a34c42;
-  --cp-history-destructive-bg: #f9ecea;
-  --cp-history-sticky-bg: #eef1ef;
+  --cp-history-warning-border: var(--color-warning-border);
+  --cp-history-warning-bg: var(--color-warning-soft);
+  --cp-history-warning-ink: var(--color-warning);
+  /* Same ink/soft-bg pair as --color-destructive / --color-destructive-soft;
+     kept as its own name since it is a badge accent, not the destructive
+     button fill. */
+  --cp-history-destructive: var(--color-destructive);
+  --cp-history-destructive-bg: var(--color-destructive-soft);
+  --cp-history-sticky-bg: var(--color-background);
   padding: var(--cp-history-space-3) var(--cp-history-space-2) var(--cp-history-space-4);
   color: var(--cp-ink);
 }
 
-.dark .cp-history {
-  --cp-history-warning-border: oklch(0.62 0.09 85);
-  --cp-history-warning-bg: oklch(0.28 0.03 85 / 0.35);
-  --cp-history-warning-ink: oklch(0.86 0.06 85);
-  --cp-history-destructive: oklch(0.72 0.12 25);
-  --cp-history-destructive-bg: oklch(0.28 0.04 25 / 0.45);
-  --cp-history-sticky-bg: oklch(0.22 0.006 260);
-}
+/* No .dark override needed: every cp-history-* token above now aliases a
+   foundation --color-* token, which already flips in .dark. */
 
 .cp-history__inner {
   max-width: 64rem;
