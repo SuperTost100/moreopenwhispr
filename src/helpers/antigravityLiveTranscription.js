@@ -1,6 +1,7 @@
 const { pcm16ToWav } = require("../utils/audioUtils");
 const { getAntigravityAccessToken } = require("./antigravityAuth");
 const { transcribeAudioViaGateway } = require("./antigravityGateway");
+const { getCatalog, resolveAntigravityModels } = require("./antigravityModelCatalog");
 
 const SAMPLE_RATE = 16000;
 const MIN_CHUNK_BYTES = SAMPLE_RATE * 2 * 2; // ~2s mono PCM16
@@ -11,9 +12,11 @@ function sleep(ms) {
 
 async function transcribePcmBuffer({ pcmBuffer, language, keyterms, mode, fetchImpl }) {
   const wav = pcm16ToWav(pcmBuffer);
-  const accessToken = await getAntigravityAccessToken({ fetchImpl });
+  const { accessToken, accountKey } = await getAntigravityAccessToken({});
   const { text } = await transcribeAudioViaGateway({
     accessToken,
+    accountKey,
+    model: resolveAntigravityModels(getCatalog(), {}).stt,
     audioBase64: wav.toString("base64"),
     mimeType: "audio/wav",
     language,

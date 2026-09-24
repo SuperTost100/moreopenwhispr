@@ -8,6 +8,7 @@ const {
   resolveAgyCliModel,
   withoutEffortArgs,
 } = require("./antigravityModels.cjs");
+const { createAntigravityError } = require("./antigravityOperation");
 const DEFAULT_ANTIGRAVITY_STT_MODEL = "gemini-3.5-transcribe";
 
 const AGY_HOME_REL = path.join(".gemini", "antigravity-cli");
@@ -20,11 +21,10 @@ const TIER_RE =
   /(?:ineligible|not available on (?:your|this) tier|upgrade (?:your|to)|tier restriction)/i;
 
 function agyNotFound(candidate) {
-  const error = new Error(
+  return createAntigravityError(
+    "AGY_NOT_FOUND",
     `Antigravity CLI not found or not executable: ${candidate}. Install agy, run agy auth login, or set ANTIGRAVITY_CLI to the full path.`
   );
-  error.code = "AGY_NOT_FOUND";
-  return error;
 }
 
 function isExecutableFile(filePath) {
@@ -231,7 +231,7 @@ function attachStream(child, streamName, chunks) {
   child[streamName].on("data", (chunk) => chunks.push(chunk));
 }
 
-function waitForClose(child, timeoutMs) {
+function waitForClose(child, timeoutMs, signal) {
   return new Promise((resolve, reject) => {
     const stdoutChunks = [];
     const stderrChunks = [];
@@ -239,12 +239,14 @@ function waitForClose(child, timeoutMs) {
     attachStream(child, "stderr", stderrChunks);
 
     let settled = false;
+    let cancelled = false;
     const finish = (result) => {
       if (settled) {
         return;
       }
       settled = true;
       clearTimeout(timer);
+      if (signal) signal.removeEventListener("abort", onAbort);
       resolve(result);
     };
 
@@ -262,20 +264,37 @@ function waitForClose(child, timeoutMs) {
           }, timeoutMs)
         : null;
 
+    // A caller-supplied abort signal kills the child directly (not just stops
+    // waiting on it) — otherwise the orphaned agy process keeps running after
+    // the caller has already given up on the result.
+    const onAbort = () => {
+      cancelled = true;
+      child.kill("SIGTERM");
+    };
+    if (signal) {
+      if (signal.aborted) {
+        onAbort();
+      } else {
+        signal.addEventListener("abort", onAbort, { once: true });
+      }
+    }
+
     child.on("error", (error) => {
       if (settled) {
         return;
       }
       settled = true;
       clearTimeout(timer);
+      if (signal) signal.removeEventListener("abort", onAbort);
       reject(error);
     });
 
-    child.on("close", (exitCode, signal) => {
+    child.on("close", (exitCode, closeSignal) => {
       finish({
         timedOut: false,
+        cancelled,
         exitCode,
-        signal,
+        signal: closeSignal,
         stdout: Buffer.concat(stdoutChunks).toString("utf8"),
         stderr: Buffer.concat(stderrChunks).toString("utf8"),
       });
@@ -297,21 +316,15 @@ function readTextFileIfPresent(filePath) {
 
 function throwAgyFailure({ stdout, stderr, exitCode, signal, timedOut, timeoutMs }) {
   if (timedOut) {
-    const error = new Error(`Antigravity CLI timed out after ${timeoutMs}ms`);
-    error.code = "AGY_TIMEOUT";
-    throw error;
+    throw createAntigravityError("AGY_TIMEOUT", `Antigravity CLI timed out after ${timeoutMs}ms`);
   }
   const classified = classifyAgyError(`${stderr}\n${stdout}`);
-  const error = new Error(classified.message);
-  error.code = classified.code;
-  error.exitCode = exitCode;
-  error.signal = signal;
-  throw error;
+  throw createAntigravityError(classified.code, classified.message, { exitCode, signal });
 }
 
 async function runAgyTurn({
   prompt,
-  model = DEFAULT_ANTIGRAVITY_MODEL,
+  model,
   addDirs,
   cwd = process.cwd(),
   timeoutMs = 300_000,
@@ -324,11 +337,13 @@ async function runAgyTurn({
   outputFormat,
   printTimeout,
   extraArgs,
+  signal,
 }) {
   const binary = resolveAgyBinary(command);
-  // resolveAgyCliModel also fills in the default, so an explicit null/"" model
-  // still reaches buildAgyArgs as a real id instead of dropping --model.
-  const cliModel = resolveAgyCliModel(model);
+  // Only resolve/remap when a model was actually requested — an omitted
+  // model must reach the CLI with no --model flag at all so agy applies its
+  // own current default instead of us freezing one in.
+  const cliModel = model ? resolveAgyCliModel(model) : "";
   const args = buildAgyArgs({
     prompt,
     model: cliModel,
@@ -340,7 +355,7 @@ async function runAgyTurn({
     extraArgs,
   });
   const env = { ...process.env, ...extraEnv };
-  env.ANTIGRAVITY_MODEL = cliModel;
+  if (cliModel) env.ANTIGRAVITY_MODEL = cliModel;
   if (path.isAbsolute(binary)) {
     const pathSep = process.platform === "win32" ? ";" : ":";
     env.PATH = path.dirname(binary) + pathSep + (env.PATH || "");
@@ -359,7 +374,7 @@ async function runAgyTurn({
   });
   let result;
   try {
-    result = await waitForClose(child, timeoutMs);
+    result = await waitForClose(child, timeoutMs, signal);
   } catch (error) {
     if (error?.code === "ENOENT") {
       throw agyNotFound(binary);
@@ -369,11 +384,16 @@ async function runAgyTurn({
   const stdoutText = result.stdout.trim();
   const stderrText = result.stderr.trim();
 
-  if ((result.exitCode ?? 0) !== 0 || result.timedOut) {
-    if (result.signal === "SIGTERM") {
-      const error = new Error("Antigravity transcription cancelled");
-      error.code = "AGY_CANCELLED";
-      throw error;
+  if ((result.exitCode ?? 0) !== 0 || result.timedOut || result.cancelled) {
+    // Check timedOut FIRST: the internal deadline kills the child with the
+    // same SIGTERM a caller cancel uses, so signal alone can't tell "this
+    // print call ran out of time" from "the caller cancelled it" apart —
+    // only the waitForClose-tracked timedOut/cancelled flags can.
+    if (result.timedOut) {
+      throwAgyFailure({ ...result, timeoutMs });
+    }
+    if (result.cancelled || result.signal === "SIGTERM" || result.signal === "SIGKILL") {
+      throw createAntigravityError("AGY_CANCELLED", "Antigravity transcription cancelled");
     }
     throwAgyFailure({ ...result, timeoutMs });
   }
@@ -382,7 +402,7 @@ async function runAgyTurn({
   // includes agent tool chatter (especially if cwd is a large workspace).
   const writeFileText = readTextFileIfPresent(writeFilePath);
   if (writeFileText) {
-    return { text: writeFileText, model: cliModel, recoveredFrom: "write_file" };
+    return { text: writeFileText, model: cliModel || null, recoveredFrom: "write_file" };
   }
 
   if (stdoutText) {
@@ -395,21 +415,26 @@ async function runAgyTurn({
             typeof envelope.structured_output === "string"
               ? envelope.structured_output
               : JSON.stringify(envelope.structured_output);
-          return { text: structured, model: cliModel, recoveredFrom: null, envelope };
+          return { text: structured, model: cliModel || null, recoveredFrom: null, envelope };
         }
         if (typeof envelope?.response === "string" && envelope.response.trim()) {
-          return { text: envelope.response.trim(), model: cliModel, recoveredFrom: null, envelope };
+          return {
+            text: envelope.response.trim(),
+            model: cliModel || null,
+            recoveredFrom: null,
+            envelope,
+          };
         }
       } catch {
         // fall through to raw stdout
       }
     }
-    return { text: stdoutText, model: cliModel, recoveredFrom: null };
+    return { text: stdoutText, model: cliModel || null, recoveredFrom: null };
   }
 
   const recovered = recoverTranscriptFromDisk({ cwd });
   if (recovered?.text) {
-    return { text: recovered.text, model: cliModel, recoveredFrom: "disk_transcript" };
+    return { text: recovered.text, model: cliModel || null, recoveredFrom: "disk_transcript" };
   }
 
   throwAgyFailure({

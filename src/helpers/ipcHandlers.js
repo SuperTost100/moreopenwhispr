@@ -4791,6 +4791,32 @@ class IPCHandlers {
       }
     });
 
+    // Catalog for the model picker. `refresh: true` fetches from the gateway
+    // first; on failure the last good (or static) catalog is still returned.
+    ipcMain.handle("antigravity-list-models", async (_event, options) => {
+      const {
+        getCatalog,
+        refreshCatalog,
+        listSelectableModels,
+      } = require("./antigravityModelCatalog");
+      let refreshError = null;
+      if (options?.refresh) {
+        try {
+          await refreshCatalog({ reason: "ipc" });
+        } catch (error) {
+          refreshError = { code: error.code, message: error.message };
+        }
+      }
+      const catalog = getCatalog();
+      return {
+        success: true,
+        models: listSelectableModels(catalog),
+        source: catalog.source || "remote",
+        fetchedAt: catalog.fetchedAt ?? null,
+        refreshError,
+      };
+    });
+
     ipcMain.handle("get-custom-transcription-key", async () => {
       return this.environmentManager.getCustomTranscriptionKey();
     });

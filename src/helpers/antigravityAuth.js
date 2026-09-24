@@ -1,33 +1,51 @@
+// Antigravity credential path (A1). `agy` itself is the single writer of the
+// OAuth token file — this module only reads it and, when the token is near
+// expiry, shells out to `agy models` (a cheap, side-effect-free CLI call) to
+// make agy refresh and rewrite the file on its own. No OAuth client id/secret
+// ever lives in this app, and no request to oauth2.googleapis.com is made
+// here: the old approach of scraping those credentials out of the agy binary
+// and refreshing directly is gone (it produced "client secret is invalid"
+// once agy rotated the pair server-side, which was the majority of dictation
+// fallbacks to the slow --print path — see mow-work/gemini-plan-v2.md).
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { execFile, execFileSync } = require("child_process");
+const crypto = require("crypto");
+const { execFile } = require("child_process");
 const { promisify } = require("util");
+const { createAntigravityError } = require("./antigravityOperation");
 
 const execFileAsync = promisify(execFile);
-const STRINGS_MAX_BUFFER = 64 * 1024 * 1024;
 
 const TOKEN_REL = path.join(".gemini", "antigravity-cli", "antigravity-oauth-token");
 
 function getTokenFilePath() {
   return path.join(os.homedir(), TOKEN_REL);
 }
-const OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const TOKEN_REFRESH_SKEW_SEC = 120;
 
-let cachedOAuthClient = null;
-let cachedOAuthCandidates = null;
-let cachedProjectId = null;
-let cachedProjectBase = null;
+const REFRESH_SKEW_MS = 5 * 60 * 1000; // treat <5min-to-expiry as "needs refresh"
+const REFRESH_TIMEOUT_MS = 20_000; // `agy models` refresh has its own budget,
+// independent of any individual caller's abort signal (see refreshViaAgy).
 
-const CLIENT_ID_RE = /(\d+-[\w-]+\.apps\.googleusercontent\.com)/g;
-// Split concatenated GOCSPX blobs (agy stores two secrets back-to-back).
-const CLIENT_SECRET_RE = /GOCSPX-[A-Za-z0-9_-]{8,48}?(?=GOCSPX-|https?:\/\/|[^A-Za-z0-9_-]|$)/g;
+// Cache of the last-read token file, keyed by mtime so a hot getAccessToken
+// loop (every dictation) doesn't re-stat-and-reparse the file each call.
+let cachedMtimeMs = null;
+let cachedTokenData = null;
 
+/**
+ * Parses both expiry formats agy writes:
+ *   "2026-09-24T09:02:27.566Z"                 (3-digit ms, Z)
+ *   "2026-09-24T11:03:16.105283+02:00"          (6-digit us, explicit offset)
+ * JS Date can't parse a 6-digit fractional-seconds component, so the
+ * fraction is truncated to milliseconds before handing it to Date.parse.
+ * Returns epoch seconds (matching the old helper's contract), or 0 if the
+ * value can't be parsed at all.
+ */
 function parseExpiryTimestamp(expiryRaw) {
   if (!expiryRaw) return 0;
   if (typeof expiryRaw === "number") return expiryRaw;
   const raw = String(expiryRaw).trim();
+  if (!raw) return 0;
   try {
     let normalized = raw;
     if (normalized.includes(".")) {
@@ -41,38 +59,58 @@ function parseExpiryTimestamp(expiryRaw) {
           break;
         }
       }
-      normalized = `${head}.${fraction.slice(0, 6)}${tz}`;
+      normalized = `${head}.${fraction.slice(0, 3)}${tz}`;
     }
-    return Date.parse(normalized) / 1000;
+    const ms = Date.parse(normalized);
+    if (Number.isNaN(ms)) return 0;
+    return ms / 1000;
   } catch {
     return 0;
   }
 }
 
+function readTokenFileRaw() {
+  return fs.readFileSync(getTokenFilePath(), "utf8");
+}
+
+// mtime-cached read: only re-stat+reparse when the file actually changed
+// since the last read (agy is the only writer, so this is safe).
 function readTokenFile() {
+  const tokenPath = getTokenFilePath();
+  let stat;
   try {
-    return JSON.parse(fs.readFileSync(getTokenFilePath(), "utf8"));
+    stat = fs.statSync(tokenPath);
   } catch {
+    cachedMtimeMs = null;
+    cachedTokenData = null;
+    return null;
+  }
+  if (cachedTokenData && cachedMtimeMs === stat.mtimeMs) {
+    return cachedTokenData;
+  }
+  try {
+    const parsed = JSON.parse(readTokenFileRaw());
+    cachedMtimeMs = stat.mtimeMs;
+    cachedTokenData = parsed;
+    return parsed;
+  } catch {
+    cachedMtimeMs = null;
+    cachedTokenData = null;
     return null;
   }
 }
 
-function writeTokenFile(data) {
-  const tokenFile = getTokenFilePath();
-  const tmp = `${tokenFile}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(data));
-  fs.renameSync(tmp, tokenFile);
-  try {
-    fs.chmodSync(tokenFile, 0o600);
-  } catch {
-    // best-effort
-  }
+function invalidateTokenFileCache() {
+  cachedMtimeMs = null;
+  cachedTokenData = null;
 }
 
-function authError(message, code) {
-  const error = new Error(message);
-  error.code = code;
-  return error;
+// Short, non-reversible fingerprint of the refresh token — safe to log or use
+// as a cache/persistence key. Never derive this from the access token (it
+// rotates far more often, which would thrash any per-account cache).
+function accountKeyFor(refreshToken) {
+  if (!refreshToken) return null;
+  return crypto.createHash("sha256").update(refreshToken, "utf8").digest("hex").slice(0, 16);
 }
 
 function resolveAgyBinaryPath() {
@@ -83,293 +121,181 @@ function resolveAgyBinaryPath() {
   }
 }
 
-function unique(values) {
-  return [...new Set(values.filter(Boolean))];
-}
+// Single-flight refresh: concurrent getAntigravityAccessToken() callers while
+// a refresh is already in flight share the same promise instead of spawning
+// their own `agy models` process. Deliberately NOT tied to any individual
+// caller's abort signal — this promise's own 20s timeout is the only thing
+// that can end it, so caller A aborting doesn't kill the refresh caller B is
+// also waiting on (or that the next caller would otherwise have to restart).
+let inFlightRefresh = null;
 
-function extractOAuthCandidates(blob) {
-  const haystack = String(blob || "");
-  if (!haystack.includes("auth.cloud.google")) {
-    return { clientIds: [], clientSecrets: [] };
-  }
-  return {
-    clientIds: unique([...haystack.matchAll(CLIENT_ID_RE)].map((m) => m[1])),
-    clientSecrets: unique([...haystack.matchAll(CLIENT_SECRET_RE)].map((m) => m[0])),
-  };
-}
-
-function preferredOAuthPair(candidates) {
-  if (!candidates?.clientIds?.length || !candidates?.clientSecrets?.length) {
-    return null;
-  }
-  // Current agy: first GOCSPX sits on the authorize URL; the working
-  // client id is the last .apps.googleusercontent.com in the binary.
-  return {
-    clientId: candidates.clientIds[candidates.clientIds.length - 1],
-    clientSecret: candidates.clientSecrets[0],
-  };
-}
-
-function oauthRefreshPairs(candidates) {
-  const pairs = [];
-  const seen = new Set();
-  const add = (clientId, clientSecret) => {
-    if (!clientId || !clientSecret) return;
-    const key = `${clientId}\0${clientSecret}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    pairs.push({ clientId, clientSecret });
-  };
-  const preferred = preferredOAuthPair(candidates);
-  if (preferred) add(preferred.clientId, preferred.clientSecret);
-  for (const clientId of candidates.clientIds) {
-    for (const clientSecret of candidates.clientSecrets) {
-      add(clientId, clientSecret);
-    }
-  }
-  return pairs.slice(0, 6);
-}
-
-// ponytail: public Antigravity OAuth app creds live inside the agy binary; scrape at runtime so git never stores them.
-function extractOAuthFromBlob(blob) {
-  return preferredOAuthPair(extractOAuthCandidates(blob));
-}
-
-function hasCachedOAuthCandidates() {
-  return Boolean(
-    cachedOAuthCandidates?.clientIds?.length && cachedOAuthCandidates?.clientSecrets?.length
-  );
-}
-
-function envOAuthCandidates() {
-  const envId = process.env.ANTIGRAVITY_CLIENT_ID?.trim();
-  const envSecret = process.env.ANTIGRAVITY_CLIENT_SECRET?.trim();
-  if (!envId || !envSecret) return null;
-  return { clientIds: [envId], clientSecrets: [envSecret] };
-}
-
-function cacheOAuthCandidates(candidates) {
-  if (!candidates?.clientIds?.length || !candidates?.clientSecrets?.length) return null;
-  cachedOAuthCandidates = candidates;
-  return candidates;
-}
-
-function tryExtractOAuthFromAgyBinary() {
+async function spawnAgyModelsRefresh() {
   const agyPath = resolveAgyBinaryPath();
-  if (!agyPath) {
-    return null;
-  }
-
-  let blob = "";
+  const command = agyPath || "agy";
   try {
-    blob = execFileSync("strings", [agyPath], {
-      encoding: "utf8",
-      maxBuffer: STRINGS_MAX_BUFFER,
+    await execFileAsync(command, ["models"], {
+      timeout: REFRESH_TIMEOUT_MS,
+      killSignal: "SIGTERM",
+      windowsHide: true,
     });
-  } catch {
-    try {
-      blob = fs.readFileSync(agyPath, "latin1");
-    } catch {
-      return null;
-    }
-  }
-
-  const candidates = cacheOAuthCandidates(extractOAuthCandidates(blob));
-  return candidates ? preferredOAuthPair(candidates) : null;
-}
-
-// Scraping `agy` costs tens of MB of string matching. resolveOAuthCandidates()
-// has to do it synchronously (it sits under the sync refresh path and blocks
-// the main process), so warm the same cache asynchronously first — off the
-// interactive path — and the sync scrape never runs in practice.
-async function warmOAuthCandidates() {
-  if (hasCachedOAuthCandidates()) return cachedOAuthCandidates;
-
-  const fromEnv = cacheOAuthCandidates(envOAuthCandidates());
-  if (fromEnv) return fromEnv;
-
-  const agyPath = resolveAgyBinaryPath();
-  if (!agyPath) return null;
-
-  let blob = "";
-  try {
-    ({ stdout: blob } = await execFileAsync("strings", [agyPath], {
-      encoding: "utf8",
-      maxBuffer: STRINGS_MAX_BUFFER,
-    }));
-  } catch {
-    try {
-      blob = await fs.promises.readFile(agyPath, "latin1");
-    } catch {
-      return null;
-    }
-  }
-
-  return cacheOAuthCandidates(extractOAuthCandidates(blob));
-}
-
-function resolveOAuthCandidates() {
-  if (hasCachedOAuthCandidates()) {
-    return cachedOAuthCandidates;
-  }
-
-  const fromEnv = cacheOAuthCandidates(envOAuthCandidates());
-  if (fromEnv) return fromEnv;
-
-  tryExtractOAuthFromAgyBinary();
-  if (hasCachedOAuthCandidates()) {
-    return cachedOAuthCandidates;
-  }
-
-  throw authError(
-    "Antigravity OAuth client credentials unavailable. Install `agy` on PATH or set ANTIGRAVITY_CLIENT_ID and ANTIGRAVITY_CLIENT_SECRET.",
-    "AGY_OAUTH_CONFIG_MISSING"
-  );
-}
-
-async function refreshWithPair(refreshToken, pair, fetchImpl) {
-  const response = await fetchImpl(OAUTH_TOKEN_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      client_id: pair.clientId,
-      client_secret: pair.clientSecret,
-      refresh_token: refreshToken,
-      grant_type: "refresh_token",
-    }),
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw authError(
-      payload.error_description || payload.error || "Antigravity OAuth refresh failed",
-      "AGY_TOKEN_EXPIRED"
-    );
-  }
-  const expiresIn = Number(payload.expires_in || 3600);
-  const expiry = new Date(Date.now() + expiresIn * 1000).toISOString();
-  return {
-    access_token: payload.access_token,
-    refresh_token: payload.refresh_token || refreshToken,
-    token_type: payload.token_type || "Bearer",
-    expiry,
-  };
-}
-
-async function refreshAccessToken(refreshToken, fetchImpl = fetch) {
-  const candidates = resolveOAuthCandidates();
-  const pairs = oauthRefreshPairs(candidates);
-  if (cachedOAuthClient) {
-    pairs.unshift(cachedOAuthClient);
-  }
-  const tried = new Set();
-  let lastError = authError("Antigravity OAuth refresh failed", "AGY_TOKEN_EXPIRED");
-  for (const pair of pairs) {
-    const key = `${pair.clientId}\0${pair.clientSecret}`;
-    if (tried.has(key)) continue;
-    tried.add(key);
-    try {
-      const refreshed = await refreshWithPair(refreshToken, pair, fetchImpl);
-      cachedOAuthClient = pair;
-      return refreshed;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  cachedOAuthClient = null;
-  throw lastError;
-}
-
-async function getAntigravityAccessToken({
-  fetchImpl = fetch,
-  forceRefresh = false,
-  minTtlSec = TOKEN_REFRESH_SKEW_SEC,
-} = {}) {
-  const data = readTokenFile();
-  if (!data?.token) {
-    throw authError(
-      "Antigravity is not signed in. Run `agy auth login` in a terminal first.",
-      "AGY_NOT_AUTHENTICATED"
-    );
-  }
-
-  const tokenObj = { ...data.token };
-  const expiryTs = parseExpiryTimestamp(tokenObj.expiry);
-  const ttlFloor = Number.isFinite(minTtlSec) ? minTtlSec : TOKEN_REFRESH_SKEW_SEC;
-  const needsRefresh =
-    forceRefresh ||
-    !tokenObj.access_token ||
-    expiryTs === 0 ||
-    expiryTs - Date.now() / 1000 < ttlFloor;
-
-  if (needsRefresh) {
-    if (!tokenObj.refresh_token) {
-      throw authError(
-        "Antigravity session expired. Run `agy auth login` again.",
-        "AGY_NOT_AUTHENTICATED"
+  } catch (error) {
+    // `agy models` prints a model list on success and a non-zero exit on
+    // most failure modes; either way we only care whether it left the token
+    // file in a refreshed state, checked by the caller after this resolves.
+    // A killed-by-timeout child rejects with error.killed === true.
+    if (error?.killed) {
+      throw createAntigravityError(
+        "AGY_TIMEOUT",
+        `Antigravity refresh (agy models) timed out after ${REFRESH_TIMEOUT_MS}ms`
       );
     }
-    const refreshed = await refreshAccessToken(tokenObj.refresh_token, fetchImpl);
-    data.token = refreshed;
-    writeTokenFile(data);
-    return refreshed.access_token;
+    // Swallow non-timeout failures here: re-reading the token file below is
+    // the real source of truth for whether the refresh actually worked.
   }
-
-  return tokenObj.access_token;
 }
 
-const TOKEN_KEEPALIVE_MS = 15 * 60 * 1000;
-const TOKEN_KEEPALIVE_TTL_SEC = 25 * 60;
-const TOKEN_KEEPALIVE_START_DELAY_MS = 10_000;
-let tokenKeepaliveTimer = null;
-let tokenKeepaliveStartup = null;
+function refreshViaAgy() {
+  if (!inFlightRefresh) {
+    inFlightRefresh = spawnAgyModelsRefresh().finally(() => {
+      inFlightRefresh = null;
+    });
+  }
+  return inFlightRefresh;
+}
 
-function startAntigravityTokenKeepalive({
-  intervalMs = TOKEN_KEEPALIVE_MS,
-  minTtlSec = TOKEN_KEEPALIVE_TTL_SEC,
-} = {}) {
-  if (tokenKeepaliveTimer) return tokenKeepaliveTimer;
-  const tick = async () => {
-    await warmOAuthCandidates().catch(() => {});
-    await getAntigravityAccessToken({ minTtlSec }).catch(() => {});
+// A caller's abort only stops *that caller* waiting; the shared refresh keeps
+// running for everyone else.
+function waitForRefresh(refresh, signal) {
+  const cancelled = () =>
+    createAntigravityError("AGY_CANCELLED", "Antigravity auth request cancelled");
+  if (!signal) return refresh;
+  if (signal.aborted) return Promise.reject(cancelled());
+  return new Promise((resolve, reject) => {
+    const onAbort = () => reject(cancelled());
+    signal.addEventListener("abort", onAbort, { once: true });
+    refresh.then(
+      (value) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(error);
+      }
+    );
+  });
+}
+
+function tokenExpiresWithin(tokenObj, skewMs) {
+  if (!tokenObj?.access_token) return true;
+  const expiryTs = parseExpiryTimestamp(tokenObj.expiry);
+  if (expiryTs === 0) return true;
+  return expiryTs * 1000 - Date.now() < skewMs;
+}
+
+/**
+ * getAntigravityAccessToken({ signal, forceRefresh }) ->
+ *   { accessToken, expiresAt, accountKey }
+ *
+ * Reads the agy-managed token file (mtime-cached). If the token is missing,
+ * expired, within 5 minutes of expiry, or `forceRefresh` is set, triggers a
+ * single-flight `agy models` refresh and re-reads the file. If it's still
+ * expired after that, rejects with AGY_AUTH_REQUIRED.
+ */
+async function getAntigravityAccessToken({ signal, forceRefresh = false } = {}) {
+  let data = readTokenFile();
+  if (!data?.token && !fs.existsSync(getTokenFilePath())) {
+    throw createAntigravityError(
+      "AGY_AUTH_REQUIRED",
+      "Antigravity is not signed in. Run `agy auth login` in a terminal first."
+    );
+  }
+
+  let tokenObj = data?.token;
+  const needsRefresh = forceRefresh || tokenExpiresWithin(tokenObj, REFRESH_SKEW_MS);
+
+  if (needsRefresh) {
+    await waitForRefresh(refreshViaAgy(), signal);
+    invalidateTokenFileCache();
+    data = readTokenFile();
+    tokenObj = data?.token;
+
+    if (!tokenObj?.access_token || tokenExpiresWithin(tokenObj, 0)) {
+      throw createAntigravityError(
+        "AGY_AUTH_REQUIRED",
+        "Antigravity session could not be refreshed. Run `agy auth login` again."
+      );
+    }
+  }
+
+  const expiryTs = parseExpiryTimestamp(tokenObj.expiry);
+  return {
+    accessToken: tokenObj.access_token,
+    expiresAt: expiryTs ? expiryTs * 1000 : null,
+    accountKey: accountKeyFor(tokenObj.refresh_token),
   };
-  tokenKeepaliveStartup = setTimeout(tick, TOKEN_KEEPALIVE_START_DELAY_MS);
-  tokenKeepaliveStartup.unref?.();
-  tokenKeepaliveTimer = setInterval(tick, intervalMs);
-  tokenKeepaliveTimer.unref?.();
-  return tokenKeepaliveTimer;
+}
+
+// --- Keepalive: proactively refresh ~5 minutes before expiry -------------
+
+const KEEPALIVE_MIN_DELAY_MS = 60_000; // never re-arm tighter than 1 minute
+// After a failed refresh (signed out, revoked token, agy missing) don't
+// respawn `agy models` every minute; real callers still retry on demand.
+const KEEPALIVE_FAILURE_DELAY_MS = 15 * 60 * 1000;
+let keepaliveTimer = null;
+let keepaliveEnabled = false;
+
+async function keepaliveTick() {
+  if (!keepaliveEnabled) return;
+  let failed = false;
+  try {
+    await getAntigravityAccessToken({});
+  } catch {
+    failed = true; // best-effort; an actual caller will surface the error
+  }
+  armKeepaliveTimer(failed ? KEEPALIVE_FAILURE_DELAY_MS : KEEPALIVE_MIN_DELAY_MS);
+}
+
+function armKeepaliveTimer(minDelayMs = KEEPALIVE_MIN_DELAY_MS) {
+  if (!keepaliveEnabled) return;
+  if (keepaliveTimer) {
+    clearTimeout(keepaliveTimer);
+    keepaliveTimer = null;
+  }
+  const data = readTokenFile();
+  const expiryTs = parseExpiryTimestamp(data?.token?.expiry);
+  let delayMs = minDelayMs;
+  if (expiryTs) {
+    delayMs = Math.max(minDelayMs, expiryTs * 1000 - Date.now() - REFRESH_SKEW_MS);
+  }
+  keepaliveTimer = setTimeout(keepaliveTick, delayMs);
+  keepaliveTimer.unref?.();
+}
+
+function startAntigravityTokenKeepalive() {
+  keepaliveEnabled = true;
+  armKeepaliveTimer();
 }
 
 function stopAntigravityTokenKeepalive() {
-  if (tokenKeepaliveStartup) {
-    clearTimeout(tokenKeepaliveStartup);
-    tokenKeepaliveStartup = null;
+  keepaliveEnabled = false;
+  if (keepaliveTimer) {
+    clearTimeout(keepaliveTimer);
+    keepaliveTimer = null;
   }
-  if (!tokenKeepaliveTimer) return;
-  clearInterval(tokenKeepaliveTimer);
-  tokenKeepaliveTimer = null;
 }
 
-function clearAntigravityProjectCache() {
-  cachedProjectId = null;
-  cachedProjectBase = null;
+// A laptop waking from sleep may have missed its keepalive timer entirely
+// (setTimeout doesn't fire while suspended); re-check/re-arm immediately.
+// Wire this into Electron's powerMonitor 'resume' event.
+function onSystemResume() {
+  if (!keepaliveEnabled) return;
+  keepaliveTick();
 }
 
-async function getAntigravityProjectId(deps = {}) {
-  if (cachedProjectId) {
-    return cachedProjectId;
-  }
-  const fetchImpl = deps.fetchImpl || fetch;
-  const accessToken = await getAntigravityAccessToken({ fetchImpl });
-  const { loadCodeAssist } = require("./antigravityGateway");
-  const loaded = await loadCodeAssist({ accessToken, fetchImpl });
-  cachedProjectId = loaded.projectId;
-  cachedProjectBase = loaded.base;
-  return cachedProjectId;
-}
-
-function getAntigravityProjectBase() {
-  return cachedProjectBase;
-}
+// --- Project id (kept for backward compatibility; antigravityGateway.js now
+// owns the full memory -> persisted -> agy-hint -> loadCodeAssist chain, see
+// getProjectId() there) ---------------------------------------------------
 
 function getAntigravityTokenPath() {
   return getTokenFilePath();
@@ -380,16 +306,12 @@ module.exports = {
   getAntigravityAccessToken,
   startAntigravityTokenKeepalive,
   stopAntigravityTokenKeepalive,
-  getAntigravityProjectId,
-  getAntigravityProjectBase,
-  clearAntigravityProjectCache,
+  onSystemResume,
   getAntigravityTokenPath,
   parseExpiryTimestamp,
   readTokenFile,
-  refreshAccessToken,
-  tryExtractOAuthFromAgyBinary,
-  warmOAuthCandidates,
-  extractOAuthFromBlob,
-  extractOAuthCandidates,
-  oauthRefreshPairs,
+  accountKeyFor,
+  invalidateTokenFileCache,
+  // exported for tests only
+  _refreshViaAgy: refreshViaAgy,
 };

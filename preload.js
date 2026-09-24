@@ -613,6 +613,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   processAntigravityToolTurn: (payload) =>
     ipcRenderer.invoke("process-antigravity-tool-turn", payload),
   checkAntigravityAvailable: () => ipcRenderer.invoke("check-antigravity-available"),
+  antigravityListModels: (options) => ipcRenderer.invoke("antigravity-list-models", options),
 
   // Corti API
   getCortiClientId: () => ipcRenderer.invoke("get-corti-client-id"),

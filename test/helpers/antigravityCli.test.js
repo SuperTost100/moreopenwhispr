@@ -216,3 +216,69 @@ test("runAgyTurn throws AUTH_REQUIRED on non-zero auth exit", async () => {
     (error) => error.code === "AUTH_REQUIRED"
   );
 });
+
+test("runAgyTurn omits --model entirely when no model is requested", async () => {
+  const result = await runAgyTurn({
+    prompt: "hello",
+    command: process.execPath,
+    spawnImpl: (_command, args, options) => {
+      assert.equal(args.includes("--model"), false);
+      assert.equal(options.env.ANTIGRAVITY_MODEL, undefined);
+      return makeChild({ stdout: "ok\n" });
+    },
+  });
+  assert.equal(result.model, null);
+});
+
+// Regression: waitForClose's own timeout handler kills the child with
+// SIGTERM, which is the exact same signal a caller-initiated cancel sends.
+// Classifying purely off `result.signal === "SIGTERM"` (the old behavior)
+// meant every internal timeout was misreported as a cancel; the timedOut
+// flag has to be checked first.
+test("runAgyTurn classifies its own subprocess timeout as AGY_TIMEOUT, never AGY_CANCELLED", async () => {
+  await assert.rejects(
+    runAgyTurn({
+      prompt: "hello",
+      command: process.execPath,
+      timeoutMs: 20,
+      spawnImpl: () => makeChild({ delayMs: 10_000 }),
+    }),
+    (error) => {
+      assert.equal(error.code, "AGY_TIMEOUT");
+      return true;
+    }
+  );
+});
+
+test("runAgyTurn kills the child when the caller's own signal aborts, and classifies it as AGY_CANCELLED", async () => {
+  const controller = new AbortController();
+  let killedWith = null;
+  const spawnImpl = () => {
+    const child = makeChild({ delayMs: 10_000 });
+    child.kill = (sig) => {
+      killedWith = sig;
+      child.killed = true;
+      // Real child_process emits 'close' once the killed process actually
+      // exits; simulate that here so waitForClose's abort path can resolve.
+      setImmediate(() => child.emit("close", null, sig));
+      return true;
+    };
+    return child;
+  };
+
+  const pending = runAgyTurn({
+    prompt: "hello",
+    command: process.execPath,
+    timeoutMs: 60_000,
+    signal: controller.signal,
+    spawnImpl,
+  });
+
+  setTimeout(() => controller.abort(), 10);
+
+  await assert.rejects(pending, (error) => {
+    assert.equal(error.code, "AGY_CANCELLED");
+    return true;
+  });
+  assert.equal(killedWith, "SIGTERM");
+});
