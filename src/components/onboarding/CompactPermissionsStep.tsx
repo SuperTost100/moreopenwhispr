@@ -84,7 +84,7 @@ function PermissionRow({
         <p className="text-sm font-medium leading-5 text-[var(--onboarding-text-primary)]">
           {title}
           {badge && (
-            <span className="ms-1.5 inline-flex items-center rounded-full bg-[var(--onboarding-surface-tertiary)] px-2 py-0.5 align-middle text-[10px] font-normal leading-4 text-[var(--onboarding-text-secondary)]">
+            <span className="ms-1.5 inline-flex items-center rounded-sm bg-[var(--onboarding-surface-tertiary)] px-2 py-0.5 align-middle text-[10px] font-normal leading-4 text-[var(--onboarding-text-secondary)]">
               {badge}
             </span>
           )}
@@ -98,7 +98,7 @@ function PermissionRow({
         type="button"
         disabled={busy || disabled || granted}
         onClick={() => void onRequest()}
-        className={`onboarding-pressable inline-flex h-8 min-w-20 shrink-0 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--onboarding-accent)_30%,transparent)] disabled:cursor-default ${
+        className={`onboarding-pressable inline-flex h-8 min-w-20 shrink-0 items-center justify-center gap-1 rounded-md px-2.5 text-xs font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--onboarding-accent)_30%,transparent)] disabled:cursor-default ${
           granted
             ? // Granted rows are disabled, so the disabled: variants have to
               // restate the tint or it falls back to the neutral grey below.
@@ -166,7 +166,7 @@ export default function CompactPermissionsStep({
           {t("auth.welcomeSubtitle")}
         </p>
 
-        <div className="mt-3 rounded-[1.35rem] bg-[var(--onboarding-surface-secondary)] px-3 py-1">
+        <div className="mt-3 rounded-xl bg-[var(--onboarding-surface-secondary)] px-3 py-1">
           <PermissionRow
             title={t("onboarding.permissions.microphoneTitle")}
             description={t("onboarding.rehaul.permissions.microphoneDescription")}
@@ -272,7 +272,7 @@ export default function CompactPermissionsStep({
             <button
               type="button"
               onClick={onBack}
-              className="onboarding-pressable inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-5 text-sm font-medium text-[var(--onboarding-text-primary)] transition-colors hover:bg-[var(--onboarding-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--onboarding-accent)_30%,transparent)]"
+              className="onboarding-pressable inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-md border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-5 text-sm font-medium text-[var(--onboarding-text-primary)] transition-colors hover:bg-[var(--onboarding-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--onboarding-accent)_30%,transparent)]"
             >
               <Undo2 className="size-4" aria-hidden="true" />
               {t("common.back")}

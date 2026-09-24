@@ -290,8 +290,8 @@ export default function OnboardingShell({
                   // One duration and curve for the pill and the label, so the
                   // min-width/padding collapse and the label collapse read as a
                   // single motion instead of two.
-                  // Stroke-only pill so the page gradient reads through.
-                  className={`h-9 rounded-[38px]! border! border-[var(--onboarding-control-border)]! text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)] transition-[background-color,border-color,color,transform,min-width,padding,gap] duration-[400ms] ease-[cubic-bezier(0.19,1,0.22,1)] ${
+                  // Stroke-only, matching the flat outline buttons elsewhere in the app.
+                  className={`h-9 rounded-md! border! border-[var(--onboarding-control-border)]! text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)] transition-[background-color,border-color,color,transform,min-width,padding,gap] duration-[400ms] ease-[cubic-bezier(0.19,1,0.22,1)] ${
                     showBackLabel ? "gap-2 px-5" : "min-w-9 gap-0 px-0"
                   }`}
                   aria-label={t("common.back")}
@@ -328,7 +328,7 @@ export default function OnboardingShell({
                   type="button"
                   onClick={onContinue}
                   disabled={continueDisabled || continueLoading}
-                  className="h-9 rounded-[38px] px-5 text-sm"
+                  className="h-9 rounded-md px-5 text-sm"
                 >
                   {continueLoading ? t("common.loading") : (continueLabel ?? t("common.continue"))}
                 </Button>
@@ -359,9 +359,8 @@ export function CompactOnboardingFrame({
       {showBrandMark && (
         <div
           className={cn(
-            "pointer-events-none absolute left-1/2 top-23 z-10 flex size-19 -translate-x-1/2 items-center justify-center rounded-[20px]",
-            BRAND_GLASS_SURFACE,
-            "shadow-(--shadow-brand-tile)"
+            "pointer-events-none absolute left-1/2 top-23 z-10 flex size-19 -translate-x-1/2 items-center justify-center rounded-xl",
+            BRAND_GLASS_SURFACE
           )}
         >
           <BrandMark className="size-13" />

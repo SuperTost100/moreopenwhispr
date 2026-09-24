@@ -34,8 +34,8 @@ export default function LanguageSelectionStep({
 
   return (
     <div className="mx-auto mt-4 flex min-h-0 w-full max-w-md flex-1 flex-col gap-2">
-      {/* Figma: Onboarding / Frame 25 — pad 12 16, gap 10, radius 66 (pill),
-          24px icon and 18/140% text, both in text-tertiary. Height hugs the
+      {/* pad 12 16, gap 10, radius 8 (matches other onboarding inputs), 24px
+          icon and 18/140% text, both in text-tertiary. Height hugs the
           content rather than being pinned, which is why there's no h-*. */}
       <label className="relative block">
         <Search
@@ -49,7 +49,7 @@ export default function LanguageSelectionStep({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={searchPlaceholder}
-          className="onboarding-light-input onboarding-light-input-bordered w-full rounded-full! border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] py-2.5 ps-11 pe-3.5 text-base leading-[1.4] text-[var(--onboarding-text-primary)] shadow-none! outline-none placeholder:text-[var(--onboarding-text-tertiary)] focus:border-[var(--onboarding-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--onboarding-accent)_15%,transparent)]"
+          className="onboarding-light-input onboarding-light-input-bordered w-full rounded-md! border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] py-2.5 ps-11 pe-3.5 text-base leading-[1.4] text-[var(--onboarding-text-primary)] shadow-none! outline-none placeholder:text-[var(--onboarding-text-tertiary)] focus:border-[var(--onboarding-accent)] focus:ring-2 focus:ring-[color-mix(in_srgb,var(--onboarding-accent)_15%,transparent)]"
         />
       </label>
 
@@ -59,13 +59,13 @@ export default function LanguageSelectionStep({
             const language = getOnboardingLanguageByCode(code);
             if (!language) return null;
             return (
-              // Figma: Onboarding / Frame 38 — gap 7, pad 10 20, radius 38,
-              // 14/140% medium, 20px close glyph at 1.667 stroke.
+              // A removable filter chip: gap 7, pad 10 20, radius 6, 14/140%
+              // medium, 20px close glyph at 1.667 stroke.
               <button
                 type="button"
                 key={code}
                 onClick={() => toggle(code)}
-                className="onboarding-pressable inline-flex items-center gap-1.5 rounded-full border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)]"
+                className="onboarding-pressable inline-flex items-center gap-1.5 rounded-sm border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)]"
               >
                 {displayOnboardingLanguageLabel(language)}
                 <X className="size-4 shrink-0" strokeWidth={1.667} />
@@ -95,10 +95,10 @@ export default function LanguageSelectionStep({
                 onClick={() => toggle(language.code)}
                 className="onboarding-list-row w-full text-start"
               >
-                {/* The control keeps its light stroke when checked — the spec's
-                    asset carries both the fill and the #E3E3E3 border. */}
+                {/* The control keeps its light stroke when checked — the
+                    filled state carries both the fill and the border. */}
                 <span
-                  className={`flex size-5 shrink-0 items-center justify-center rounded-[5px] border border-[var(--onboarding-control-border)] ${
+                  className={`flex size-5 shrink-0 items-center justify-center rounded-sm border border-[var(--onboarding-control-border)] ${
                     checked
                       ? "bg-[var(--onboarding-accent)] text-[var(--onboarding-accent-foreground)]"
                       : "bg-[var(--onboarding-surface)]"

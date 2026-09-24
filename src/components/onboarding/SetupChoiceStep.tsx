@@ -81,13 +81,13 @@ function Feature({
 // Compact setup card: content stays pinned to the top and the action to the bottom.
 function SetupCard({ children }: { children: React.ReactNode }) {
   return (
-    <section className="relative flex h-[350px] w-68 shrink-0 flex-col justify-between overflow-hidden rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 pb-5 pt-4 text-start">
+    <section className="relative flex h-[350px] w-68 shrink-0 flex-col justify-between overflow-hidden rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 pb-5 pt-4 text-start">
       {children}
     </section>
   );
 }
 
-// Figma "Frame 25": pad 8 20, radius 38, 14/140% medium. Brand fill or stroke.
+// Pad 8 20, radius 8 (flat, no pill), 14/140% medium. Brand fill or stroke.
 const CardAction = forwardRef<
   HTMLButtonElement,
   {
@@ -102,7 +102,7 @@ const CardAction = forwardRef<
       ref={ref}
       type="button"
       onClick={onClick}
-      className={`onboarding-pressable relative z-10 w-full rounded-[38px] px-4 py-1.5 text-xs font-medium leading-[1.4] ${className} ${
+      className={`onboarding-pressable relative z-10 w-full rounded-md px-4 py-1.5 text-xs font-medium leading-[1.4] ${className} ${
         brand
           ? "bg-[var(--onboarding-accent)] text-[var(--onboarding-accent-foreground)] hover:brightness-95"
           : "border border-[var(--onboarding-control-border)] text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)]"
@@ -207,7 +207,7 @@ export default function SetupChoiceStep({
     return (
       <div
         role="alert"
-        className="mx-auto mt-8 flex w-full max-w-md flex-col items-center rounded-2xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-6 py-8 text-center"
+        className="mx-auto mt-8 flex w-full max-w-md flex-col items-center rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-6 py-8 text-center"
       >
         <span className="flex size-10 items-center justify-center rounded-full bg-[var(--onboarding-surface-secondary)] text-[var(--onboarding-accent)]">
           <AlertCircle className="size-5" />
@@ -257,8 +257,8 @@ export default function SetupChoiceStep({
                     </span>
                   ))}
                 </span>
-                {/* Frame 49: pad 4 9, radius 47, surface-tertiary, 10/140%. */}
-                <span className="rounded-[47px] bg-[var(--onboarding-surface-tertiary)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-text-primary)]">
+                {/* A status chip: pad 4 9, radius 6, surface-tertiary, 10/140%. */}
+                <span className="rounded-sm bg-[var(--onboarding-surface-tertiary)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-text-primary)]">
                   {t("onboarding.rehaul.setupChoice.local.badge")}
                 </span>
               </div>
@@ -300,10 +300,6 @@ export default function SetupChoiceStep({
 
         {antigravityAllowed && (
           <SetupCard>
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[183px] bg-gradient-to-t from-[color-mix(in_srgb,var(--onboarding-accent)_12%,transparent)] to-transparent"
-              aria-hidden="true"
-            />
             <div className="relative z-10 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-[var(--onboarding-surface-secondary)] ring-[1.33px] ring-[var(--onboarding-surface)]">
@@ -318,7 +314,7 @@ export default function SetupChoiceStep({
                     className="size-5"
                   />
                 </span>
-                <span className="rounded-[47px] bg-[var(--onboarding-accent)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-accent-foreground)]">
+                <span className="rounded-sm bg-[var(--onboarding-accent)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-accent-foreground)]">
                   {t("common.recommended")}
                 </span>
               </div>
@@ -362,29 +358,29 @@ export default function SetupChoiceStep({
         <button
           type="button"
           onClick={() => setShowMore(true)}
-          className="onboarding-pressable rounded-[38px] border border-[var(--onboarding-control-border)] px-4 py-1.5 text-xs font-medium leading-[1.4] text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)]"
+          className="onboarding-pressable rounded-md border border-[var(--onboarding-control-border)] px-4 py-1.5 text-xs font-medium leading-[1.4] text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-hover)]"
         >
           {t("onboarding.rehaul.setupChoice.showMore")}
         </button>
       )}
 
-      {/* Figma "Frame 2147258999": 460 wide, radius 28, pad 24/20/32/20, col gap
-          32, over a 20% black scrim at backdrop-blur(11). Picking a row goes
-          straight to that setup step — deliberately skipping the warning dialog
-          the cards use, since the user has already made an explicit choice here. */}
+      {/* 460 wide, radius 12, pad 24/20/32/20, col gap 32, over a flat scrim.
+          Picking a row goes straight to that setup step — deliberately
+          skipping the warning dialog the cards use, since the user has
+          already made an explicit choice here. */}
       <Dialog open={showMore} onOpenChange={(open) => !open && setShowMore(false)}>
         <DialogContent
-          overlayClassName="bg-[var(--onboarding-scrim)]! backdrop-blur-[11px]"
-          className="w-full max-w-sm gap-6 rounded-3xl border-0 bg-[var(--onboarding-surface)] px-4 pb-6 pt-5 text-start [&>button]:hidden"
+          overlayClassName="bg-[var(--onboarding-scrim)]!"
+          className="w-full max-w-sm gap-6 rounded-xl border-0 bg-[var(--onboarding-surface)] px-4 pb-6 pt-5 text-start [&>button]:hidden"
         >
           {/* Frame 2147258979: 238 tall, radius 20, image fill. Source is 840x477,
               so it lands at ~2x for the 420x238 slot. */}
           <div
-            className="flex h-[190px] items-center justify-center rounded-2xl bg-cover bg-center"
+            className="flex h-[190px] items-center justify-center rounded-xl bg-cover bg-center"
             style={{ backgroundImage: `url(${apiSetupHero})` }}
           >
-            {/* Frame 35: pad 10 20, gap 7, radius 38, 16/140% medium. */}
-            <span className="inline-flex items-center gap-1.5 rounded-[38px] border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)]">
+            {/* An illustrative chip: pad 10 20, gap 7, radius 8, 16/140% medium. */}
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-text-primary)]">
               <KeyRound
                 className="size-5 shrink-0 text-[var(--onboarding-accent)]"
                 strokeWidth={1.667}
@@ -410,7 +406,7 @@ export default function SetupChoiceStep({
 
             {/* Frame 16: pad 20 16, surface-secondary, radius 20. Rows follow the
                 shared rhythm — nothing above the first, divider between. */}
-            <div className="rounded-2xl bg-[var(--onboarding-surface-secondary)] px-3.5 py-4">
+            <div className="rounded-xl bg-[var(--onboarding-surface-secondary)] px-3.5 py-4">
               {moreSetupOptions.map((row, index) => (
                 <button
                   key={row.id}
@@ -452,15 +448,15 @@ export default function SetupChoiceStep({
 
       <Dialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
         <DialogContent
-          overlayClassName="bg-[var(--onboarding-scrim)]! backdrop-blur-[11px]"
-          className="w-full max-w-sm gap-6 rounded-3xl border-0 bg-[var(--onboarding-surface)] px-4 pb-6 pt-5 text-start text-[var(--onboarding-text-primary)] [&>button]:hidden"
+          overlayClassName="bg-[var(--onboarding-scrim)]!"
+          className="w-full max-w-sm gap-6 rounded-xl border-0 bg-[var(--onboarding-surface)] px-4 pb-6 pt-5 text-start text-[var(--onboarding-text-primary)] [&>button]:hidden"
           onOpenAutoFocus={handleWarningAutoFocus}
         >
           {/* Frame 2147258979: 238 tall, radius 20, image crop. The three marks
               are 32 / 55 / 32 on a 14 gap, with the outer two at 72% white so the
               middle one reads as the subject. */}
           <div
-            className="flex h-[190px] items-center justify-center rounded-2xl bg-cover bg-center"
+            className="flex h-[190px] items-center justify-center rounded-xl bg-cover bg-center"
             style={{ backgroundImage: `url(${warningBackdrop})` }}
           >
             <div className="flex items-center gap-3.5">
