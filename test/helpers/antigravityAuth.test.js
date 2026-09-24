@@ -276,3 +276,19 @@ test("accountKeyFor derives a short, non-reversible fingerprint of the refresh t
     restore();
   }
 });
+
+test("a token with a few minutes left is used as-is, without spawning agy on the hot path", async () => {
+  const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-skew-"));
+  const spawnCalls = [];
+  const { mod, restore } = freshAuthModule({ homedir, spawnCalls });
+  try {
+    const expiry = new Date(Date.now() + 3 * 60 * 1000).toISOString();
+    writeToken(homedir, { access_token: "tok", refresh_token: "r", expiry });
+    const result = await mod.getAntigravityAccessToken({});
+    assert.equal(result.accessToken, "tok");
+    assert.equal(spawnCalls.length, 0);
+  } finally {
+    restore();
+    fs.rmSync(homedir, { recursive: true, force: true });
+  }
+});
