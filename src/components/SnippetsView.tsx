@@ -209,7 +209,7 @@ export default function SnippetsView() {
 
       {/* ─── Expansion panel ─── */}
       {panelOpen && (
-        <div className="rounded-md border border-primary/30 dark:border-primary/40 px-3 pt-2.5 pb-2">
+        <div className="rounded-md border border-border bg-card px-3 pt-2.5 pb-2">
           <Textarea
             dir="auto"
             autoFocus
@@ -225,10 +225,10 @@ export default function SnippetsView() {
           />
           <div className="flex items-center justify-between pt-1.5">
             <div dir="ltr" className="flex items-center gap-0.5">
-              <kbd className="text-[10px] px-1 py-px rounded border border-border/70 dark:border-white/10 bg-muted/40 text-muted-foreground/70 font-mono leading-tight">
+              <kbd className="text-[10px] px-1 py-px rounded-sm border border-border bg-muted text-muted-foreground font-mono leading-tight">
                 {getCachedPlatform() === "darwin" ? "⌘" : "Ctrl"}
               </kbd>
-              <kbd className="text-[10px] px-1 py-px rounded border border-border/70 dark:border-white/10 bg-muted/40 text-muted-foreground/70 font-mono leading-tight">
+              <kbd className="text-[10px] px-1 py-px rounded-sm border border-border bg-muted text-muted-foreground font-mono leading-tight">
                 ⏎
               </kbd>
             </div>
@@ -245,13 +245,13 @@ export default function SnippetsView() {
       )}
 
       {/* ─── Snippet list ─── */}
-      <div className="rounded-md border border-foreground/8 dark:border-white/10 bg-foreground/[0.02] dark:bg-white/[0.03] px-4 py-3">
+      <div className="rounded-md border border-border bg-muted px-4 py-3">
         {snippets.length > 0 && (
           <>
             <h3 className="text-xs font-semibold text-foreground/45">
               {t("dictionary.snippets.title")}
             </h3>
-            <div className="mt-2.5 border-t border-dashed border-foreground/10 dark:border-white/10" />
+            <div className="mt-2.5 border-t border-dashed border-border" />
           </>
         )}
 
@@ -270,7 +270,7 @@ export default function SnippetsView() {
                 {t("dictionary.snippets.new")}
               </Button>
             </div>
-            <div className="flex-1 min-w-[260px] rounded-md border border-foreground/8 dark:border-white/10 bg-foreground/[0.02] dark:bg-white/[0.03] px-3.5 py-3 flex flex-col gap-2.5">
+            <div className="flex-1 min-w-[260px] rounded-md border border-border bg-card px-3.5 py-3 flex flex-col gap-2.5">
               {EXAMPLE_KEYS.map((key) => (
                 <div key={key} className="flex items-start gap-2">
                   <span className="shrink-0 inline-flex items-center gap-1 rounded-[5px] bg-primary/10 dark:bg-primary/15 border border-primary/15 dark:border-primary/20 px-1.5 py-0.5 text-xs text-primary">

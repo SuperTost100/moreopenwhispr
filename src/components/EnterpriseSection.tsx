@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ProviderTabs } from "./ui/ProviderTabs";
+import { SettingsProviderChips } from "./settings/SettingsProviderChips";
 import EnterpriseProviderConfig from "./EnterpriseProviderConfig";
 import { REASONING_PROVIDERS } from "../models/ModelRegistry";
 import { useSettingsStore } from "../stores/settingsStore";
@@ -76,11 +76,11 @@ export default function EnterpriseSection({
   return (
     <div className="space-y-2">
       {providerTabs.length > 0 && (
-        <ProviderTabs
+        <SettingsProviderChips
+          layout="grid"
           providers={providerTabs}
           selectedId={selectedEnterprise}
           onSelect={handleEnterpriseSelect}
-          colorScheme="purple"
         />
       )}
 

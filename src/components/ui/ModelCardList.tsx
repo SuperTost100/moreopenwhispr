@@ -30,16 +30,14 @@ const COLOR_CONFIG: Record<
   }
 > = {
   purple: {
-    selected:
-      "border-primary/30 bg-primary/8 dark:bg-primary/6 dark:border-primary/20 shadow-[0_0_0_1px_oklch(0.62_0.22_260/0.12),0_0_10px_-3px_oklch(0.62_0.22_260/0.18)]",
+    selected: "border-primary bg-primary-soft",
     default:
-      "border-border bg-surface-1 hover:border-border-hover hover:bg-muted dark:border-white/10 dark:bg-white/3 dark:hover:border-white/20 dark:hover:bg-white/8",
+      "border-border bg-card hover:border-border-hover hover:bg-muted transition-colors duration-150",
   },
   blue: {
-    selected:
-      "border-primary/30 bg-primary/10 dark:bg-primary/6 shadow-[0_0_0_1px_oklch(0.62_0.22_260/0.15),0_0_12px_-3px_oklch(0.62_0.22_260/0.2)]",
+    selected: "border-primary bg-primary-soft",
     default:
-      "border-border bg-surface-1 hover:border-border-hover hover:bg-muted dark:border-white/10 dark:bg-white/3 dark:hover:border-white/20 dark:hover:bg-white/8",
+      "border-border bg-card hover:border-border-hover hover:bg-muted transition-colors duration-150",
   },
 };
 
@@ -87,17 +85,13 @@ export function ModelCard({
 
   const getStatusDotClass = () => {
     if (!isLocalMode) {
-      return isSelected
-        ? "bg-primary shadow-[0_0_6px_oklch(0.62_0.22_260/0.6)]"
-        : "bg-muted-foreground/30";
+      return isSelected ? "bg-primary" : "bg-muted-foreground/30";
     }
     if (isDownloaded) {
-      return isSelected
-        ? "bg-primary shadow-[0_0_6px_oklch(0.62_0.22_260/0.6)]"
-        : "bg-success shadow-[0_0_4px_rgba(34,197,94,0.5)]";
+      return isSelected ? "bg-primary" : "bg-success";
     }
     if (isDownloading) {
-      return "bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]";
+      return "bg-warning";
     }
     return "bg-muted-foreground/20";
   };
@@ -112,11 +106,7 @@ export function ModelCard({
       <div className="flex items-center gap-1.5">
         <div
           className={`w-1.5 h-1.5 rounded-full shrink-0 ${getStatusDotClass()} ${
-            isSelected && isDownloaded
-              ? "animate-[pulse-glow_2s_ease-in-out_infinite]"
-              : isDownloading
-                ? "animate-[spinner-rotate_1s_linear_infinite]"
-                : ""
+            isDownloading ? "animate-[spinner-rotate_1s_linear_infinite]" : ""
           }`}
         />
 
