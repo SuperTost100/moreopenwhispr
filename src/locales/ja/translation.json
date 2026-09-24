@@ -1020,7 +1020,10 @@
         "screenContextSkipped": "画面コンテキストをスキップしました",
         "dailyLimitReached": "1 日の上限に達しました",
         "providerRateLimited": "プロバイダーのレート制限",
-        "antigravityQuotaExceeded": "Antigravityのクォータ超過"
+        "antigravityQuotaExceeded": "Antigravityのクォータ超過",
+        "antigravityAuthRequired": "Antigravity Sign-In Required",
+        "antigravityTimeout": "Antigravity Request Timed Out",
+        "antigravityModelUnavailable": "Antigravity Model Unavailable"
       },
       "fallback": {
         "title": "フォールバックモード",
@@ -1062,7 +1065,11 @@
         "streamingOnlyProvider": "このプロバイダーはライブ文字起こしのみに対応しています。ファイルのアップロードや再実行には別のプロバイダーを選択してください。",
         "providerKeyMissing": "文字起こしプロバイダーのAPIキーが設定されていません。設定 → 音声テキスト変換 から追加してください。",
         "cleanupTruncated": "AI モデルの出力が上限に達し、ディクテーションのクリーンアップが完了しませんでした。",
-        "cleanupEmptyReply": "AI モデルが空の応答を返したため、クリーンアップされたテキストがありません。"
+        "cleanupEmptyReply": "AI モデルが空の応答を返したため、クリーンアップされたテキストがありません。",
+        "antigravityAuthRequired": "Antigravity sign-in expired. Run `agy auth login` in a terminal.",
+        "antigravityTimeout": "Antigravity did not finish in time. Check your connection or try a shorter clip.",
+        "antigravityModelUnavailable": "The chosen Antigravity model is unavailable. OpenWhispr will try another model automatically on the next request.",
+        "antigravityQuotaResetAt": "Quota resets around {{time}}."
       },
       "translationFallback": {
         "unreachableTitle": "翻訳を利用できません",
@@ -2443,6 +2450,16 @@
           "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
           "smart": "Smart",
           "verbatim": "Verbatim"
+        },
+        "backendModel": {
+          "sttLabel": "Transcription model",
+          "sttDescription": "Gateway model for speech-to-text. Automatic picks the latest audio-capable tier from your Antigravity catalog.",
+          "cleanupLabel": "Cleanup model",
+          "cleanupDescription": "Gateway model for the optional polished cleanup pass.",
+          "chatLabel": "Assistant model",
+          "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
+          "automatic": "Automatic (latest)",
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
         }
       }
     },

@@ -1,6 +1,7 @@
 import type { InferenceProvider } from "./types";
 import { wrapCleanupTranscript } from "../../../config/prompts";
 import logger from "../../../utils/logger";
+import { getSettings } from "../../../stores/settingsStore";
 
 export const antigravityProvider: InferenceProvider = {
   id: "antigravity",
@@ -15,6 +16,7 @@ export const antigravityProvider: InferenceProvider = {
 
     const systemPrompt = config.systemPrompt || ctx.getSystemPrompt(agentName);
     const userContent = config.systemPrompt ? text : wrapCleanupTranscript(text);
+    const settings = getSettings();
     const result = await window.electronAPI.processAntigravityReasoning(
       userContent,
       model,
@@ -22,6 +24,8 @@ export const antigravityProvider: InferenceProvider = {
       {
         ...config,
         systemPrompt,
+        antigravityCleanupModel: settings.antigravityCleanupModel || "auto",
+        requestId: config.requestId,
       }
     );
 

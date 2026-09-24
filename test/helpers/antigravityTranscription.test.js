@@ -116,32 +116,31 @@ test("prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversi
   );
 });
 
-test("transcribeWithAntigravity falls back to agy only when gateway fails", async () => {
+test("transcribeWithAntigravity falls back to agy only on network unreachable", async () => {
   let fetchCalls = 0;
+  let runOptions = null;
+  const networkErr = Object.assign(new TypeError("fetch failed"), { code: "ENOTFOUND" });
   const result = await transcribeWithAntigravity({
     audioBuffer: Buffer.from("fake-audio"),
     contentType: "audio/wav",
     getAccessToken: fakeAuth,
-    fetchImpl: async (url) => {
+    getProjectId: async () => "daily-proj",
+    fetchImpl: async () => {
       fetchCalls += 1;
-      if (String(url).includes("loadCodeAssist")) {
-        return {
-          ok: true,
-          json: async () => ({ cloudaicompanionProject: "daily-proj" }),
-        };
-      }
-      return {
-        ok: false,
-        status: 500,
-        text: async () => '{"error":{"message":"upstream"}}',
-      };
+      throw networkErr;
     },
+    op: require("../../src/helpers/antigravityOperation").createAntigravityOperation({
+      budgetMs: 60_000,
+      label: "test",
+    }),
     runTurn: async (options) => {
+      runOptions = options;
       fs.writeFileSync(options.writeFilePath, "fallback words");
-      return { text: "", model: "gemini-3.5-flash-low" };
+      return { text: "", model: null };
     },
   });
 
   assert.equal(result.text, "fallback words");
   assert.ok(fetchCalls >= 1);
+  assert.equal(runOptions?.model, undefined);
 });

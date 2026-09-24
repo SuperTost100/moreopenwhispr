@@ -491,13 +491,18 @@ const PROXY_TRANSCRIPTION_PROVIDERS = {
   antigravity: {
     displayName: "Antigravity",
     ipc: () => window.electronAPI?.proxyAntigravityTranscription,
-    buildPayload: ({ audioBuffer, model, language, keyterms, apiSettings }) => ({
+    buildPayload: ({ audioBuffer, model, language, keyterms, apiSettings, durationSeconds }) => ({
       audioBuffer,
       model,
       language,
       keyterms: keyterms.length > 0 ? keyterms : undefined,
       transcriptionMode:
         apiSettings?.antigravityTranscriptionMode === "verbatim" ? "VERBATIM" : "SMART",
+      requestId: crypto.randomUUID(),
+      audioDurationSec: durationSeconds,
+      antigravitySttModel: apiSettings?.antigravitySttModel || "auto",
+      antigravityCleanupModel: apiSettings?.antigravityCleanupModel || "auto",
+      antigravityChatModel: apiSettings?.antigravityChatModel || "auto",
     }),
   },
   xai: {
@@ -3636,6 +3641,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           managedResolution,
           mimeType: optimizedAudio.type || "audio/webm",
           dictionaryPrompt: this.getWhisperPrompt(apiSettings),
+          durationSeconds,
           keyterms: this.getKeyterms()
             .map((t) => t.trim().slice(0, 50))
             .filter(Boolean)

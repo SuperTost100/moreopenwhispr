@@ -942,6 +942,9 @@ export interface SettingsState
   antigravityDictationMode: "fast" | "polished";
   /** Antigravity fork: smart transcribe includes built-in polish. */
   antigravityTranscriptionMode: "smart" | "verbatim";
+  antigravitySttModel: string;
+  antigravityCleanupModel: string;
+  antigravityChatModel: string;
 
   /** Last model used per scope+provider (`"<context>:<providerId>"`), so switching providers restores it. */
   transcriptionModelByProvider: Record<string, string>;
@@ -1086,6 +1089,9 @@ export interface SettingsState
   setCloudTranscriptionModel: (value: string) => void;
   setAntigravityDictationMode: (value: "fast" | "polished") => void;
   setAntigravityTranscriptionMode: (value: "smart" | "verbatim") => void;
+  setAntigravitySttModel: (value: string) => void;
+  setAntigravityCleanupModel: (value: string) => void;
+  setAntigravityChatModel: (value: string) => void;
   setCloudTranscriptionBaseUrl: (value: string) => void;
   setCloudTranscriptionMode: (value: string) => void;
   switchCloudTranscriptionProvider: (
@@ -1509,6 +1515,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     const v = readString("antigravityTranscriptionMode", "smart");
     return v === "verbatim" ? "verbatim" : "smart";
   })(),
+  antigravitySttModel: readString("antigravitySttModel", "auto"),
+  antigravityCleanupModel: readString("antigravityCleanupModel", "auto"),
+  antigravityChatModel: readString("antigravityChatModel", "auto"),
   cloudTranscriptionBaseUrl: readString(
     "cloudTranscriptionBaseUrl",
     API_ENDPOINTS.TRANSCRIPTION_BASE
@@ -1994,6 +2003,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     createStringSetter("antigravityDictationMode")(value === "polished" ? "polished" : "fast"),
   setAntigravityTranscriptionMode: (value: "smart" | "verbatim") =>
     createStringSetter("antigravityTranscriptionMode")(value === "verbatim" ? "verbatim" : "smart"),
+  setAntigravitySttModel: createStringSetter("antigravitySttModel"),
+  setAntigravityCleanupModel: createStringSetter("antigravityCleanupModel"),
+  setAntigravityChatModel: createStringSetter("antigravityChatModel"),
   setCloudTranscriptionBaseUrl: createStringSetter("cloudTranscriptionBaseUrl"),
 
   // Every provider shares one model slot per scope, so a plain provider write

@@ -6,81 +6,70 @@ Public setup: [docs/antigravity.md](../docs/antigravity.md). Product name: **Mor
 
 ## Architecture (dictation speed)
 
-Dictation STT uses the same **daily Cloud Code gateway** as the `agy` CLI (`daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent`) with OAuth from `agy auth`. Audio is sent inline to `gemini-3.5-flash-low` with a transcription system prompt. One round trip, no agent subprocess.
+Dictation STT uses the **daily Cloud Code gateway** (`daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent`) with OAuth from `agy auth login`. Audio is sent inline with a transcription system prompt. One round trip when the gateway path succeeds.
 
-| Path | Latency | Use |
-| --- | --- | --- |
-| Daily gateway stream + flash-low multimodal | ~1–3s | **Default** dictation STT |
-| Gateway + `gemini-3.5-flash-low` text | ~1–2s | Optional cleanup when Polished mode |
-| `agy --print` agent | ~10–30s+ | Emergency fallback only if gateway fails |
-| Rolling PCM (~2s) on the same daily path | Live preview | Preview + stream commit at stop |
+| Path                                 | Latency (warm, ~7 s clip) | Use                                                                           |
+| ------------------------------------ | ------------------------- | ----------------------------------------------------------------------------- |
+| Daily gateway stream (catalog model) | ~1.2–2.5 s                | **Default** dictation STT                                                     |
+| Gateway text (cleanup slot)          | ~1–2 s                    | Optional cleanup when Polished mode                                           |
+| `agy --print` subprocess             | ~14–22 s                  | Fallback only when the network is unreachable and budget remains              |
+| Rolling PCM preview on gateway       | ~2 s cadence              | Live preview only (6 s stage cap); final text comes from a full-clip STT pass |
+
+**Credentials:** `agy` is the single writer of `~/.gemini/antigravity-cli/antigravity-oauth-token`. The app reads it, refreshes via `agy models` when near expiry, and never stores OAuth client secrets.
+
+**Models:** `fetchAvailableModels` populates a persisted catalog. Settings offer **Automatic (latest)** (tier order + pinned `gemini-2.5-flash-lite` fallback) or an explicit gateway id per slot (STT / cleanup / chat). Synthetic ids `gemini-3.5-transcribe*` are **modes** (SMART/VERBATIM, live preview), not gateway model ids.
+
+**Failover:** Within one operation budget, STT/cleanup walk `candidates.<slot>` on stage timeout, HTTP 5xx, model unavailable, model-scoped rate limits, or empty output (STT with speech). Account quota exhaustion, auth required, cancel, and safety blocks stop immediately. One 401 retry refreshes the token.
+
+**Budgets & cancel:** IPC builds `createAntigravityOperation` per request (`requestId` → `AbortController`; `cloud-transcribe-cancel` aborts in-flight Antigravity work and kills the CLI child). STT budget = 12 s + 0.5 × audio seconds (cap 90 s; unknown duration assumes 30 s). FFmpeg convert is async and killed on abort.
 
 **Fast mode (default):** SMART transcribe skips the separate cleanup pass (`shouldSkipAntigravityDictationCleanup`).
 
-**Polished mode:** SMART transcribe + optional flash-low cleanup via daily gateway.
+**Polished mode:** SMART transcribe + optional cleanup via the cleanup slot on the gateway.
 
 ## Live STT
 
-Dedicated `gemini-3.5-transcribe-live` returned 404 on the daily gateway. Implemented as a **rolling PCM buffer**: every ~2s of audio, cumulative WAV goes through `streamGenerateContent`; preview updates via existing dictation-preview IPC.
+Mode id `gemini-3.5-transcribe-live`: rolling PCM preview (~2 s) on the gateway with a 6 s stage timeout (no subprocess). `finish()` returns `{ final: true }` only when the full-clip gateway STT succeeds; otherwise the main IPC STT path runs with its own budget.
 
 ## Owned files (safe to keep on rebase)
 
 - `src/helpers/antigravityAuth.js`
+- `src/helpers/antigravityOperation.js`
+- `src/helpers/antigravityFailover.js`
+- `src/helpers/antigravityIpc.js`
 - `src/helpers/antigravityGateway.js`
+- `src/helpers/antigravityModelCatalog.js`
 - `src/helpers/antigravityTranscriptionPolicy.js`
 - `src/helpers/antigravityCli.js`
 - `src/helpers/antigravityTranscription.js`
 - `src/helpers/antigravityReasoning.js`
+- `src/helpers/antigravityLiveTranscription.js`
 - `src/services/ai/inferenceProviders/antigravity.ts`
 - `src/services/ai/antigravityChat.ts`
 - `src/components/onboarding/antigravitySetup.ts`
 - `src/config/mowProfile.ts` / `mowProfile.cjs`
 - `test/helpers/antigravity*.test.js`
 - `test/components/antigravitySetup.test.js`
+- `scripts/bench-antigravity-models.mjs`
+- `scripts/refresh-antigravity-token.js`
 - `.fork/ANTIGRAVITY.md` (this file)
-
-## Upstream touch points (re-apply after merge)
-
-| File | Change |
-| --- | --- |
-| `src/models/modelRegistryData.json` | `antigravity` in `transcriptionProviders` + `cloudProviders` |
-| `src/helpers/transcriptionRoute.ts` | proxied provider + `resolveByokModel` |
-| `src/helpers/audioManager.js` | `PROXY_TRANSCRIPTION_PROVIDERS.antigravity`, skip cleanup |
-| `src/helpers/ipcHandlers.js` | proxy STT, reasoning, tool-turn, availability handlers |
-| `preload.js` | IPC bridges |
-| `src/types/electron.ts` | API types |
-| `src/services/ai/inferenceProviders/index.ts` | registry entry |
-| `src/services/ReasoningService.ts` | `isAvailable` + streaming antigravity branch |
-| `src/stores/settingsStore.ts` | fork defaults + antigravity mode settings |
-| `src/components/onboarding/*` | Antigravity setup path |
-
-## Defaults (fresh installs / empty localStorage)
-
-- Transcription: provider `antigravity`, model `gemini-3.5-transcribe`, mode `providers`
-- `antigravityDictationMode`: `fast` (skip cleanup after SMART transcribe)
-- `antigravityTranscriptionMode`: `smart`
-- Cleanup / agent / chat: provider `antigravity`, cleanup model `gemini-3.5-flash-low`
-
-## Runtime requirements
-
-- `agy` on PATH, signed in (`agy auth login`). OAuth token file must exist
-- Optional `ffmpeg-static` for webm→wav before gateway transcribe
-
-## Distribution
-
-- GitHub: [SuperTost100/moreopenwhispr](https://github.com/SuperTost100/moreopenwhispr), branch `antigravity-fork`
-- Releases: unsigned macOS / Windows / Linux via `.github/workflows/release.yml`
-- Account / billing UI disabled via `src/config/mowProfile.ts`
-- `repoUrl` / `issuesUrl` / `docsUrl` live in `mowProfile.ts` (keep them pointing at SuperTost100)
 
 ## What still uses `agy` subprocess
 
-- Chat tool loop (`runToolLoopTurn`)
+- Chat tool loop (`runToolLoopTurn`) — Phase B migrates this to the gateway
 - Reasoning with screen context (multimodal image in isolated temp dir)
+- STT/cleanup emergency fallback when the gateway cannot be reached over the network
 
-Text-only cleanup uses gateway HTTP when no screen context is attached.
+## Troubleshooting (AGY_* codes)
 
-## Follow-ups
+| Code                         | Meaning                         | What to do                                                              |
+| ---------------------------- | ------------------------------- | ----------------------------------------------------------------------- |
+| `AGY_AUTH_REQUIRED`          | Token missing or refresh failed | Run `agy auth login` in a terminal                                      |
+| `AGY_RATE_LIMITED` (account) | Subscription quota exhausted    | Wait for reset; check Antigravity quota UI                              |
+| `AGY_RATE_LIMITED` (model)   | Temporary model throttle        | Automatic failover tries another catalog model                          |
+| `AGY_TIMEOUT`                | Stage or budget exceeded        | Shorter clip, check network, or pick a faster model                     |
+| `AGY_MODEL_UNAVAILABLE`      | 404 or retirement notice        | Refresh catalog (automatic on failure); pick Automatic or another model |
+| `AGY_CANCELLED`              | User cancelled dictation        | Expected; retry dictation                                               |
+| `AGY_BLOCKED`                | Safety filter                   | Rephrase or change content                                              |
 
-- Tune live chunk interval / overlap for lower preview latency
-- Settings UI: Fast/Polished and Smart/Verbatim (Speech → Dictation when Antigravity is selected)
+Measure models locally: `node scripts/bench-antigravity-models.mjs` (never prints tokens).

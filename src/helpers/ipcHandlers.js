@@ -648,6 +648,7 @@ class IPCHandlers {
     this._agentStreamRequests = new AgentStreamRequestRegistry();
     this._cloudReasonRequests = new AgentStreamRequestRegistry();
     this._cloudTranscriptionRequests = new AgentStreamRequestRegistry();
+    this._antigravityRequests = new AgentStreamRequestRegistry();
     this._enterpriseReasoningRequests = new AgentStreamRequestRegistry();
     // webContents id -> its release listener, for renderers holding the mic open.
     this._micHoldSenders = new Map();
@@ -4716,26 +4717,54 @@ class IPCHandlers {
 
     ipcMain.handle(
       "proxy-antigravity-transcription",
-      serializeIpcError(
-        async (event, { audioBuffer, model, language, keyterms, transcriptionMode }) => {
-          const { transcribeWithAntigravity } = require("./antigravityTranscription");
-          const { getFFmpegPath } = require("./ffmpegUtils");
+      serializeIpcError(async (event, payload = {}) => {
+        const {
+          antigravityPrefsFromPayload,
+          beginAntigravityOperation,
+          sttBudgetFromPayload,
+        } = require("./antigravityIpc");
+        const { transcribeWithAntigravity } = require("./antigravityTranscription");
+        const { getFFmpegPath } = require("./ffmpegUtils");
+        const { op, controller, requestId } = beginAntigravityOperation(
+          this._antigravityRequests,
+          event,
+          payload,
+          { budgetMs: sttBudgetFromPayload(payload), label: "antigravity-stt" }
+        );
+        try {
           return await transcribeWithAntigravity({
-            audioBuffer: Buffer.from(audioBuffer),
-            model,
-            contentType: "audio/webm",
-            language,
-            keyterms,
-            transcriptionMode,
+            audioBuffer: Buffer.from(payload.audioBuffer),
+            model: payload.model,
+            contentType: payload.contentType || "audio/webm",
+            language: payload.language,
+            keyterms: payload.keyterms,
+            transcriptionMode: payload.transcriptionMode,
             ffmpegPath: getFFmpegPath() || undefined,
+            op,
+            antigravityPrefs: antigravityPrefsFromPayload(payload),
+            audioDurationSec: payload.audioDurationSec,
+            hadSpeech: payload.hadSpeech !== false,
           });
+        } finally {
+          this._antigravityRequests.complete(event.sender.id, requestId, controller);
         }
-      )
+      })
     );
 
     ipcMain.handle(
       "process-antigravity-reasoning",
       async (event, text, modelId, _agentName, config) => {
+        const {
+          antigravityPrefsFromPayload,
+          beginAntigravityOperation,
+          cleanupBudgetMs,
+        } = require("./antigravityIpc");
+        const { op, controller, requestId } = beginAntigravityOperation(
+          this._antigravityRequests,
+          event,
+          config || {},
+          { budgetMs: cleanupBudgetMs(), label: "antigravity-cleanup" }
+        );
         try {
           const { reasonWithAntigravity } = require("./antigravityReasoning");
           const result = await reasonWithAntigravity({
@@ -4743,10 +4772,19 @@ class IPCHandlers {
             model: modelId,
             systemPrompt: config?.systemPrompt || "",
             screenContext: config?.screenContext,
+            op,
+            antigravityPrefs: antigravityPrefsFromPayload(config || {}),
           });
           return { success: true, text: result };
         } catch (error) {
-          return { success: false, error: error.message, code: error.code };
+          return {
+            success: false,
+            error: error.message,
+            code: error.code,
+            messageKey: error.messageKey,
+          };
+        } finally {
+          this._antigravityRequests.complete(event.sender.id, requestId, controller);
         }
       }
     );
@@ -4755,8 +4793,15 @@ class IPCHandlers {
       const fs = require("fs");
       const os = require("os");
       const path = require("path");
+      const { beginAntigravityOperation, toolTurnBudgetMs } = require("./antigravityIpc");
       const { runToolLoopTurn } = require("./antigravityReasoning");
       const { ensureWritableDir } = require("./antigravityCli");
+      const { op, controller, requestId } = beginAntigravityOperation(
+        this._antigravityRequests,
+        event,
+        payload || {},
+        { budgetMs: toolTurnBudgetMs(payload || {}), label: "antigravity-tool-turn" }
+      );
       const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-antigravity-chat-"));
       ensureWritableDir(tmpDir);
       try {
@@ -4766,13 +4811,15 @@ class IPCHandlers {
           tools: payload?.tools || [],
           model: payload?.model,
           conversationId: payload?.conversationId,
-          timeoutMs: payload?.timeoutMs,
+          timeoutMs: Math.min(payload?.timeoutMs || toolTurnBudgetMs(payload), op.remainingMs()),
           cwd: tmpDir,
+          signal: op.signal,
         });
         return { success: true, result, conversationId };
       } catch (error) {
         return { success: false, error: error.message, code: error.code };
       } finally {
+        this._antigravityRequests.complete(event.sender.id, requestId, controller);
         try {
           fs.rmSync(tmpDir, { recursive: true, force: true });
         } catch {
@@ -6463,6 +6510,7 @@ class IPCHandlers {
 
     ipcMain.on("cloud-transcribe-cancel", (event) => {
       this._cloudTranscriptionRequests.cancelSender(event.sender.id);
+      this._antigravityRequests.cancelSender(event.sender.id);
       try {
         require("./antigravityCli").killActiveAgyTurn();
       } catch {
@@ -9492,7 +9540,9 @@ class IPCHandlers {
         if (result) {
           streamedText = result.text || "";
           // Trust the streamed transcript only on a clean server flush and a clean renderer flush.
-          streamed = !result.truncated && rendererFlushOk;
+          // Antigravity live streams say so with `final`; Parakeet online streams report `truncated`.
+          const cleanFlush = typeof result.final === "boolean" ? result.final : !result.truncated;
+          streamed = cleanFlush && rendererFlushOk;
         }
         if (streamedText && display && dictationPreviewSessionActive) {
           this.windowManager.showTranscriptionPreview(streamedText);

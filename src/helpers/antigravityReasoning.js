@@ -13,6 +13,12 @@ const {
   notifyModelUnavailable,
   resolveAntigravityModels,
 } = require("./antigravityModelCatalog");
+const {
+  decideAntigravityFailover,
+  applyFailoverSideEffects,
+  isNetworkUnreachableError,
+} = require("./antigravityFailover");
+const { createAntigravityError } = require("./antigravityOperation");
 
 const TOOL_LOOP_JSON_SCHEMA = {
   type: "object",
@@ -141,6 +147,107 @@ function buildToolLoopPrompt({ systemPrompt, messages, tools }) {
   ].join("\n");
 }
 
+async function reasonWithAntigravityGateway({
+  text,
+  systemPrompt,
+  fetchImpl,
+  getAccessToken,
+  getProjectId,
+  op,
+  antigravityPrefs,
+  command,
+}) {
+  const prefs = {
+    cleanup:
+      typeof antigravityPrefs?.cleanup === "string" && antigravityPrefs.cleanup.trim()
+        ? antigravityPrefs.cleanup.trim()
+        : "auto",
+  };
+  const resolved = resolveAntigravityModels(getCatalog(), prefs);
+  const candidates =
+    resolved.candidates.cleanup?.length > 0
+      ? resolved.candidates.cleanup
+      : [resolved.cleanup].filter(Boolean);
+  let auth = await getAccessToken({ signal: op?.signal });
+  let authRetried = false;
+  let lastError = null;
+
+  for (let index = 0; index < candidates.length; index += 1) {
+    const gatewayModel = candidates[index];
+    op?.throwIfDone?.();
+    try {
+      const projectId = await getProjectId({
+        accessToken: auth.accessToken,
+        accountKey: auth.accountKey,
+        fetchImpl,
+        op,
+      });
+      return {
+        text: await generateTextViaGateway({
+          accessToken: auth.accessToken,
+          accountKey: auth.accountKey,
+          projectId,
+          model: gatewayModel,
+          systemPrompt,
+          userText: text,
+          fetchImpl,
+          gatewayBase: DAILY_CLOUDCODE_BASE,
+          op,
+        }),
+        notices: resolved.notices,
+      };
+    } catch (error) {
+      lastError = error;
+      const decision = decideAntigravityFailover(error, {
+        slot: "cleanup",
+        remainingMs: op?.remainingMs?.() ?? 0,
+        budgetExhausted: (op?.remainingMs?.() ?? 0) <= 0,
+        authRetried,
+      });
+      if (decision.action === "retry_auth") {
+        authRetried = true;
+        auth = await getAccessToken({ signal: op?.signal, forceRefresh: true });
+        index -= 1;
+        continue;
+      }
+      if (decision.refreshCatalog) notifyModelUnavailable();
+      applyFailoverSideEffects(decision, gatewayModel);
+      if (decision.action === "failover") continue;
+      if (decision.action === "subprocess") {
+        const prompt = buildReasoningPrompt({ systemPrompt, userText: text });
+        const turn = await runAgyTurn({
+          prompt,
+          model: undefined,
+          cwd: process.cwd(),
+          command,
+          printTimeout: "120s",
+          timeoutMs: Math.min(180_000, op?.remainingMs?.() || 180_000),
+          extraArgs: ["--sandbox"],
+          signal: op?.signal,
+        });
+        return { text: turn.text.trim(), notices: resolved.notices };
+      }
+      throw error;
+    }
+  }
+
+  if (lastError && isNetworkUnreachableError(lastError) && (op?.remainingMs?.() ?? 0) > 8_000) {
+    const prompt = buildReasoningPrompt({ systemPrompt, userText: text });
+    const turn = await runAgyTurn({
+      prompt,
+      model: undefined,
+      cwd: process.cwd(),
+      printTimeout: "120s",
+      timeoutMs: Math.min(180_000, op?.remainingMs?.() || 180_000),
+      extraArgs: ["--sandbox"],
+      signal: op?.signal,
+    });
+    return { text: turn.text.trim(), notices: resolved.notices };
+  }
+
+  throw lastError || createAntigravityError("AGY_HTTP", "Antigravity cleanup failed");
+}
+
 async function reasonWithAntigravity({
   text,
   model,
@@ -153,6 +260,7 @@ async function reasonWithAntigravity({
   getAccessToken = getAntigravityAccessToken,
   getProjectId = getAntigravityProjectId,
   op,
+  antigravityPrefs,
 }) {
   const resolvedModel = model || DEFAULT_ANTIGRAVITY_MODEL;
 
@@ -187,29 +295,24 @@ async function reasonWithAntigravity({
     }
   }
 
-  // Gateway ids differ from agy CLI ids (a CLI id like gemini-3.7-flash-low
-  // 404s here), so the gateway model comes from the catalog's cleanup slot;
-  // a CLI id that isn't a catalog model just falls through to "auto".
-  const { cleanup: gatewayModel } = resolveAntigravityModels(getCatalog(), { cleanup: model });
-  const { accessToken, accountKey } = await getAccessToken({ signal: op?.signal });
-  const projectId = await getProjectId({ accessToken, accountKey, fetchImpl, op });
-  try {
-    return await generateTextViaGateway({
-      accessToken,
-      accountKey,
-      projectId,
-      model: gatewayModel,
-      systemPrompt,
-      userText: text,
-      fetchImpl,
-      gatewayBase: DAILY_CLOUDCODE_BASE,
-      op,
-    });
-  } catch (error) {
-    // Includes an anchored retirement notice returned as cleanup output.
-    if (error?.code === "AGY_MODEL_UNAVAILABLE") notifyModelUnavailable();
-    throw error;
-  }
+  const { text: answer } = await reasonWithAntigravityGateway({
+    text,
+    systemPrompt,
+    fetchImpl,
+    getAccessToken,
+    getProjectId,
+    op,
+    antigravityPrefs: {
+      cleanup:
+        typeof antigravityPrefs?.cleanup === "string"
+          ? antigravityPrefs.cleanup
+          : typeof model === "string" && model.trim() && !model.startsWith("gemini-3.5-transcribe")
+            ? model
+            : "auto",
+    },
+    command,
+  });
+  return answer;
 }
 
 async function runToolLoopTurn({
@@ -224,6 +327,7 @@ async function runToolLoopTurn({
   conversationId,
   extraArgs = ["--sandbox"],
   printTimeout = "120s",
+  signal,
 }) {
   const prompt = buildToolLoopPrompt({ systemPrompt, messages, tools });
   const turn = await runTurn({
@@ -237,6 +341,7 @@ async function runToolLoopTurn({
     outputFormat: "json",
     printTimeout,
     extraArgs,
+    signal,
   });
   const result = parseToolLoopResponse(turn.text);
   const nextConversationId =

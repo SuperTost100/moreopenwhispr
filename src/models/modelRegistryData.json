@@ -356,13 +356,13 @@
       "models": [
         {
           "id": "gemini-3.5-transcribe",
-          "name": "Gemini 3.5 Transcribe",
+          "name": "Antigravity transcription",
           "description": "Fast cloud transcription via your Antigravity subscription",
           "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe"
         },
         {
           "id": "gemini-3.5-transcribe-live",
-          "name": "Gemini 3.5 Transcribe Live",
+          "name": "Antigravity transcription with live preview",
           "description": "Live preview while you speak via Antigravity subscription",
           "descriptionKey": "models.descriptions.transcription.antigravity_gemini_3_5_transcribe_live",
           "streaming": true
