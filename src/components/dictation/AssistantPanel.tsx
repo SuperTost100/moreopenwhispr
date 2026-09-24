@@ -559,7 +559,7 @@ export function AssistantPanel({
           >
             <span className="sr-only">{streaming.toolStatus}</span>
             <div
-              className="assistant-tool-invocation-status inline-flex max-w-full items-center gap-2.5 rounded-xl border border-border/60 bg-surface-raised/60 px-4 py-2.5 shadow-[var(--shadow-card)] backdrop-blur-md"
+              className="assistant-tool-invocation-status inline-flex max-w-full items-center gap-2.5 rounded-xl border border-border/60 bg-surface-raised px-4 py-2.5 shadow-[var(--shadow-card)]"
               aria-hidden="true"
             >
               <span className="assistant-tool-invocation-pulse relative flex size-2 shrink-0 rounded-full bg-agent-brand" />
@@ -615,7 +615,7 @@ export function AssistantPanel({
             <Button
               type="button"
               size="sm"
-              className="bg-surface-raised bg-none px-4 font-medium text-foreground shadow-sm hover:bg-surface-3 dark:bg-white dark:text-neutral-950 dark:hover:bg-white/90"
+              className="bg-surface-raised bg-none px-4 font-medium text-foreground shadow-sm hover:bg-surface-3 dark:bg-foreground dark:text-background dark:hover:bg-foreground/90"
               onClick={() => void handleCopy()}
               aria-live="polite"
               tabIndex={footerPhase === "actions" ? 0 : -1}
@@ -625,7 +625,7 @@ export function AssistantPanel({
               {!copied && (
                 <kbd
                   dir="ltr"
-                  className="ms-1 rounded bg-foreground/10 px-1.5 py-0.5 font-mono text-[10px] font-medium dark:bg-black/10"
+                  className="ms-1 rounded bg-foreground/10 px-1.5 py-0.5 font-mono text-[10px] font-medium dark:bg-background/10"
                 >
                   C
                 </kbd>

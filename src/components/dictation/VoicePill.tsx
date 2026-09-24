@@ -129,7 +129,7 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
       {...props}
     >
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-br from-foreground/10 to-transparent transition-opacity duration-200 ease-out"
+        className="pointer-events-none absolute inset-0 bg-foreground/10 transition-opacity duration-200 ease-out"
         style={{ opacity: state === "hover" ? 0.72 : 0 }}
       />
 
@@ -150,7 +150,11 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
             className={cn(
               "transition-[width,height] duration-200",
               state === "idle" && "text-foreground",
-              (isUnavailable || isProcessing) && "animate-pulse"
+              // Processing is transient work in flight, so it pulses like the
+              // waveform does while recording. Unavailable is a standing
+              // error state, so it stays still and reads through colour
+              // (the ring below) instead of idle motion.
+              isProcessing && "animate-pulse"
             )}
           />
         </span>
@@ -207,7 +211,7 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
       </div>
 
       {isUnavailable && (
-        <div className="pointer-events-none absolute inset-0 rounded-full border-2 border-foreground/30 animate-pulse" />
+        <div className="pointer-events-none absolute inset-0 rounded-full border-2 border-destructive/40" />
       )}
     </div>
   );
@@ -219,9 +223,7 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
         className="processing-signal-glow"
         data-active={showSignalGlow ? "true" : undefined}
         data-agent={agentMode || undefined}
-      >
-        <span className="processing-signal-ring" />
-      </span>
+      />
       {pill}
     </span>
   );
