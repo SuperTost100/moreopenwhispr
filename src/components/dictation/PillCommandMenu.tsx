@@ -63,7 +63,7 @@ export function PillCommandMenu({
   return (
     <div
       ref={menuRef}
-      className={`absolute bottom-full ${alignClass} mb-3 w-48 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg backdrop-blur-sm`}
+      className={`absolute bottom-full ${alignClass} mb-3 w-48 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-elevated`}
       onMouseEnter={() => {
         setWindowInteractivity(true);
       }}

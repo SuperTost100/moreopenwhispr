@@ -395,7 +395,7 @@ const Toast: React.FC<
             (isDestructive ? (
               <div
                 className={cn(
-                  "text-xs leading-snug mt-1 px-1.5 py-1 rounded-[3px] font-mono",
+                  "text-xs leading-snug mt-1 px-1.5 py-1 rounded-sm font-mono",
                   "bg-white/4 border border-white/6",
                   "text-red-300/80"
                 )}
@@ -420,7 +420,7 @@ const Toast: React.FC<
               <div className="text-xs leading-snug mt-0.5 text-white/45">{detail}</div>
             ))}
           {copyCommand && (
-            <div className="mt-1.5 flex items-center gap-1.5 rounded-[3px] border border-white/6 bg-white/4 px-1.5 py-1">
+            <div className="mt-1.5 flex items-center gap-1.5 rounded-sm border border-white/6 bg-white/4 px-1.5 py-1">
               <code
                 dir="ltr"
                 className="min-w-0 flex-1 wrap-break-word font-mono text-[11px] text-white/60 select-all"

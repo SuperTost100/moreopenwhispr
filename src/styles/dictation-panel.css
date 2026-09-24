@@ -237,8 +237,7 @@
 .voice-pill-control[data-agent-beam-active="true"] {
   box-shadow:
     var(--shadow-card),
-    0 0 0 1px color-mix(in oklch, var(--color-agent-brand) 28%, transparent),
-    0 0 10px color-mix(in oklch, var(--color-agent-brand) 18%, transparent);
+    0 0 0 1px color-mix(in oklch, var(--color-agent-brand) 45%, transparent);
 }
 
 /* While the cancel button's liquid skin owns the fused surface, the pill goes
@@ -288,143 +287,34 @@
   filter: drop-shadow(0 1px 3px oklch(0 0 0 / 0.2));
 }
 
-/* The Signal glow: a comet orbiting a breathing ambient halo around the
-   pill. Both identities light it for the thinking state only — brand blue
-   for dictation processing, the agent's purple for agent thinking. */
+/* The Signal ring: a flat colour ring around the pill, lit for the thinking
+   state only — the antigravity accent for dictation processing, the agent
+   brand colour for agent thinking. No blur, gradient, or spin: it only
+   fades in and out with the state change. */
 .voice-pill-glow-anchor {
   position: relative;
   display: inline-flex;
   border-radius: 9999px;
 }
 
-/* The orbit animates the conic gradients' start angle instead of rotating
-   the layers, so the same glow tracks the circular thinking pill and the
-   expanded recording capsule alike. */
-@property --signal-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: true;
-}
-
 .processing-signal-glow {
-  --signal-bright: #38bdf8;
-  --signal-core: #2563eb;
-  --signal-deep: #6366f1;
-  --signal-head: #eaf6ff;
-  --signal-halo-opacity: 0.8;
-  --signal-comet-opacity: 0.95;
+  --signal-color: var(--color-route-antigravity);
   position: absolute;
-  inset: 0;
+  inset: -3px;
   border-radius: 9999px;
+  border: 2px solid var(--signal-color);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 220ms ease-out;
+  transition: opacity 160ms ease-out;
 }
 
-/* Agent Mode keeps the identical glow in its purple identity. */
+/* Agent Mode keeps the identical ring in its brand identity. */
 .processing-signal-glow[data-agent="true"] {
-  --signal-bright: #a78bfa;
-  /* Same value as the agent brand token, which has no dark override, so the
-     glow keeps its deliberate identical-in-both-themes palette. */
-  --signal-core: var(--color-agent-brand);
-  --signal-deep: #7c3aed;
-  --signal-head: #f2edff;
-}
-
-:root:not(.dark) .processing-signal-glow {
-  --signal-halo-opacity: 0.7;
-  --signal-comet-opacity: 0.85;
+  --signal-color: var(--color-agent-brand);
 }
 
 .processing-signal-glow[data-active="true"] {
   opacity: 1;
-}
-
-/* Breathing ambient halo, sized to stay inside the pill's 12px dock inset
-   (see WINDOW_SIZES in windowConfig.js) so it never hard-clips at the native
-   window bounds. */
-.processing-signal-glow::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in srgb, var(--signal-core) 90%, transparent) 45%,
-    color-mix(in srgb, var(--signal-deep) 70%, transparent) 75%,
-    transparent
-  );
-  filter: blur(5px);
-  opacity: var(--signal-halo-opacity);
-}
-
-/* Soft bloom trailing the comet head. */
-.processing-signal-glow::after {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 9999px;
-  background: conic-gradient(
-    from var(--signal-angle),
-    transparent 0 55%,
-    color-mix(in srgb, var(--signal-core) 70%, transparent) 82%,
-    var(--signal-bright) 100%
-  );
-  filter: blur(4px);
-  opacity: var(--signal-comet-opacity);
-}
-
-/* Gradient ring whose white-hot head cools through the bright hue into the
-   deep tail. */
-.processing-signal-ring {
-  position: absolute;
-  inset: -2px;
-  border-radius: 9999px;
-  padding: 2.5px;
-  background: conic-gradient(
-    from var(--signal-angle),
-    color-mix(in srgb, var(--signal-core) 25%, transparent) 0%,
-    color-mix(in srgb, var(--signal-deep) 55%, transparent) 45%,
-    var(--signal-core) 75%,
-    var(--signal-bright) 94%,
-    var(--signal-head) 100%
-  );
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-}
-
-/* Animations only run while active so the always-visible idle pill costs
-   nothing; the 220ms fade covers the frozen final frame on exit. */
-.processing-signal-glow[data-active="true"]::before {
-  animation: processing-signal-breathe 1.9s ease-in-out infinite;
-}
-
-.processing-signal-glow[data-active="true"] {
-  animation: processing-signal-spin 1.6s linear infinite;
-}
-
-@keyframes processing-signal-spin {
-  to {
-    --signal-angle: 360deg;
-  }
-}
-
-@keyframes processing-signal-breathe {
-  0%,
-  100% {
-    opacity: calc(var(--signal-halo-opacity) * 0.55);
-    transform: scale(0.96);
-  }
-  50% {
-    opacity: var(--signal-halo-opacity);
-    transform: scale(1.05);
-  }
 }
 
 .expanding-panel-surface[data-panel-mode="live-transcript"][data-panel-stage="encapsulated"] {
@@ -658,11 +548,6 @@
   .assistant-response-actions,
   .assistant-pill-presence {
     animation-duration: 1ms !important;
-  }
-
-  .processing-signal-glow[data-active="true"],
-  .processing-signal-glow[data-active="true"]::before {
-    animation: none;
   }
 
   .inline-response-shimmer {

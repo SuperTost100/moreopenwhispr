@@ -58,7 +58,10 @@ test("thinking and recording keep the same persistent glow and pill roots", asyn
   assert.equal((recording.match(/rounded-full bg-current/g) || []).length, expectedBars);
 });
 
-test("one Signal glow serves both identities: blue processing, purple agent", async () => {
+test("one Signal ring serves both identities: antigravity accent processing, agent brand", async () => {
+  // The redesign flattened the comet/halo effect (blur + conic-gradient spin)
+  // into a flat colour ring, so there's no more light/dark opacity tuning
+  // selector to assert — just the ring rule and the per-identity colour swap.
   const styles = readDictationStyles();
   const agentThinking = await renderPill("thinking", false, "right", { agentMode: true });
   // Listening must not glow in either identity: a glow before any transcript
@@ -66,7 +69,7 @@ test("one Signal glow serves both identities: blue processing, purple agent", as
   const agentListening = await renderPill("recording", false, "right", { agentMode: true });
 
   assert.match(styles, /\.processing-signal-glow\s*\{/);
-  assert.match(styles, /:root:not\(\.dark\) \.processing-signal-glow\s*\{/);
+  assert.match(styles, /\.processing-signal-glow\[data-agent="true"\]\s*\{/);
   assert.match(
     agentThinking,
     /class="processing-signal-glow" data-active="true" data-agent="true"/
@@ -245,13 +248,12 @@ test("Agent Mode uses the supplied mark, a purple perimeter glow, and a neutral 
   assert.match(AGENT_MODE_PATH, /^M6\.14226 /);
   assert.match(styles, /--color-agent-brand:/);
   assert.doesNotMatch(styles, /\.voice-pill-control\[data-agent-mode="true"\]\s*\{/);
-  // The agent glow is the same Signal treatment re-palettes to the agent's
-  // purple around the brand color.
+  // The agent ring is the same Signal treatment re-palettes to the agent's
+  // brand colour instead of the antigravity accent.
   assert.match(styles, /\.processing-signal-glow\[data-agent="true"\]\s*\{/);
-  // The glow references the brand token rather than repeating its value, so
-  // assert the indirection and the colour it resolves to.
-  assert.match(styles, /--signal-core: var\(--color-agent-brand\)/);
-  assert.match(styles, /--color-agent-brand: #8787ff/);
+  // The ring references the brand token rather than repeating its value, so
+  // assert the indirection.
+  assert.match(styles, /--signal-color: var\(--color-agent-brand\)/);
   assert.doesNotMatch(styles, /agent-waveform-background|agent-waveform-highlight/);
   // Listening stays glow-free; the purple Signal glow is reserved for the
   // post-recording thinking state so "hearing you" and "working" read apart.
