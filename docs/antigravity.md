@@ -19,7 +19,7 @@ Token file (do not commit it, do not paste it into issues):
 ~/.gemini/antigravity-cli/antigravity-oauth-token
 ```
 
-`agy` refreshes and rewrites that file; the app only reads it and runs `agy models` when the token is near expiry.
+`agy` is the account of record for that file, but the app keeps it fresh itself: it refreshes the token directly against Google using the OAuth client that ships inside your `agy` binary (extracted locally, never sent anywhere, never committed), and only falls back to asking `agy` to refresh it when that isn't possible. You're only asked to sign in again (`agy auth login`) if the refresh token itself has actually expired.
 
 Windows: a Start Menu / tray launch will not see a PATH you only exported in a VS Code terminal. Install `agy` system-wide or set the user PATH, then log out.
 
@@ -68,10 +68,10 @@ Hosts: `oauth2.googleapis.com`, `daily-cloudcode-pa.googleapis.com`. Full list: 
 | Model unavailable             | Settings → Automatic, or pick another catalog model                                   |
 | Slow every time               | Run `node scripts/bench-antigravity-models.mjs` to compare models (tokens stay local) |
 
-Refresh token before expiry (cron-friendly):
+The app refreshes this token on its own while it's running, so you shouldn't normally need to do anything. To force a refresh by hand (e.g. for headless use when the app isn't running):
 
 ```bash
-node scripts/refresh-antigravity-token.js --min-ttl-sec 1500
+node scripts/refresh-antigravity-token.js
 ```
 
 Debug log: [DEBUG.md](../DEBUG.md).
