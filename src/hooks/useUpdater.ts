@@ -4,6 +4,7 @@ interface UpdateStatus {
   updateAvailable: boolean;
   updateDownloaded: boolean;
   isDevelopment: boolean;
+  isSupported: boolean;
 }
 
 interface UpdateInfo {
@@ -28,6 +29,7 @@ let globalState: UpdateState = {
     updateAvailable: false,
     updateDownloaded: false,
     isDevelopment: false,
+    isSupported: true,
   },
   info: null,
   downloadProgress: 0,
@@ -165,15 +167,14 @@ export function useUpdater() {
   const checkForUpdates = useCallback(async () => {
     updateGlobalState({ isChecking: true, error: null });
     try {
-      const result = await window.electronAPI.checkForUpdates();
-      updateGlobalState({ isChecking: false });
-      return result;
+      return await window.electronAPI.checkForUpdates();
     } catch (error) {
       updateGlobalState({
-        isChecking: false,
         error: error instanceof Error ? error : new Error(String(error)),
       });
       throw error;
+    } finally {
+      updateGlobalState({ isChecking: false });
     }
   }, []);
 
@@ -184,8 +185,7 @@ export function useUpdater() {
 
     updateGlobalState({ isDownloading: true, downloadProgress: 0, error: null });
     try {
-      const result = await window.electronAPI.downloadUpdate();
-      return result;
+      return await window.electronAPI.downloadUpdate();
     } catch (error) {
       updateGlobalState({
         isDownloading: false,
@@ -206,6 +206,7 @@ export function useUpdater() {
     try {
       await window.electronAPI.installUpdate();
 
+      // Settings raises its own "almost there" dialog when the restart stalls.
       setTimeout(() => {
         if (isInstallingRef.current) {
           isInstallingRef.current = false;
@@ -237,12 +238,6 @@ export function useUpdater() {
     }
   }, []);
 
-  const clearError = useCallback(() => {
-    if (globalState.error) {
-      updateGlobalState({ error: null });
-    }
-  }, []);
-
   return {
     status: state.status,
     info: state.info,
@@ -255,6 +250,5 @@ export function useUpdater() {
     downloadUpdate,
     installUpdate,
     getAppVersion,
-    clearError,
   };
 }

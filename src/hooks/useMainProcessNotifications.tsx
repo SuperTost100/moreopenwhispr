@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { TFunction } from "i18next";
+import { ToastActionButton } from "../components/ui/Toast";
 import type { ToastContextType } from "../components/ui/useToast";
 
 /**
@@ -36,10 +37,25 @@ export function useMainProcessNotifications({
     });
 
     const showGpuFallbackToast = () => {
-      toast({
+      let toastId: string;
+      toastId = toast({
         title: t("app.toasts.gpuFallback.title"),
         description: t("app.toasts.gpuFallback.description"),
         duration: 10000,
+        action: (
+          <ToastActionButton
+            onClick={async () => {
+              try {
+                const result = await window.electronAPI?.whisperGpuRetry?.();
+                if (result?.success) dismiss(toastId);
+              } catch {
+                // silently fail — toast stays up for another attempt
+              }
+            }}
+          >
+            {t("app.toasts.gpuFallback.retry")}
+          </ToastActionButton>
+        ),
       });
     };
     const unsubscribeCudaFallback =

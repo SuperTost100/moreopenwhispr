@@ -166,7 +166,10 @@ export default function SidebarNavRail<T extends string>({
           <div className="flex items-center gap-1.5">
             <div className="h-1 w-1 rounded-full bg-success/60" />
             {!isCompact && (
-              <span className="text-xs text-muted-foreground/40 tabular-nums tracking-wide">
+              <span
+                dir="ltr"
+                className="text-xs text-muted-foreground/40 tabular-nums tracking-wide"
+              >
                 v{version}
               </span>
             )}

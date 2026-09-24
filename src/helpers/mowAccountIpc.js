@@ -37,6 +37,19 @@ const MOW_DISABLED_CHANNELS = [
   "get-referral-stats",
   "send-referral-invite",
   "get-referral-invites",
+  // Cloud sync of locally-recorded analytics events (account-scoped claim/
+  // upload queue) — an OpenWhispr Cloud account feature. Local recording
+  // (analytics-record-event, analytics-get-summary) stays enabled since it
+  // never leaves the device.
+  "analytics-get-pending",
+  "analytics-mark-synced",
+  "analytics-get-pending-deletes",
+  "analytics-hard-delete",
+  "analytics-get-pending-clear",
+  "analytics-complete-clear",
+  "analytics-count-unclaimed",
+  "analytics-count-awaiting-upload",
+  "analytics-claim-anonymous",
 ];
 
 /** Fire-and-forget cloud channels silenced in MOW builds. */

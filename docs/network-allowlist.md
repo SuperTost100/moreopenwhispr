@@ -62,16 +62,19 @@ Private/internal resolved addresses are rejected.
 
 Only for keys you actually saved.
 
-| Host | Protocol | Port | Used when |
-| --- | --- | --- | --- |
-| `api.openai.com` | HTTPS / WSS | 443 | OpenAI transcription or reasoning |
-| `*.cognitiveservices.azure.com`, `*.openai.azure.com`, `*.services.ai.azure.com` | HTTPS | 443 | Azure speech |
-| `api.anthropic.com` | HTTPS | 443 | Anthropic |
-| `generativelanguage.googleapis.com` | HTTPS | 443 | Gemini API key (not Antigravity) |
-| `api.groq.com` | HTTPS | 443 | Groq |
-| `atc.tinfoil.sh`, `*.tinfoil.sh` | WSS, HTTPS | 443 | Tinfoil |
-| `api.mistral.ai` | HTTPS | 443 | Mistral |
-| `openrouter.ai` | HTTPS | 443 | OpenRouter (`/api/v1/models` even without a key) |
+| Host                                                                             | Protocol   | Port | Used when                                                                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------------------------------------- | ---------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api.openai.com`                                                                 | HTTPS      | 443  | OpenAI API key configured (transcription or reasoning).                                                                                                                                                                                                                                                                                                  |
+| `*.cognitiveservices.azure.com`, `*.openai.azure.com`, `*.services.ai.azure.com` | HTTPS      | 443  | Azure AI Foundry / Azure OpenAI speech-to-text configured (custom transcription provider pointed at your own Azure resource endpoint).                                                                                                                                                                                                                   |
+| `api.anthropic.com`                                                              | HTTPS      | 443  | Anthropic API key configured.                                                                                                                                                                                                                                                                                                                            |
+| `generativelanguage.googleapis.com`                                              | WSS, HTTPS | 443  | Gemini API key configured. Batch transcription is HTTPS; the Live streaming model opens a WSS session.                                                                                                                                                                                                                                                   |
+| `api.groq.com`                                                                   | HTTPS      | 443  | Groq API key configured.                                                                                                                                                                                                                                                                                                                                 |
+| `atc.tinfoil.sh`, `*.tinfoil.sh`                                                 | WSS, HTTPS | 443  | Tinfoil API key configured. `atc.tinfoil.sh` serves the enclave attestation bundle (verified locally against an embedded sigstore root). Inference and realtime transcription connect to an enclave host assigned dynamically at runtime (e.g. `inference.tinfoil.sh`, `router.infN.tinfoil.sh`), so allowlist `*.tinfoil.sh` rather than pinning hosts. |
+| `api.mistral.ai`                                                                 | HTTPS      | 443  | Mistral API key configured.                                                                                                                                                                                                                                                                                                                              |
+| `api.deepgram.com`                                                               | WSS, HTTPS | 443  | Deepgram API key configured. Realtime-only: dictation and note recording open a WSS session (there is no file-upload or retry path); the Settings connection test calls `/v1/models` over HTTPS.                                                                                                                                                         |
+| `streaming.assemblyai.com`                                                       | WSS, HTTPS | 443  | AssemblyAI API key configured. `/v3/token` mints the short-lived session token over HTTPS; the live session is WSS. Realtime-only, like Deepgram.                                                                                                                                                                                                        |
+| `api.assemblyai.com`                                                             | HTTPS      | 443  | AssemblyAI API key configured. Credential check when the key is tested in Settings (`/v2/transcript`).                                                                                                                                                                                                                                                   |
+| `openrouter.ai`                                                                  | HTTPS      | 443  | OpenRouter selected as a reasoning provider (`/api/v1/models` is fetched even without a key).                                                                                                                                                                                                                                                            |
 
 ## Not contacted
 
@@ -91,6 +94,12 @@ Those are official OpenWhispr Cloud. This build does not sign in there.
 # Antigravity gateway (any HTTP status, including 401, means the path works)
 curl -v https://daily-cloudcode-pa.googleapis.com
 
-# Model downloads
+# Streaming providers (only for the BYOK provider you configured)
+curl -v https://api.deepgram.com/v1/projects
+curl -v https://api.openai.com/v1/models
+curl -v https://streaming.assemblyai.com/v3/token
+curl -v https://generativelanguage.googleapis.com/v1beta/models
+
+# Model downloads (only if local mode is in use)
 curl -v -I https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 ```

@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
-import { Blocks, BookOpen, Home, MessageSquare, NotebookPen, Upload } from "lucide-react";
+import type { IconComponent } from "../icons";
+import { Blocks, BookOpen, Home, MessageSquare, NotebookPen, Upload } from "../icons";
 import { isControlPanelViewAllowed } from "../../stores/policyRules.ts";
 
 // "settings" is a real ControlPanelView (the settings view rendered in the
@@ -12,7 +12,7 @@ export type ControlPanelView =
 export interface ControlPanelNavItemDefinition {
   id: ControlPanelView;
   labelKey: string;
-  icon: LucideIcon;
+  icon: IconComponent;
 }
 
 export const CONTROL_PANEL_NAV_ITEMS: readonly ControlPanelNavItemDefinition[] = [

@@ -96,6 +96,50 @@ test("fresh Chinese browser locale survives settings hydration", async (t) => {
   );
 });
 
+test("BYOK secrets hydrate from the main process on a MOW (account-free) build", async (t) => {
+  installNavigatorLanguage(t, "en-US");
+  installBrowserGlobals(t, {
+    window: {
+      electronAPI: {
+        getDictionary: async () => [],
+        getUiLanguage: async () => "",
+        setDictionary: async () => ({ success: true }),
+        getOpenAIKey: async () => "sk-test-openai",
+        getAnthropicKey: async () => "sk-test-anthropic",
+      },
+    },
+  });
+  const vite = await createRendererServer(t, {
+    cachePrefix: "openwhispr-byok-hydration-test-",
+  });
+
+  const { initializeSettings, useSettingsStore } = await vite.ssrLoadModule(
+    "/stores/settingsStore.ts"
+  );
+  const { isMowBuild } = await vite.ssrLoadModule("/config/mowProfile.ts");
+
+  await initializeSettings();
+  // initializeSettings fires a background i18n.changeLanguage() that isn't
+  // awaited; let it settle before the harness tears down the Vite SSR
+  // transport, or node:test attributes its late rejection to this test.
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  // This fork is always a MOW build; asserting it here documents the
+  // assumption the gate previously (incorrectly) relied on.
+  assert.equal(isMowBuild(), true);
+
+  assert.deepEqual(
+    {
+      openaiApiKey: useSettingsStore.getState().openaiApiKey,
+      anthropicApiKey: useSettingsStore.getState().anthropicApiKey,
+    },
+    {
+      openaiApiKey: "sk-test-openai",
+      anthropicApiKey: "sk-test-anthropic",
+    }
+  );
+});
+
 test("main locale fallback remains implicit and yields to an explicit preference", (t) => {
   const userDataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-ui-language-"));
   const originalEnvironment = { ...process.env };

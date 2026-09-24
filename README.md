@@ -99,6 +99,8 @@ Packaged installers: `npm run build:mac`, `build:win`, or `build:linux`. Full ma
 
 If you want Antigravity as the cloud path, install `agy`, run `agy auth login`, then pick Antigravity during onboarding. [docs/antigravity.md](docs/antigravity.md).
 
+The commands above run the desktop application, which remains at the repository root. The Expo mobile application lives in [`openwhispr-mobile`](openwhispr-mobile/) with its own dependencies, lockfile, build configuration, and release process. See the [mobile README](openwhispr-mobile/README.md) for its setup instructions.
+
 ## Documentation
 
 - [macOS](docs/macos.md). Globe key, Gatekeeper, permissions

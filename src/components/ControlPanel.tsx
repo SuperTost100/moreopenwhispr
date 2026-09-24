@@ -2,6 +2,7 @@ import React, { Suspense, useState, useEffect, useRef, useCallback } from "react
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { Button } from "./ui/button";
+import { BIDI_VALUE_TOKEN, BidiInterpolatedText } from "./ui/BidiInterpolatedText";
 import {
   Download,
   RefreshCw,
@@ -11,7 +12,8 @@ import {
   ChevronLeft,
   PanelLeftOpen,
   PanelLeftClose,
-} from "lucide-react";
+} from "./icons";
+import WindowControls from "./WindowControls";
 import UpgradePrompt from "./UpgradePrompt";
 import PostMigrationOnboarding from "./PostMigrationOnboarding";
 import { RequiredModelsBanner } from "./RequiredModelsBanner";
@@ -23,6 +25,8 @@ import { useUpdater } from "../hooks/useUpdater";
 import { useSettings } from "../hooks/useSettings";
 import { useAuth } from "../hooks/useAuth";
 import { useJoinableWorkspaces } from "../hooks/useJoinableWorkspaces";
+import { useWorkspace } from "../hooks/useWorkspace";
+import { manageableWorkspaces, selectWorkspaceForSpaceCreation } from "../lib/workspaceSelection";
 import { useUsage } from "../hooks/useUsage";
 import { decideUpsell } from "../lib/upsell";
 import { isMowBuild } from "../config/mowProfile";
@@ -49,6 +53,7 @@ import {
   isTranscriptionContextAllowed,
   isUpdateRequiredByOrg,
 } from "../stores/policyRules";
+import { getManagedTranscriptionResolution } from "../services/managedTranscription";
 import {
   useIsMeetingMode,
   useIsNarrowWindow,
@@ -58,11 +63,13 @@ import ControlPanelSidebar, { type ControlPanelView } from "./ControlPanelSideba
 import ControlPanelCompactNav from "./control-panel/ControlPanelCompactNav";
 import MeetingRecordingMount from "./MeetingRecordingMount";
 import MeetingRecordingPill from "./notes/MeetingRecordingPill";
-import WindowControls from "./WindowControls";
+import NewNoteMenu from "./notes/NewNoteMenu";
 
 import { getCachedPlatform } from "../utils/platform";
 import { isAccessibilitySkipped } from "../utils/permissions";
 import { useGpuBannerAvailability } from "../hooks/useGpuBannerAvailability";
+import { useCreateNote } from "../hooks/useCreateNote";
+import { useSignInCloudNudge } from "../hooks/useSignInCloudNudge";
 import {
   setActiveNoteId,
   setActiveFolderId,
@@ -77,6 +84,7 @@ import {
   shouldRunTranslateStep,
 } from "../helpers/translationChain";
 import { applyChineseScript, resolveChineseScriptTarget } from "../utils/chineseScript";
+import { getAgentName } from "../utils/agentName";
 import HistoryView from "./HistoryView";
 import BackgroundActionToastListener from "./notes/BackgroundActionToastListener";
 import SpaceSyncToastListener from "./notes/SpaceSyncToastListener";
@@ -103,6 +111,7 @@ const toggleIconClass =
 const SettingsModal = React.lazy(() => import("./SettingsModal"));
 const SettingsView = React.lazy(() => import("./settings/SettingsView"));
 const ReferralModal = React.lazy(() => import("./ReferralModal"));
+const InviteTeammateDialog = React.lazy(() => import("./InviteTeammateDialog"));
 const PersonalNotesView = React.lazy(() => import("./notes/PersonalNotesView"));
 const DictionaryView = React.lazy(() => import("./DictionaryView"));
 const UploadAudioView = React.lazy(() => import("./notes/UploadAudioView"));
@@ -138,14 +147,15 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     () => localStorage.getItem("aiCTADismissed") === "true"
   );
   const [showReferrals, setShowReferrals] = useState(false);
+  const [showInviteTeam, setShowInviteTeam] = useState(false);
   const [invitationToken, setInvitationToken] = useState<string | null>(null);
   const [invitationNotesEntry, setInvitationNotesEntry] = useState<{
     workspaceId: string;
     teamIds: string[];
+    spaceIds: string[];
   } | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const showDiscarded = useShowDiscarded();
-  const [showCloudMigrationBanner, setShowCloudMigrationBanner] = useState(false);
   const [activeView, setActiveView] = useState<ControlPanelView>(() =>
     initialSettingsSection && !isMeetingMode ? "settings" : "home"
   );
@@ -189,12 +199,11 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const [gpuBannerDismissed, setGpuBannerDismissed] = useState(
     () => localStorage.getItem("gpuBannerDismissedUnified") === "true"
   );
-  const cloudMigrationProcessed = useRef(false);
   const updateReadyToastShown = useRef(false);
   const updateErrorToastShown = useRef<Error | null>(null);
   const { hotkey } = useHotkey();
   const { toast } = useToast();
-  const { useCleanupModel, setUseLocalWhisper, setCloudTranscriptionMode } = useSettings();
+  const { useCleanupModel } = useSettings();
   const { isSignedIn, isLoaded: authLoaded, user } = useAuth();
   // Suppressed while a deep-linked invitation is open so the two never stack.
   const {
@@ -202,6 +211,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     dismiss: dismissJoinable,
     markRequested,
   } = useJoinableWorkspaces(user?.id ?? null, isSignedIn && !invitationToken);
+  const { workspaces, active: activeWorkspace } = useWorkspace();
+  // Invitations are owner/admin-only (server-enforced), so the sidebar row
+  // only exists when the user can manage a workspace.
+  const inviteWorkspace = selectWorkspaceForSpaceCreation(
+    manageableWorkspaces(workspaces),
+    activeWorkspace,
+    null
+  );
   const usage = useUsage();
   const upsell = decideUpsell({
     authLoaded,
@@ -220,7 +237,19 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     error: updateError,
   } = useUpdater();
 
+  const openTranscriptionSettings = useCallback(() => {
+    setSettingsSection("transcription");
+    setShowSettings(true);
+  }, []);
+  useSignInCloudNudge(isSignedIn, openTranscriptionSettings);
+
   const agentAllowedByPolicy = usePolicyStore(isAgentAllowed);
+  const { createNote } = useCreateNote();
+  // The note is created before the view switches so Notes mounts with it already open.
+  const handleNewNote = useCallback(async () => {
+    await createNote();
+    setActiveView("personal-notes");
+  }, [createNote]);
   const policyActionsAllowed = usePolicyStore((state) => isPolicyActionAllowed(state));
   useEffect(() => {
     if (!isControlPanelViewAllowed(activeView, agentAllowedByPolicy, policyActionsAllowed)) {
@@ -420,19 +449,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   }, [authLoaded, isSignedIn]);
 
   useEffect(() => {
-    if (!authLoaded || !isSignedIn || cloudMigrationProcessed.current) return;
-    const isPending = localStorage.getItem("pendingCloudMigration") === "true";
-    const alreadyShown = localStorage.getItem("cloudMigrationShown") === "true";
-    if (!isPending || alreadyShown) return;
-
-    cloudMigrationProcessed.current = true;
-    setUseLocalWhisper(false);
-    setCloudTranscriptionMode("openwhispr");
-    localStorage.removeItem("pendingCloudMigration");
-    setShowCloudMigrationBanner(true);
-  }, [authLoaded, isSignedIn, setUseLocalWhisper, setCloudTranscriptionMode]);
-
-  useEffect(() => {
     const drain = async () => {
       const data = await window.electronAPI?.getPendingMeetingNoteNavigation?.();
       if (!data) return;
@@ -505,9 +521,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     []
   );
 
-  const handleExitMeetingMode = useCallback(() => {
-    window.electronAPI?.restoreFromMeetingMode?.();
-  }, []);
+  // The side-panel layout is shared by meeting mode and by a note opened in a
+  // narrow window, so leaving it means different things in each case.
+  const handleExitSidePanel = useCallback(() => {
+    if (isMeetingMode) window.electronAPI?.restoreFromMeetingMode?.();
+    else setActiveNoteId(null);
+  }, [isMeetingMode]);
 
   const copyToClipboard = useCallback(
     async (text: string) => {
@@ -563,7 +582,11 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const clearAllTranscriptions = useCallback(() => {
     showConfirmDialog({
       title: t("controlPanel.history.clearAllTitle"),
-      description: t("controlPanel.history.clearAllDescription"),
+      description: t(
+        isSignedIn
+          ? "controlPanel.history.clearAllDescription"
+          : "controlPanel.history.clearAllDescriptionDevice"
+      ),
       onConfirm: async () => {
         try {
           const result = await window.electronAPI.clearTranscriptions();
@@ -590,7 +613,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       },
       variant: "destructive",
     });
-  }, [showConfirmDialog, showAlertDialog, toast, t]);
+  }, [isSignedIn, showConfirmDialog, showAlertDialog, toast, t]);
 
   const showAudioInFolder = useCallback(
     async (id: number) => {
@@ -616,11 +639,20 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     async (id: number, options?: { isRecover?: boolean }) => {
       try {
         const s = getSettings();
-        if (!isTranscriptionContextAllowed(usePolicyStore.getState(), s, "dictation")) {
+        const managed = getManagedTranscriptionResolution();
+        if (managed?.kind === "error") {
+          toast({
+            title: managed.messageKey ? t(managed.messageKey) : managed.message,
+            variant: "destructive",
+          });
+          return;
+        }
+        if (!managed && !isTranscriptionContextAllowed(usePolicyStore.getState(), s, "dictation")) {
           toast({ title: t("common.managedByOrg"), variant: "default" });
           return;
         }
         const result = await window.electronAPI.retryTranscription(id, {
+          managed,
           useLocalWhisper: s.useLocalWhisper,
           localTranscriptionProvider: s.localTranscriptionProvider,
           cloudTranscriptionMode: s.cloudTranscriptionMode,
@@ -658,7 +690,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 import("../stores/settingsStore"),
               ]);
               const settings = getEffectiveSettings();
-              const agentName = localStorage.getItem("agentName") || null;
+              const agentName = getAgentName();
               const route = resolveReasoningRoute(rawText, settings, agentName, false, true);
               if (route.kind === "translation") {
                 const { text, translated } = await executeTranslationChain({
@@ -677,12 +709,22 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                     settings.translationSourceLanguage,
                     settings.translationTargetLanguage
                   ),
-                  onCleanupError: (cleanupError: Error) =>
+                  onCleanupError: (cleanupError: Error & { messageKey?: string }) => {
                     logger.warn(
                       "Cleanup step failed in translation chain, translating raw transcript",
                       { error: cleanupError.message },
                       "transcription"
-                    ),
+                    );
+                    // The chain still translates the raw transcript, so say why cleanup
+                    // was dropped rather than reporting a clean success (#2091).
+                    toast({
+                      title: t("app.toasts.cleanupFailed.title"),
+                      description: cleanupError.messageKey
+                        ? t(cleanupError.messageKey)
+                        : cleanupError.message,
+                      variant: "destructive",
+                    });
+                  },
                   onEmptyTranslate: () =>
                     logger.warn(
                       "Translation step returned empty text, keeping previous text",
@@ -729,9 +771,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               const model = getEffectiveCleanupModel();
               const isCloud = isCloudCleanupMode();
               if (model || isCloud) {
-                const agentName = localStorage.getItem("agentName") || null;
+                const agentName = getAgentName();
                 const reasonedText = await ReasoningService.processText(rawText, model, agentName, {
                   disableThinking: getSettings().cleanupDisableThinking,
+                  requireCompleteOutput: true,
                 });
                 if (hasTextContent(reasonedText) && reasonedText !== rawText) {
                   const updated = await window.electronAPI.updateTranscriptionText(
@@ -744,8 +787,15 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   }
                 }
               }
-            } catch {
-              // Reasoning failed — keep the raw STT result
+            } catch (cleanupError) {
+              // The row keeps its raw transcript, so the retry must not look like it
+              // cleaned anything — report why, the way dictation does (#2091).
+              const failure = cleanupError as Error & { messageKey?: string };
+              toast({
+                title: t("app.toasts.cleanupFailed.title"),
+                description: failure.messageKey ? t(failure.messageKey) : failure.message,
+                variant: "destructive",
+              });
             }
           }
 
@@ -794,7 +844,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         } else {
           toast({
             title: t("controlPanel.history.retryError"),
-            description: result.error,
+            description: result.messageKey ? t(result.messageKey) : result.error,
             variant: "destructive",
           });
         }
@@ -957,14 +1007,27 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       )}
 
       {!isMowBuild() && (
-        <AcceptInvitationModal
-          token={invitationToken}
-          onClose={() => setInvitationToken(null)}
-          onAccepted={(entry) => {
-            setInvitationNotesEntry(entry);
-            setActiveView("personal-notes");
-          }}
-        />
+        <>
+          {showInviteTeam && inviteWorkspace && (
+            <Suspense fallback={null}>
+              <InviteTeammateDialog
+                open={showInviteTeam}
+                onOpenChange={setShowInviteTeam}
+                workspaceId={inviteWorkspace.id}
+                workspaceName={inviteWorkspace.name}
+              />
+            </Suspense>
+          )}
+
+          <AcceptInvitationModal
+            token={invitationToken}
+            onClose={() => setInvitationToken(null)}
+            onAccepted={(entry) => {
+              setInvitationNotesEntry(entry);
+              setActiveView("personal-notes");
+            }}
+          />
+        </>
       )}
 
       <JoinYourTeamModal
@@ -975,28 +1038,27 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         onJoined={() => setActiveView("personal-notes")}
       />
 
-      {showSearch && (
-        <Suspense fallback={null}>
-          <CommandSearch
-            open={showSearch}
-            onOpenChange={setShowSearch}
-            transcriptions={history}
-            onNoteSelect={(id, folderId, spaceId) => {
-              if (folderId != null) setActiveFolderId(folderId);
-              else if (spaceId != null) navigateToContainer(spaceId, null);
-              setActiveNoteId(id);
-              setActiveView("personal-notes");
-            }}
-            onContainerSelect={(spaceId, folderId) => {
-              navigateToContainer(spaceId, folderId);
-              setActiveView("personal-notes");
-            }}
-            onTranscriptSelect={() => {
-              setActiveView("home");
-            }}
-          />
-        </Suspense>
-      )}
+      {/* Always mounted so the palette chunk is warm and Radix can play its exit animation. */}
+      <Suspense fallback={null}>
+        <CommandSearch
+          open={showSearch}
+          onOpenChange={setShowSearch}
+          transcriptions={history}
+          onNoteSelect={(id, folderId, spaceId) => {
+            if (folderId != null) setActiveFolderId(folderId);
+            else if (spaceId != null) navigateToContainer(spaceId, null);
+            setActiveNoteId(id);
+            setActiveView("personal-notes");
+          }}
+          onContainerSelect={(spaceId, folderId) => {
+            navigateToContainer(spaceId, folderId);
+            setActiveView("personal-notes");
+          }}
+          onTranscriptSelect={() => {
+            setActiveView("home");
+          }}
+        />
+      </Suspense>
 
       <div className="flex flex-1 overflow-hidden relative">
         <div
@@ -1004,17 +1066,15 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           style={{ width: sidebarCollapsed || isSidePanelLayout ? 0 : SIDEBAR_WIDTH_PX }}
         />
         <div
-          className={`cp-shell-sidebar-panel absolute inset-y-0 left-0 z-30 hidden min-[800px]:block transition-transform duration-300 ease-out${
+          className={`cp-shell-sidebar-panel absolute inset-y-0 start-0 z-30 hidden min-[800px]:block transition-transform duration-300 ease-out ${
+            !isSidePanelLayout && (!sidebarCollapsed || sidebarPeek)
+              ? "translate-x-0"
+              : "ltr:-translate-x-full rtl:translate-x-full"
+          }${
             sidebarCollapsed && sidebarPeek && !isSidePanelLayout
-              ? " shadow-[10px_0_40px_-18px_rgba(0,0,0,0.2)]"
+              ? " shadow-[10px_0_40px_-18px_rgba(0,0,0,0.2)] rtl:shadow-[-10px_0_40px_-18px_rgba(0,0,0,0.2)]"
               : ""
           }`}
-          style={{
-            transform:
-              !isSidePanelLayout && (!sidebarCollapsed || sidebarPeek)
-                ? "translateX(0)"
-                : "translateX(-100%)",
-          }}
           onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
           onMouseLeave={sidebarCollapsed ? hideSidebarPeek : undefined}
         >
@@ -1024,6 +1084,9 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             onOpenSearch={() => setShowSearch(true)}
             onOpenSettings={() => openSettings()}
             onOpenReferrals={() => setShowReferrals(true)}
+            onInviteTeam={
+              !isMowBuild() && inviteWorkspace ? () => setShowInviteTeam(true) : undefined
+            }
             onUpgrade={() => openSettings("plansBilling")}
             isOverLimit={usage?.isOverLimit ?? false}
             userName={user?.name}
@@ -1054,7 +1117,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </div>
         <main className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div
-            className="cp-shell-drag-strip flex items-center justify-between w-full h-10 shrink-0"
+            className="cp-shell-drag-strip flex items-center justify-between w-full h-10 shrink-0 gap-2"
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
             {isSidePanelLayout && (
@@ -1065,7 +1128,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 <Button
                   variant="outline-flat"
                   size="sm"
-                  onClick={handleExitMeetingMode}
+                  onClick={handleExitSidePanel}
                   className="h-7 px-2.5 pl-1.5 gap-1"
                 >
                   <ChevronLeft size={14} strokeWidth={1.8} />
@@ -1074,6 +1137,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               </div>
             )}
             <div className="flex-1" />
+            {!isSidePanelLayout && (
+              <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+                <NewNoteMenu
+                  onNewNote={handleNewNote}
+                  onNewChat={agentAllowedByPolicy ? () => setActiveView("chat") : undefined}
+                />
+              </div>
+            )}
             {platform !== "darwin" && (
               <div className="pr-1" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
                 <WindowControls />
@@ -1108,9 +1179,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                         {t("controlPanel.updateRequiredByOrg.title")}
                       </p>
                       <p className="text-xs text-amber-700 dark:text-amber-300/80">
-                        {t("controlPanel.updateRequiredByOrg.description", {
-                          version: policyMinAppVersion,
-                        })}
+                        <BidiInterpolatedText
+                          text={t("controlPanel.updateRequiredByOrg.description", {
+                            version: BIDI_VALUE_TOKEN,
+                          })}
+                          value={policyMinAppVersion}
+                        />
                       </p>
                     </div>
                   </div>
@@ -1200,8 +1274,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 history={history}
                 isLoading={isLoading}
                 hotkey={hotkey}
-                showCloudMigrationBanner={showCloudMigrationBanner}
-                setShowCloudMigrationBanner={setShowCloudMigrationBanner}
                 aiCTADismissed={aiCTADismissed}
                 setAiCTADismissed={setAiCTADismissed}
                 useCleanupModel={useCleanupModel}
