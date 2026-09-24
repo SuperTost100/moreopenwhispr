@@ -76,7 +76,7 @@ export function ProviderTabs({
     >
       <div
         ref={indicatorRef}
-        className="absolute top-0 left-0 rounded-full bg-primary/10 dark:bg-primary/15 ring-1 ring-primary/30 dark:ring-primary/25 transition-[width,height,transform,opacity] duration-200 ease-out pointer-events-none"
+        className="absolute top-0 left-0 rounded-md bg-primary-soft border border-primary/20 transition-[width,height,transform,opacity] duration-200 ease-out pointer-events-none"
         style={{ opacity: 0 }}
       />
 
@@ -97,12 +97,12 @@ export function ProviderTabs({
               onSelect(provider.id);
             }}
             className={cn(
-              "relative z-10 flex items-center gap-1 px-2.5 py-1 rounded-full font-medium text-xs whitespace-nowrap transition-colors duration-150",
+              "relative z-10 flex items-center gap-1 px-2.5 py-1 rounded-md font-medium text-xs whitespace-nowrap transition-colors duration-150",
               isDisabled
-                ? "text-muted-foreground/70 cursor-not-allowed ring-1 ring-border/40 dark:ring-white/5"
+                ? "text-muted-foreground/70 cursor-not-allowed ring-1 ring-border"
                 : isSelected
                   ? "text-foreground [&_svg]:text-primary"
-                  : "text-muted-foreground ring-1 ring-border/60 dark:ring-white/10 hover:text-foreground hover:bg-foreground/4 dark:hover:bg-white/5"
+                  : "text-muted-foreground ring-1 ring-border hover:text-foreground hover:bg-muted"
             )}
           >
             {renderIcon ? renderIcon(provider.id) : <ProviderIcon provider={provider.id} />}

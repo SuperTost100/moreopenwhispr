@@ -323,7 +323,7 @@ export default function CommandSearch({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           ref={registerContent}
           onInteractOutside={(e) => {
@@ -333,8 +333,7 @@ export default function CommandSearch({
           }}
           className={cn(
             "fixed left-[50%] top-[18%] z-50 w-full max-w-xl translate-x-[-50%]",
-            "rounded-xl border border-border/70 bg-card shadow-2xl overflow-hidden",
-            "dark:bg-surface-2 dark:border-border dark:shadow-modal",
+            "rounded-xl border border-border bg-card shadow-elevated overflow-hidden",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -441,9 +440,7 @@ export default function CommandSearch({
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={cn(
                     "flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-start transition-colors duration-100 outline-none",
-                    selectedIndex === idx
-                      ? "bg-primary/8 dark:bg-primary/10"
-                      : "hover:bg-foreground/4 dark:hover:bg-white/4"
+                    selectedIndex === idx ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted"
                   )}
                 >
                   <MessageSquare
@@ -605,9 +602,7 @@ function ContainerRow({
       onMouseEnter={onHover}
       className={cn(
         "group flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-start transition-colors duration-100 outline-none",
-        isSelected
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4"
+        isSelected ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted"
       )}
     >
       {target.folderId != null ? (
@@ -666,9 +661,7 @@ function NoteRow({
       onMouseEnter={onHover}
       className={cn(
         "group flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-start transition-colors duration-100 outline-none",
-        isSelected
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4"
+        isSelected ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted"
       )}
     >
       <NoteIcon
@@ -736,9 +729,7 @@ function TranscriptRow({
       onMouseEnter={onHover}
       className={cn(
         "group flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-start transition-colors duration-100 outline-none",
-        isSelected
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4"
+        isSelected ? "bg-primary/8 dark:bg-primary/10" : "hover:bg-muted"
       )}
     >
       <Mic

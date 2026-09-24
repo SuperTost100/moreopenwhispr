@@ -190,13 +190,7 @@ export default function HistoryView({
                   {/* Ghost rows preview the list this card becomes. */}
                   <div aria-hidden="true" className="mb-1 w-56 space-y-2">
                     {EMPTY_PREVIEW_WIDTHS.map((width) => (
-                      <span
-                        key={width}
-                        className={cn(
-                          "block h-2 rounded-full bg-foreground/6 dark:bg-white/8",
-                          width
-                        )}
-                      />
+                      <span key={width} className={cn("block h-2 rounded-full bg-muted", width)} />
                     ))}
                   </div>
                   <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-surface-3 px-3 text-xs font-medium text-foreground/70 dark:bg-surface-3">

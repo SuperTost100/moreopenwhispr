@@ -34,7 +34,7 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
         "border-s-2 transition-colors duration-300",
         isExecuting && "border-s-primary/60",
         isCompleted && !isError && "border-s-muted-foreground/20",
-        isClipboard && "border-s-emerald-500/50",
+        isClipboard && "border-s-success/50",
         isError && "border-s-destructive/50"
       )}
     >
@@ -59,7 +59,7 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
             "shrink-0 transition-colors duration-300",
             isExecuting && "text-primary/70",
             isCompleted && !isError && !isClipboard && "text-muted-foreground/70",
-            isClipboard && "text-emerald-500/70",
+            isClipboard && "text-success/70",
             isError && "text-destructive/60"
           )}
         />
@@ -77,12 +77,12 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
           </div>
         ) : isClipboard ? (
           <div className="flex items-center gap-1">
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-400/80">
+            <span className="text-[11px] text-success">
               {t("agentMode.tools.copiedToClipboard")}
             </span>
             <Check
               size={10}
-              className="text-emerald-500 shrink-0"
+              className="text-success shrink-0"
               style={{ animation: "tool-check-pop 300ms ease-out both" }}
             />
           </div>
@@ -275,7 +275,7 @@ export function ChatMessage({
                 "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
               )}
             >
-              {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+              {copied ? <Check size={12} className="text-success" /> : <Copy size={12} />}
             </button>
           </div>
         )}

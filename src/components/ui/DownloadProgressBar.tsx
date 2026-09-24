@@ -25,7 +25,7 @@ export function DownloadProgressBar({
   const indeterminate = !isInstalling && totalBytes === 0 && downloadedBytes > 0;
 
   return (
-    <div className="px-2.5 py-2 border-b border-white/5 dark:border-border-subtle">
+    <div className="px-2.5 py-2 border-b border-border">
       <div className="flex items-center gap-2 mb-2">
         <div className="relative flex items-center justify-center h-6 min-w-6 px-1.5 shrink-0">
           <div
@@ -64,15 +64,12 @@ export function DownloadProgressBar({
         </div>
       </div>
 
-      <div
-        className="w-full rounded-full overflow-hidden bg-white/5 dark:bg-white/3"
-        style={{ height: 4 }}
-      >
+      <div className="w-full rounded-full overflow-hidden bg-muted" style={{ height: 4 }}>
         {indeterminate ? (
-          <div className="h-full w-1/3 rounded-full bg-primary shadow-[0_0_8px_oklch(0.62_0.22_260/0.4)] animate-[indeterminate_1.5s_ease-in-out_infinite]" />
+          <div className="h-full w-1/3 rounded-full bg-primary animate-[indeterminate_1.5s_ease-in-out_infinite]" />
         ) : (
           <div
-            className={`${isInstalling ? "animate-pulse" : ""} bg-primary shadow-[0_0_8px_oklch(0.62_0.22_260/0.4)]`}
+            className={`${isInstalling ? "animate-pulse" : ""} bg-primary`}
             style={{
               height: "100%",
               width: `${isInstalling ? 100 : Math.min(percentage, 100)}%`,
