@@ -517,6 +517,12 @@ interface TranscriptionSectionProps {
   setAntigravityDictationMode: (mode: "fast" | "polished") => void;
   antigravityTranscriptionMode: "smart" | "verbatim";
   setAntigravityTranscriptionMode: (mode: "smart" | "verbatim") => void;
+  antigravitySttModel: string;
+  setAntigravitySttModel: (model: string) => void;
+  antigravityCleanupModel: string;
+  setAntigravityCleanupModel: (model: string) => void;
+  antigravityChatModel: string;
+  setAntigravityChatModel: (model: string) => void;
   toast: (opts: {
     title: string;
     description: string;
@@ -558,6 +564,12 @@ function TranscriptionSection({
   setAntigravityDictationMode,
   antigravityTranscriptionMode,
   setAntigravityTranscriptionMode,
+  antigravitySttModel,
+  setAntigravitySttModel,
+  antigravityCleanupModel,
+  setAntigravityCleanupModel,
+  antigravityChatModel,
+  setAntigravityChatModel,
   toast,
 }: TranscriptionSectionProps) {
   const { t } = useTranslation();
@@ -816,6 +828,12 @@ function TranscriptionSection({
                 setDictationMode={setAntigravityDictationMode}
                 transcriptionMode={antigravityTranscriptionMode}
                 setTranscriptionMode={setAntigravityTranscriptionMode}
+                sttModel={antigravitySttModel}
+                setSttModel={setAntigravitySttModel}
+                cleanupModel={antigravityCleanupModel}
+                setCleanupModel={setAntigravityCleanupModel}
+                chatModel={antigravityChatModel}
+                setChatModel={setAntigravityChatModel}
               />
             )}
           {effectiveTranscriptionMode === "local" && renderTranscriptionPicker("local")}
@@ -1263,6 +1281,12 @@ export default function SettingsPage({
     setAntigravityDictationMode,
     antigravityTranscriptionMode,
     setAntigravityTranscriptionMode,
+    antigravitySttModel,
+    setAntigravitySttModel,
+    antigravityCleanupModel,
+    setAntigravityCleanupModel,
+    antigravityChatModel,
+    setAntigravityChatModel,
     autoPasteEnabled,
     setAutoPasteEnabled,
     keepTranscriptionInClipboard,
@@ -4985,6 +5009,12 @@ EOF`,
                   setAntigravityDictationMode={setAntigravityDictationMode}
                   antigravityTranscriptionMode={antigravityTranscriptionMode}
                   setAntigravityTranscriptionMode={setAntigravityTranscriptionMode}
+                  antigravitySttModel={antigravitySttModel}
+                  setAntigravitySttModel={setAntigravitySttModel}
+                  antigravityCleanupModel={antigravityCleanupModel}
+                  setAntigravityCleanupModel={setAntigravityCleanupModel}
+                  antigravityChatModel={antigravityChatModel}
+                  setAntigravityChatModel={setAntigravityChatModel}
                   toast={toast}
                 />
                 {transcriptionMode === "local" &&

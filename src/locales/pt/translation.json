@@ -999,7 +999,10 @@
         "screenContextSkipped": "Contexto de tela ignorado",
         "dailyLimitReached": "Limite diário atingido",
         "providerRateLimited": "Limite de taxa do provedor",
-        "antigravityQuotaExceeded": "Cota do Antigravity esgotada"
+        "antigravityQuotaExceeded": "Cota do Antigravity esgotada",
+        "antigravityAuthRequired": "Antigravity Sign-In Required",
+        "antigravityTimeout": "Antigravity Request Timed Out",
+        "antigravityModelUnavailable": "Antigravity Model Unavailable"
       },
       "fallback": {
         "title": "Modo de fallback",
@@ -1041,7 +1044,11 @@
         "streamingOnlyProvider": "Este provedor só suporta transcrição ao vivo. Escolha outro provedor para uploads de arquivos e novas tentativas.",
         "providerKeyMissing": "Nenhuma chave de API definida para seu provedor de transcrição. Adicione-a em Configurações → Fala para texto.",
         "cleanupTruncated": "O modelo de IA ficou sem espaço antes de terminar a limpeza do seu ditado.",
-        "cleanupEmptyReply": "O modelo de IA devolveu uma resposta vazia em vez do ditado limpo."
+        "cleanupEmptyReply": "O modelo de IA devolveu uma resposta vazia em vez do ditado limpo.",
+        "antigravityAuthRequired": "Antigravity sign-in expired. Run `agy auth login` in a terminal.",
+        "antigravityTimeout": "Antigravity did not finish in time. Check your connection or try a shorter clip.",
+        "antigravityModelUnavailable": "The chosen Antigravity model is unavailable. OpenWhispr will try another model automatically on the next request.",
+        "antigravityQuotaResetAt": "Quota resets around {{time}}."
       },
       "translationFallback": {
         "unreachableTitle": "Tradução indisponível",
@@ -2422,6 +2429,16 @@
           "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
           "smart": "Smart",
           "verbatim": "Verbatim"
+        },
+        "backendModel": {
+          "sttLabel": "Transcription model",
+          "sttDescription": "Gateway model for speech-to-text. Automatic picks the latest audio-capable tier from your Antigravity catalog.",
+          "cleanupLabel": "Cleanup model",
+          "cleanupDescription": "Gateway model for the optional polished cleanup pass.",
+          "chatLabel": "Assistant model",
+          "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
+          "automatic": "Automatic (latest)",
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
         }
       }
     },

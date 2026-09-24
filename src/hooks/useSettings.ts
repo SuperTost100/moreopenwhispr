@@ -35,6 +35,9 @@ export interface TranscriptionSettings {
   cloudTranscriptionMode: string;
   antigravityDictationMode: "fast" | "polished";
   antigravityTranscriptionMode: "smart" | "verbatim";
+  antigravitySttModel: string;
+  antigravityCleanupModel: string;
+  antigravityChatModel: string;
   transcriptionMode: InferenceMode;
   remoteTranscriptionType: SelfHostedType;
   remoteTranscriptionUrl: string;
@@ -296,6 +299,9 @@ function useSettingsInternal() {
     cloudTranscriptionMode: store.cloudTranscriptionMode,
     antigravityDictationMode: store.antigravityDictationMode,
     antigravityTranscriptionMode: store.antigravityTranscriptionMode,
+    antigravitySttModel: store.antigravitySttModel,
+    antigravityCleanupModel: store.antigravityCleanupModel,
+    antigravityChatModel: store.antigravityChatModel,
     cleanupCloudMode: store.cleanupCloudMode,
     transcriptionMode: store.transcriptionMode,
     remoteTranscriptionType: store.remoteTranscriptionType,
@@ -347,6 +353,9 @@ function useSettingsInternal() {
     setCloudTranscriptionMode: store.setCloudTranscriptionMode,
     setAntigravityDictationMode: store.setAntigravityDictationMode,
     setAntigravityTranscriptionMode: store.setAntigravityTranscriptionMode,
+    setAntigravitySttModel: store.setAntigravitySttModel,
+    setAntigravityCleanupModel: store.setAntigravityCleanupModel,
+    setAntigravityChatModel: store.setAntigravityChatModel,
     setCleanupCloudBaseUrl: store.setCleanupCloudBaseUrl,
     setCleanupCloudMode: store.setCleanupCloudMode,
     setTranscriptionMode: store.setTranscriptionMode,

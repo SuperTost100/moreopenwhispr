@@ -1,8 +1,9 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { spawnSync } = require("child_process");
+const { spawn } = require("child_process");
 const debugLogger = require("./debugLogger");
+const { createAntigravityError } = require("./antigravityOperation");
 const { getAntigravityAccessToken } = require("./antigravityAuth");
 const { transcribeAudioViaGateway, getAntigravityProjectId } = require("./antigravityGateway");
 const {
@@ -11,10 +12,16 @@ const {
   resolveAntigravityModels,
 } = require("./antigravityModelCatalog");
 const {
+  decideAntigravityFailover,
+  applyFailoverSideEffects,
+  isNetworkUnreachableError,
+  computeSttBudgetMs,
+} = require("./antigravityFailover");
+const {
   DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL,
   isAntigravityTranscribeModel,
 } = require("./antigravityTranscriptionPolicy");
-const { DEFAULT_ANTIGRAVITY_MODEL, ensureWritableDir, runAgyTurn } = require("./antigravityCli");
+const { ensureWritableDir, runAgyTurn } = require("./antigravityCli");
 
 const GEMINI_MIME_TYPES = {
   "audio/mpeg": "audio/mp3",
@@ -102,7 +109,6 @@ function parseTranscriptText(text) {
 
 function resolveSpawnableFfmpegPath(ffmpegPath) {
   if (!ffmpegPath || typeof ffmpegPath !== "string") return ffmpegPath;
-  // asar entries can be read but never exec'd. ffmpegUtils already rewrites + chmod.
   if (ffmpegPath.includes("app.asar") && !ffmpegPath.includes("app.asar.unpacked")) {
     return (
       require("./ffmpegUtils").getFFmpegPath() ||
@@ -112,18 +118,35 @@ function resolveSpawnableFfmpegPath(ffmpegPath) {
   return ffmpegPath;
 }
 
-function convertToWav({ inputPath, outputPath, ffmpegPath }) {
+function convertToWavAsync({ inputPath, outputPath, ffmpegPath, signal }) {
   const bin = resolveSpawnableFfmpegPath(ffmpegPath);
-  const result = spawnSync(bin, ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", outputPath], {
-    encoding: "utf8",
+  return new Promise((resolve, reject) => {
+    const child = spawn(bin, ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", outputPath], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stderr = "";
+    child.stderr?.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    const onAbort = () => {
+      child.kill("SIGKILL");
+      reject(createAntigravityError("AGY_CANCELLED", "Antigravity ffmpeg conversion cancelled"));
+    };
+    if (signal?.aborted) {
+      onAbort();
+      return;
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+    child.on("error", (error) => {
+      signal?.removeEventListener("abort", onAbort);
+      reject(error);
+    });
+    child.on("close", (code) => {
+      signal?.removeEventListener("abort", onAbort);
+      if (code === 0) resolve();
+      else reject(new Error((stderr || "").trim() || "ffmpeg conversion failed"));
+    });
   });
-  if (result.error) {
-    throw new Error(result.error.message);
-  }
-  if (result.status !== 0) {
-    const detail = (result.stderr || result.stdout || "").trim();
-    throw new Error(detail || "ffmpeg conversion failed");
-  }
 }
 
 function removeDirQuietly(dir) {
@@ -139,6 +162,7 @@ async function prepareAudioBuffer({
   contentType = "audio/webm",
   ffmpegPath,
   tmpRoot = os.tmpdir(),
+  op,
 }) {
   const tmpDir = fs.mkdtempSync(path.join(tmpRoot, "openwhispr-antigravity-stt-"));
   const extension = extensionForContentType(contentType);
@@ -154,7 +178,8 @@ async function prepareAudioBuffer({
   let readPath = inputPath;
   let mimeType = mimeTypeForGateway(contentType, extension);
   if (ffmpegPath && extension !== ".wav") {
-    convertToWav({ inputPath, outputPath: wavPath, ffmpegPath });
+    const ffmpegSignal = op?.stageSignal ? op.stageSignal(120_000) : undefined;
+    await convertToWavAsync({ inputPath, outputPath: wavPath, ffmpegPath, signal: ffmpegSignal });
     readPath = wavPath;
     mimeType = "audio/wav";
   }
@@ -162,6 +187,18 @@ async function prepareAudioBuffer({
   const buffer = fs.readFileSync(readPath);
   removeDirQuietly(tmpDir);
   return { buffer, mimeType };
+}
+
+function buildAntigravitySttPrefs(model, antigravityPrefs = {}) {
+  const sttPref =
+    typeof antigravityPrefs.stt === "string" && antigravityPrefs.stt.trim()
+      ? antigravityPrefs.stt.trim()
+      : "auto";
+  return {
+    stt: sttPref,
+    cleanup: antigravityPrefs.cleanup,
+    chat: antigravityPrefs.chat,
+  };
 }
 
 async function transcribeWithAntigravityLegacyAgent({
@@ -174,6 +211,7 @@ async function transcribeWithAntigravityLegacyAgent({
   ffmpegPath,
   tmpRoot = os.tmpdir(),
   runTurn = runAgyTurn,
+  op,
 }) {
   const tmpDir = fs.mkdtempSync(path.join(tmpRoot, "openwhispr-antigravity-stt-legacy-"));
   const extension = extensionForContentType(contentType);
@@ -190,7 +228,8 @@ async function transcribeWithAntigravityLegacyAgent({
 
     let audioPath = path.basename(inputPath);
     if (ffmpegPath && extension !== ".wav") {
-      convertToWav({ inputPath, outputPath: wavPath, ffmpegPath });
+      const ffmpegSignal = op?.stageSignal ? op.stageSignal(120_000) : undefined;
+      await convertToWavAsync({ inputPath, outputPath: wavPath, ffmpegPath, signal: ffmpegSignal });
       audioPath = path.basename(wavPath);
     }
 
@@ -203,14 +242,15 @@ async function transcribeWithAntigravityLegacyAgent({
 
     const turn = await runTurn({
       prompt,
-      model: model || DEFAULT_ANTIGRAVITY_MODEL,
+      model: model || undefined,
       addDirs: [tmpDir],
       cwd: tmpDir,
       writeFilePath: transcriptPath,
       command,
       printTimeout: "45s",
-      timeoutMs: 60_000,
+      timeoutMs: Math.min(60_000, op?.remainingMs?.() || 60_000),
       extraArgs: ["--sandbox"],
+      signal: op?.signal,
     });
 
     const writeFileText = fs.existsSync(transcriptPath)
@@ -224,10 +264,42 @@ async function transcribeWithAntigravityLegacyAgent({
       throw error;
     }
 
-    return { text, model: turn.model || model };
+    return { text, model: turn.model || model || "agy-subprocess" };
   } finally {
     removeDirQuietly(tmpDir);
   }
+}
+
+async function transcribeGatewaySttOnce({
+  backendModel,
+  prepared,
+  auth,
+  language,
+  keyterms,
+  mode,
+  fetchImpl,
+  op,
+  getProjectId,
+}) {
+  const projectId = await getProjectId({
+    accessToken: auth.accessToken,
+    accountKey: auth.accountKey,
+    fetchImpl,
+    op,
+  });
+  return transcribeAudioViaGateway({
+    accessToken: auth.accessToken,
+    accountKey: auth.accountKey,
+    projectId,
+    model: backendModel,
+    audioBase64: prepared.buffer.toString("base64"),
+    mimeType: prepared.mimeType,
+    language,
+    keyterms,
+    mode,
+    fetchImpl,
+    op,
+  });
 }
 
 async function transcribeWithAntigravity({
@@ -246,6 +318,9 @@ async function transcribeWithAntigravity({
   getAccessToken = getAntigravityAccessToken,
   getProjectId = getAntigravityProjectId,
   op,
+  antigravityPrefs,
+  hadSpeech = true,
+  audioDurationSec,
 }) {
   const startedAt = Date.now();
   const resolvedModel = isAntigravityTranscribeModel(model)
@@ -254,7 +329,7 @@ async function transcribeWithAntigravity({
   const mode = transcriptionMode || "SMART";
   const legacyArgs = {
     audioBuffer,
-    model: DEFAULT_ANTIGRAVITY_MODEL,
+    model: undefined,
     contentType,
     language,
     keyterms,
@@ -262,6 +337,7 @@ async function transcribeWithAntigravity({
     ffmpegPath,
     tmpRoot,
     runTurn,
+    op,
   };
 
   const logStage = (stage, extra = {}) => {
@@ -287,59 +363,97 @@ async function transcribeWithAntigravity({
     throw error;
   }
 
-  const preparedPromise = prepareAudioBuffer({
-    audioBuffer,
-    contentType,
-    ffmpegPath,
-    tmpRoot,
-  });
-  const authPromise = getAccessToken({ signal: op?.signal });
-
-  // One resolved model per call; walking the rest of `candidates.stt` on
-  // failure is wave 2 (A5). Synthetic transcribe-mode ids resolve as "auto".
-  const { stt: backendModel, notices } = resolveAntigravityModels(getCatalog(), { stt: model });
+  const prefs = buildAntigravitySttPrefs(model, antigravityPrefs);
+  const resolved = resolveAntigravityModels(getCatalog(), prefs);
+  const { notices } = resolved;
+  const sttCandidates =
+    resolved.candidates.stt?.length > 0 ? resolved.candidates.stt : [resolved.stt].filter(Boolean);
   if (notices.length) {
     logStage("model-notices", { notices: notices.map((n) => `${n.slot}:${n.code}:${n.model}`) });
   }
 
-  try {
-    const [{ buffer, mimeType }, auth] = await Promise.all([preparedPromise, authPromise]);
-    logStage("gateway-request", { bytes: buffer.length, mimeType, backendModel });
-    const projectId = await getProjectId({
-      accessToken: auth.accessToken,
-      accountKey: auth.accountKey,
-      fetchImpl,
-      op,
-    });
-    const gatewayResult = await transcribeAudioViaGateway({
-      accessToken: auth.accessToken,
-      accountKey: auth.accountKey,
-      projectId,
-      model: backendModel,
-      audioBase64: buffer.toString("base64"),
-      mimeType,
-      language,
-      keyterms,
-      mode,
-      fetchImpl,
-      op,
-    });
-    logStage("gateway-done", {
-      transport: "daily-stream-multimodal",
-      backendModel: gatewayResult.model,
-    });
-    return { text: gatewayResult.text, model: gatewayResult.model || resolvedModel };
-  } catch (error) {
-    if (error?.code === "AGY_CANCELLED") {
+  op?.throwIfDone?.();
+  const prepared = await prepareAudioBuffer({
+    audioBuffer,
+    contentType,
+    ffmpegPath,
+    tmpRoot,
+    op,
+  });
+
+  let auth = await getAccessToken({ signal: op?.signal });
+  let authRetried = false;
+  let lastError = null;
+
+  for (let index = 0; index < sttCandidates.length; index += 1) {
+    const backendModel = sttCandidates[index];
+    op?.throwIfDone?.();
+    try {
+      logStage("gateway-request", {
+        bytes: prepared.buffer.length,
+        mimeType: prepared.mimeType,
+        backendModel,
+        candidate: index + 1,
+      });
+      const gatewayResult = await transcribeGatewaySttOnce({
+        backendModel,
+        prepared,
+        auth,
+        language,
+        keyterms,
+        mode,
+        fetchImpl,
+        op,
+        getProjectId,
+      });
+      logStage("gateway-done", {
+        transport: "daily-stream-multimodal",
+        backendModel: gatewayResult.model,
+      });
+      return { text: gatewayResult.text, model: gatewayResult.model || resolvedModel, notices };
+    } catch (error) {
+      lastError = error;
+      const decision = decideAntigravityFailover(error, {
+        slot: "stt",
+        hadSpeech,
+        remainingMs: op?.remainingMs?.() ?? 0,
+        budgetExhausted: (op?.remainingMs?.() ?? 0) <= 0,
+        authRetried,
+      });
+
+      if (decision.action === "retry_auth") {
+        authRetried = true;
+        auth = await getAccessToken({ signal: op?.signal, forceRefresh: true });
+        index -= 1;
+        continue;
+      }
+
+      if (decision.refreshCatalog) notifyModelUnavailable();
+      applyFailoverSideEffects(decision, backendModel);
+
+      if (decision.action === "failover") {
+        logStage("gateway-failover", { code: error?.code, status: error?.status, backendModel });
+        continue;
+      }
+
+      if (decision.action === "subprocess") {
+        logStage("agy-subprocess-fallback", { code: error?.code });
+        const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
+        logStage("agy-legacy-done", { transport: "agy-write-file" });
+        return { ...result, notices };
+      }
+
       throw error;
     }
-    if (error?.code === "AGY_MODEL_UNAVAILABLE") notifyModelUnavailable();
-    // Status/code only: gateway error messages can echo request content.
-    logStage("gateway-error-fallback-agy", { code: error?.code, status: error?.status });
-    const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
-    logStage("agy-legacy-done", { transport: "agy-write-file" });
-    return result;
   }
+
+  if (lastError && isNetworkUnreachableError(lastError) && (op?.remainingMs?.() ?? 0) > 8_000) {
+    logStage("agy-subprocess-fallback-exhausted", { code: lastError?.code });
+    const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
+    return { ...result, notices };
+  }
+
+  throw lastError || createAntigravityError("AGY_HTTP", "Antigravity transcription failed");
 }
 
 module.exports = {
@@ -349,4 +463,6 @@ module.exports = {
   transcribeWithAntigravityLegacyAgent,
   prepareAudioBuffer,
   parseTranscriptText,
+  buildAntigravitySttPrefs,
+  computeSttBudgetMs,
 };

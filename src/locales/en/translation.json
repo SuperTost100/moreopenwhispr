@@ -1020,7 +1020,10 @@
         "screenContextSkipped": "Screen Context Skipped",
         "dailyLimitReached": "Daily Limit Reached",
         "providerRateLimited": "Provider Rate Limited",
-        "antigravityQuotaExceeded": "Antigravity Quota Exhausted"
+        "antigravityQuotaExceeded": "Antigravity Quota Exhausted",
+        "antigravityAuthRequired": "Antigravity Sign-In Required",
+        "antigravityTimeout": "Antigravity Request Timed Out",
+        "antigravityModelUnavailable": "Antigravity Model Unavailable"
       },
       "fallback": {
         "title": "Fallback Mode",
@@ -1051,7 +1054,11 @@
         "offline": "You're offline. Cloud transcription requires an internet connection.",
         "dailyLimitReached": "You've reached today's transcription limit. Try again tomorrow or upgrade your plan.",
         "providerRateLimited": "Your transcription provider rate-limited the request. Wait a moment and try again.",
-        "antigravityQuotaExceeded": "Your Antigravity subscription quota is exhausted. OpenWhispr will retry via the slower agy path when possible — otherwise wait a few minutes and try again.",
+        "antigravityQuotaExceeded": "Your Antigravity subscription quota is exhausted. Wait for your quota to reset or try again later.",
+        "antigravityQuotaResetAt": "Quota resets around {{time}}.",
+        "antigravityAuthRequired": "Antigravity sign-in expired. Run `agy auth login` in a terminal.",
+        "antigravityTimeout": "Antigravity did not finish in time. Check your connection or try a shorter clip.",
+        "antigravityModelUnavailable": "The chosen Antigravity model is unavailable. OpenWhispr will try another model automatically on the next request.",
         "chunkLoss": "A network problem lost too much of the recording. Re-transcribe it from History.",
         "agentReasoningFailed": "Your voice assistant couldn't process the command — the raw transcript was inserted instead.",
         "screenContextSkipped": "The screenshot couldn't be sent, so your command ran without screen context.",
@@ -2693,6 +2700,16 @@
           "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
           "smart": "Smart",
           "verbatim": "Verbatim"
+        },
+        "backendModel": {
+          "sttLabel": "Transcription model",
+          "sttDescription": "Gateway model for speech-to-text. Automatic picks the latest audio-capable tier from your Antigravity catalog.",
+          "cleanupLabel": "Cleanup model",
+          "cleanupDescription": "Gateway model for the optional polished cleanup pass.",
+          "chatLabel": "Assistant model",
+          "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
+          "automatic": "Automatic (latest)",
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
         }
       },
       "vad": {
