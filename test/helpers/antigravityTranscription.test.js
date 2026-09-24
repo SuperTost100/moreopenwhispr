@@ -1,7 +1,25 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
+const { _setUserDataDirForTests } = require("../../src/helpers/antigravityGateway");
+const { _resetCatalogForTests } = require("../../src/helpers/antigravityModelCatalog");
+
+// Project-id and model-catalog caches persist under userData; keep them in a
+// throwaway dir so these tests never read or write the real one.
+let userDataDir;
+test.before(() => {
+  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-transcription-userdata-"));
+  _setUserDataDirForTests(userDataDir);
+  _resetCatalogForTests();
+});
+test.after(() => {
+  _setUserDataDirForTests(null);
+  fs.rmSync(userDataDir, { recursive: true, force: true });
+});
+
+const fakeAuth = async () => ({ accessToken: "fake-access", accountKey: "acct-test" });
 
 const {
   buildTranscriptionPrompt,
@@ -32,14 +50,12 @@ test("parseTranscriptText unwraps json transcript field", () => {
 });
 
 test("transcribeWithAntigravity uses daily gateway stream path by default", async () => {
-  const { clearGatewayQuotaCache } = require("../../src/helpers/antigravityQuotaCache");
-  clearGatewayQuotaCache();
   const calls = [];
   const result = await transcribeWithAntigravity({
     audioBuffer: Buffer.from("fake-audio"),
     contentType: "audio/wav",
     language: "auto",
-    getAccessToken: async () => "token",
+    getAccessToken: fakeAuth,
     fetchImpl: async (url) => {
       calls.push(url);
       if (String(url).includes("loadCodeAssist")) {
@@ -57,7 +73,8 @@ test("transcribeWithAntigravity uses daily gateway stream path by default", asyn
   });
 
   assert.equal(result.text, "spoken words");
-  assert.equal(result.model, "gemini-3.6-flash-low");
+  // No fetched catalog yet: the static fallback's auto STT pick.
+  assert.equal(result.model, "gemini-3.8-flash-tiered");
   assert.ok(calls.some((url) => String(url).includes("streamGenerateContent")));
 });
 
@@ -100,13 +117,11 @@ test("prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversi
 });
 
 test("transcribeWithAntigravity falls back to agy only when gateway fails", async () => {
-  const { clearGatewayQuotaCache } = require("../../src/helpers/antigravityQuotaCache");
-  clearGatewayQuotaCache();
   let fetchCalls = 0;
   const result = await transcribeWithAntigravity({
     audioBuffer: Buffer.from("fake-audio"),
     contentType: "audio/wav",
-    getAccessToken: async () => "token",
+    getAccessToken: fakeAuth,
     fetchImpl: async (url) => {
       fetchCalls += 1;
       if (String(url).includes("loadCodeAssist")) {

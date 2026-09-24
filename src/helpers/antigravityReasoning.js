@@ -2,8 +2,17 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { DEFAULT_ANTIGRAVITY_MODEL, ensureWritableDir, runAgyTurn } = require("./antigravityCli");
-const { getAntigravityAccessToken, getAntigravityProjectId } = require("./antigravityAuth");
-const { generateTextViaGateway, DAILY_CLOUDCODE_BASE } = require("./antigravityGateway");
+const { getAntigravityAccessToken } = require("./antigravityAuth");
+const {
+  generateTextViaGateway,
+  getAntigravityProjectId,
+  DAILY_CLOUDCODE_BASE,
+} = require("./antigravityGateway");
+const {
+  getCatalog,
+  notifyModelUnavailable,
+  resolveAntigravityModels,
+} = require("./antigravityModelCatalog");
 
 const TOOL_LOOP_JSON_SCHEMA = {
   type: "object",
@@ -143,6 +152,7 @@ async function reasonWithAntigravity({
   fetchImpl = fetch,
   getAccessToken = getAntigravityAccessToken,
   getProjectId = getAntigravityProjectId,
+  op,
 }) {
   const resolvedModel = model || DEFAULT_ANTIGRAVITY_MODEL;
 
@@ -177,17 +187,29 @@ async function reasonWithAntigravity({
     }
   }
 
-  const accessToken = await getAccessToken({ fetchImpl });
-  const projectId = await getProjectId({ fetchImpl });
-  return generateTextViaGateway({
-    accessToken,
-    projectId,
-    model: resolvedModel,
-    systemPrompt,
-    userText: text,
-    fetchImpl,
-    gatewayBase: DAILY_CLOUDCODE_BASE,
-  });
+  // Gateway ids differ from agy CLI ids (a CLI id like gemini-3.7-flash-low
+  // 404s here), so the gateway model comes from the catalog's cleanup slot;
+  // a CLI id that isn't a catalog model just falls through to "auto".
+  const { cleanup: gatewayModel } = resolveAntigravityModels(getCatalog(), { cleanup: model });
+  const { accessToken, accountKey } = await getAccessToken({ signal: op?.signal });
+  const projectId = await getProjectId({ accessToken, accountKey, fetchImpl, op });
+  try {
+    return await generateTextViaGateway({
+      accessToken,
+      accountKey,
+      projectId,
+      model: gatewayModel,
+      systemPrompt,
+      userText: text,
+      fetchImpl,
+      gatewayBase: DAILY_CLOUDCODE_BASE,
+      op,
+    });
+  } catch (error) {
+    // Includes an anchored retirement notice returned as cleanup output.
+    if (error?.code === "AGY_MODEL_UNAVAILABLE") notifyModelUnavailable();
+    throw error;
+  }
 }
 
 async function runToolLoopTurn({

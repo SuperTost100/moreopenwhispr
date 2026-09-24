@@ -1882,6 +1882,19 @@ declare global {
         code?: string;
       }>;
       checkAntigravityAvailable?: () => Promise<{ available: boolean; error?: string }>;
+      antigravityListModels?: (options?: { refresh?: boolean }) => Promise<{
+        success: boolean;
+        models: Array<{
+          id: string;
+          displayName: string;
+          tag: string | null;
+          supportsAudio: boolean;
+          supportsImages: boolean;
+        }>;
+        source: "remote" | "persisted" | "static";
+        fetchedAt: number | null;
+        refreshError: { code?: string; message: string } | null;
+      }>;
       proxyAntigravityTranscription?: (data: {
         audioBuffer: ArrayBuffer;
         model?: string;

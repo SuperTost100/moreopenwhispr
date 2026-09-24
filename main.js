@@ -585,9 +585,10 @@ function registerSidecars() {
   const onnxWorkerClient = require("./src/helpers/onnxWorkerClient");
   sidecarRegistry.register("onnx", () => onnxWorkerClient.stop());
   if (isMowBuild()) {
-    sidecarRegistry.register("agy-token", () =>
-      require("./src/helpers/antigravityAuth").stopAntigravityTokenKeepalive()
-    );
+    sidecarRegistry.register("agy-token", () => {
+      require("./src/helpers/antigravityAuth").stopAntigravityTokenKeepalive();
+      require("./src/helpers/antigravityModelCatalog").stopAntigravityCatalogRefresh();
+    });
   }
 }
 
@@ -1015,6 +1016,7 @@ async function startApp() {
   await environmentManager.init();
   if (isMowBuild()) {
     require("./src/helpers/antigravityAuth").startAntigravityTokenKeepalive();
+    require("./src/helpers/antigravityModelCatalog").startAntigravityCatalogRefresh();
   }
   // After any upgrade the GPU gets one fresh attempt: clear the remembered
   // failure before the whisper pre-warm below resolves its GPU backend.
@@ -1242,6 +1244,8 @@ async function startApp() {
 
   const { powerMonitor } = require("electron");
   powerMonitor.on("resume", () => {
+    // Sleep can skip the token keepalive timer; re-check before the next dictation.
+    if (isMowBuild()) require("./src/helpers/antigravityAuth").onSystemResume();
     if (calendarReminderScheduler) calendarReminderScheduler.onWakeFromSleep();
     if (googleCalendarManager) {
       googleCalendarManager.onWakeFromSleep();

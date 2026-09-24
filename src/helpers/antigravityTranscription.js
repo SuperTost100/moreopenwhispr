@@ -3,8 +3,13 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const debugLogger = require("./debugLogger");
-const { getAntigravityAccessToken, getAntigravityProjectId } = require("./antigravityAuth");
-const { transcribeAudioViaGateway } = require("./antigravityGateway");
+const { getAntigravityAccessToken } = require("./antigravityAuth");
+const { transcribeAudioViaGateway, getAntigravityProjectId } = require("./antigravityGateway");
+const {
+  getCatalog,
+  notifyModelUnavailable,
+  resolveAntigravityModels,
+} = require("./antigravityModelCatalog");
 const {
   DEFAULT_ANTIGRAVITY_TRANSCRIBE_MODEL,
   isAntigravityTranscribeModel,
@@ -240,6 +245,7 @@ async function transcribeWithAntigravity({
   useLegacyAgent = false,
   getAccessToken = getAntigravityAccessToken,
   getProjectId = getAntigravityProjectId,
+  op,
 }) {
   const startedAt = Date.now();
   const resolvedModel = isAntigravityTranscribeModel(model)
@@ -287,20 +293,36 @@ async function transcribeWithAntigravity({
     ffmpegPath,
     tmpRoot,
   });
-  const authPromise = getAccessToken({ fetchImpl });
+  const authPromise = getAccessToken({ signal: op?.signal });
+
+  // One resolved model per call; walking the rest of `candidates.stt` on
+  // failure is wave 2 (A5). Synthetic transcribe-mode ids resolve as "auto".
+  const { stt: backendModel, notices } = resolveAntigravityModels(getCatalog(), { stt: model });
+  if (notices.length) {
+    logStage("model-notices", { notices: notices.map((n) => `${n.slot}:${n.code}:${n.model}`) });
+  }
 
   try {
-    const [{ buffer, mimeType }, accessToken] = await Promise.all([preparedPromise, authPromise]);
-    logStage("gateway-request", { bytes: buffer.length, mimeType });
+    const [{ buffer, mimeType }, auth] = await Promise.all([preparedPromise, authPromise]);
+    logStage("gateway-request", { bytes: buffer.length, mimeType, backendModel });
+    const projectId = await getProjectId({
+      accessToken: auth.accessToken,
+      accountKey: auth.accountKey,
+      fetchImpl,
+      op,
+    });
     const gatewayResult = await transcribeAudioViaGateway({
-      accessToken,
-      model: resolvedModel,
+      accessToken: auth.accessToken,
+      accountKey: auth.accountKey,
+      projectId,
+      model: backendModel,
       audioBase64: buffer.toString("base64"),
       mimeType,
       language,
       keyterms,
       mode,
       fetchImpl,
+      op,
     });
     logStage("gateway-done", {
       transport: "daily-stream-multimodal",
@@ -311,7 +333,9 @@ async function transcribeWithAntigravity({
     if (error?.code === "AGY_CANCELLED") {
       throw error;
     }
-    logStage("gateway-error-fallback-agy", { code: error?.code, message: error?.message });
+    if (error?.code === "AGY_MODEL_UNAVAILABLE") notifyModelUnavailable();
+    // Status/code only: gateway error messages can echo request content.
+    logStage("gateway-error-fallback-agy", { code: error?.code, status: error?.status });
     const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
     logStage("agy-legacy-done", { transport: "agy-write-file" });
     return result;
