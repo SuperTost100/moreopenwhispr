@@ -23,7 +23,13 @@ function getTokenFilePath() {
   return path.join(os.homedir(), TOKEN_REL);
 }
 
-const REFRESH_SKEW_MS = 5 * 60 * 1000; // treat <5min-to-expiry as "needs refresh"
+// agy only refreshes a token that is (nearly) expired, so asking it earlier
+// changes nothing. The hot path refreshes inline only in the last 30s; the
+// keepalive tries 5 minutes ahead and, if agy declines, retries just before
+// expiry instead of respawning `agy models` every minute.
+const HOT_PATH_SKEW_MS = 30_000;
+const KEEPALIVE_SKEW_MS = 5 * 60 * 1000;
+const KEEPALIVE_LATE_SKEW_MS = 5_000;
 const REFRESH_TIMEOUT_MS = 20_000; // `agy models` refresh has its own budget,
 // independent of any individual caller's abort signal (see refreshViaAgy).
 
@@ -202,7 +208,11 @@ function tokenExpiresWithin(tokenObj, skewMs) {
  * single-flight `agy models` refresh and re-reads the file. If it's still
  * expired after that, rejects with AGY_AUTH_REQUIRED.
  */
-async function getAntigravityAccessToken({ signal, forceRefresh = false } = {}) {
+async function getAntigravityAccessToken({
+  signal,
+  forceRefresh = false,
+  refreshSkewMs = HOT_PATH_SKEW_MS,
+} = {}) {
   let data = readTokenFile();
   if (!data?.token && !fs.existsSync(getTokenFilePath())) {
     throw createAntigravityError(
@@ -212,7 +222,7 @@ async function getAntigravityAccessToken({ signal, forceRefresh = false } = {}) 
   }
 
   let tokenObj = data?.token;
-  const needsRefresh = forceRefresh || tokenExpiresWithin(tokenObj, REFRESH_SKEW_MS);
+  const needsRefresh = forceRefresh || tokenExpiresWithin(tokenObj, refreshSkewMs);
 
   if (needsRefresh) {
     await waitForRefresh(refreshViaAgy(), signal);
@@ -247,16 +257,24 @@ let keepaliveEnabled = false;
 
 async function keepaliveTick() {
   if (!keepaliveEnabled) return;
+  const before = parseExpiryTimestamp(readTokenFile()?.token?.expiry);
   let failed = false;
   try {
-    await getAntigravityAccessToken({});
+    await getAntigravityAccessToken({ refreshSkewMs: KEEPALIVE_SKEW_MS });
   } catch {
     failed = true; // best-effort; an actual caller will surface the error
   }
-  armKeepaliveTimer(failed ? KEEPALIVE_FAILURE_DELAY_MS : KEEPALIVE_MIN_DELAY_MS);
+  if (failed) {
+    armKeepaliveTimer(KEEPALIVE_FAILURE_DELAY_MS);
+    return;
+  }
+  const after = parseExpiryTimestamp(readTokenFile()?.token?.expiry);
+  // agy declined to refresh a still-valid token: come back just before expiry.
+  const declined = after && after === before && after * 1000 - Date.now() < KEEPALIVE_SKEW_MS;
+  armKeepaliveTimer(KEEPALIVE_MIN_DELAY_MS, declined ? KEEPALIVE_LATE_SKEW_MS : KEEPALIVE_SKEW_MS);
 }
 
-function armKeepaliveTimer(minDelayMs = KEEPALIVE_MIN_DELAY_MS) {
+function armKeepaliveTimer(minDelayMs = KEEPALIVE_MIN_DELAY_MS, skewMs = KEEPALIVE_SKEW_MS) {
   if (!keepaliveEnabled) return;
   if (keepaliveTimer) {
     clearTimeout(keepaliveTimer);
@@ -266,7 +284,11 @@ function armKeepaliveTimer(minDelayMs = KEEPALIVE_MIN_DELAY_MS) {
   const expiryTs = parseExpiryTimestamp(data?.token?.expiry);
   let delayMs = minDelayMs;
   if (expiryTs) {
-    delayMs = Math.max(minDelayMs, expiryTs * 1000 - Date.now() - REFRESH_SKEW_MS);
+    const untilRefresh = expiryTs * 1000 - Date.now() - skewMs;
+    delayMs =
+      skewMs === KEEPALIVE_SKEW_MS
+        ? Math.max(minDelayMs, untilRefresh)
+        : Math.max(1000, untilRefresh);
   }
   keepaliveTimer = setTimeout(keepaliveTick, delayMs);
   keepaliveTimer.unref?.();
