@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, Gift, HelpCircle, Search, Settings } from "lucide-react";
+import { ChevronDown, Gift, HelpCircle, Search, Settings } from "../icons";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { Button } from "../ui/button";

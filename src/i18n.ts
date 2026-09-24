@@ -6,6 +6,7 @@ import { isMowBuild, rewriteUpstreamBrand } from "./config/mowProfile";
 
 export const SUPPORTED_UI_LANGUAGES = [
   "en",
+  "ar",
   "es",
   "fr",
   "de",
@@ -52,6 +53,10 @@ const resources = {
   en: {
     translation: TRANSLATIONS_BY_LOCALE.en,
     prompts: PROMPTS_BY_LOCALE.en,
+  },
+  ar: {
+    translation: TRANSLATIONS_BY_LOCALE.ar,
+    prompts: PROMPTS_BY_LOCALE.ar,
   },
   es: {
     translation: TRANSLATIONS_BY_LOCALE.es,

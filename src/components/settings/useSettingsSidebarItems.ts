@@ -10,7 +10,7 @@ import {
   CreditCard,
   Shield,
   Users,
-} from "lucide-react";
+} from "../icons";
 import type { SidebarItem } from "../ui/SidebarModal";
 import type { SettingsSectionType } from "../SettingsPage";
 import { useAuth } from "../../hooks/useAuth";

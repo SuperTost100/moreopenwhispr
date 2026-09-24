@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import {
   Gift,
   Lock,
+  Search,
   Settings,
   ShieldCheck,
   HelpCircle,
   UserCircle,
+  UserPlus,
   X,
-  Search,
   Zap,
-} from "lucide-react";
+} from "./icons";
 import logoIcon from "../assets/icon.png";
 import { useTranslation } from "react-i18next";
 import { preventOrphanWord } from "../utils/orphanWord";
@@ -35,6 +36,7 @@ interface ControlPanelSidebarProps {
   onOpenSettings: () => void;
   onOpenSearch?: () => void;
   onOpenReferrals?: () => void;
+  onInviteTeam?: () => void;
   onUpgrade?: () => void;
   isOverLimit?: boolean;
   userName?: string | null;
@@ -53,6 +55,7 @@ export default function ControlPanelSidebar({
   onOpenSettings,
   onOpenSearch,
   onOpenReferrals,
+  onInviteTeam,
   onUpgrade,
   isOverLimit,
   userName,
@@ -181,7 +184,7 @@ export default function ControlPanelSidebar({
                 localStorage.setItem("upgradeProDismissed", "true");
               }}
               aria-label={t("common.dismiss")}
-              className="absolute right-2 top-2 rounded-sm p-0.5 opacity-60 hover:bg-foreground/5 hover:opacity-100"
+              className="absolute end-2 top-2 rounded-sm p-0.5 opacity-60 hover:bg-foreground/5 hover:opacity-100"
             >
               <X size={12} aria-hidden="true" />
             </button>
@@ -229,6 +232,18 @@ export default function ControlPanelSidebar({
           >
             {updateAction}
           </div>
+        ) : null}
+
+        {onInviteTeam ? (
+          <button
+            type="button"
+            onClick={onInviteTeam}
+            aria-label={t("sidebar.inviteTeam")}
+            className="cp-shell-footer-item flex h-11 w-full items-center gap-2.5 rounded-md px-3 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            <UserPlus size={16} className="shrink-0 opacity-70" aria-hidden="true" />
+            <span>{t("sidebar.inviteTeam")}</span>
+          </button>
         ) : null}
 
         {isSignedIn && onOpenReferrals && !isMowBuild() ? (
@@ -298,11 +313,13 @@ export default function ControlPanelSidebar({
               <div className="min-w-0 flex-1">
                 {isSignedIn && (userName || userEmail) ? (
                   <>
-                    <p className="truncate text-xs leading-tight opacity-80">
+                    <p dir="auto" className="truncate text-xs leading-tight opacity-80">
                       {userName || t("sidebar.defaultUser")}
                     </p>
                     {userEmail ? (
-                      <p className="truncate text-xs leading-tight opacity-55">{userEmail}</p>
+                      <p className="truncate text-xs leading-tight opacity-55">
+                        <bdi dir="ltr">{userEmail}</bdi>
+                      </p>
                     ) : null}
                   </>
                 ) : authLoaded && !isSignedIn ? (

@@ -1,6 +1,9 @@
 {
   "appId": "com.moreopenwhispr.app",
   "afterPack": "scripts/afterPack.js",
+  "extraMetadata": {
+    "windowsTrayIdentity": true
+  },
   "productName": "MoreOpenWhisperer",
   "protocols": {
     "name": "MoreOpenWhisperer Protocol",
@@ -97,7 +100,11 @@
   ],
   "extraResources": [
     ".env",
-    "src/assets/**/*",
+    {
+      "from": "src/assets",
+      "to": "src/assets",
+      "filter": ["**/*", "!fonts/yowza/**"]
+    },
     {
       "from": "resources/bin/",
       "to": "bin/",
@@ -170,7 +177,7 @@
     }
   },
   "win": {
-    "target": ["nsis", "portable"],
+    "target": ["nsis"],
     "icon": "src/assets/icon.ico",
     "extraResources": [
       {

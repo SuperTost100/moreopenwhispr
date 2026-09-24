@@ -1,5 +1,9 @@
 const { autoUpdater } = require("electron-updater");
-const { appUpdatesEnabled, githubUpdateFeed } = require("./helpers/updateCheckPolicy");
+const { githubUpdateFeed } = require("./helpers/updateCheckPolicy");
+
+// electron-updater can only replace an AppImage on Linux; deb, rpm and tar.gz
+// installs are updated by the package manager instead.
+const isUpdaterSupported = process.platform !== "linux" || Boolean(process.env.APPIMAGE);
 
 class UpdateManager {
   constructor() {
@@ -13,8 +17,9 @@ class UpdateManager {
     this.eventListeners = [];
     this.updateCheckInterval = null;
     this.windowManager = null;
-    this._suppressNotification = false;
     this._backgroundCheck = false;
+    // null until the renderer syncs the preference, so nothing downloads unasked.
+    this.autoUpdatesEnabled = null;
 
     this.setupAutoUpdater();
   }
@@ -84,18 +89,11 @@ class UpdateManager {
           };
         }
         this.notifyRenderers("update-available", info);
-        const notifAllowed = appUpdatesEnabled(this.windowManager?.notificationPrefs);
-        if (this.windowManager && info && !this._suppressNotification && notifAllowed) {
-          this.windowManager.showUpdateNotification(info).catch((err) => {
-            console.error("Failed to show update notification:", err);
-          });
-        }
-        this._suppressNotification = false;
+        this._autoDownloadIfEnabled();
       },
       "update-not-available": (info) => {
         this._backgroundCheck = false;
         this.updateAvailable = false;
-        this._suppressNotification = false;
         if (!this.updateDownloaded) {
           this.isDownloading = false;
           this.lastUpdateInfo = null;
@@ -104,7 +102,6 @@ class UpdateManager {
       },
       error: (err) => {
         console.error("❌ Auto-updater error:", err);
-        this._suppressNotification = false;
         this.isDownloading = false;
         // Background startup/periodic checks 404 until a GitHub release
         // exists. Don't toast that into the user's face. The flag is cleared
@@ -175,8 +172,14 @@ class UpdateManager {
         };
       }
 
+      if (!isUpdaterSupported) {
+        return {
+          updateAvailable: false,
+          message: "Updates are installed through the system package manager",
+        };
+      }
+
       console.log("🔍 Checking for updates...");
-      this._suppressNotification = true;
       this._backgroundCheck = false;
       const result = await autoUpdater.checkForUpdates();
 
@@ -291,6 +294,7 @@ class UpdateManager {
         updateAvailable: this.updateAvailable,
         updateDownloaded: this.updateDownloaded,
         isDevelopment: process.env.NODE_ENV === "development",
+        isSupported: isUpdaterSupported,
       };
     } catch (error) {
       console.error("❌ Error getting update status:", error);
@@ -307,13 +311,35 @@ class UpdateManager {
     }
   }
 
-  // Prefs are read at fire time, not scheduling time, so flipping the
-  // "App updates" toggle takes effect without a restart (#1605).
+  setAutoUpdatesEnabled(enabled) {
+    this.autoUpdatesEnabled = enabled;
+    // The startup check may have found an update before the renderer synced.
+    if (enabled) this._autoDownloadIfEnabled();
+  }
+
+  // NSIS and AppImage install a downloaded update from their quit handler, which would
+  // replace the executable a reset relaunch starts (an AppImage even moves to a new
+  // file name).
+  deferInstallOnQuit() {
+    autoUpdater.autoInstallOnAppQuit = false;
+  }
+
+  // On macOS a finished download is handed to Squirrel.Mac, which installs it on any
+  // quit from then on; MacUpdater records that hand-off in squirrelDownloadedUpdate.
+  hasStagedUpdate() {
+    return process.platform === "darwin" && autoUpdater.squirrelDownloadedUpdate === true;
+  }
+
+  _autoDownloadIfEnabled() {
+    if (!this.autoUpdatesEnabled || !this.updateAvailable) return;
+    // downloadUpdate() is a no-op while a download is in flight or complete;
+    // failures surface through the shared "error" handler and the renderers.
+    this.downloadUpdate().catch(() => {});
+  }
+
+  // Checks always run so the sidebar can offer a manual download when automatic
+  // updates are off; a failed background check is logged and never surfaced.
   _autoCheckForUpdates(label) {
-    if (!appUpdatesEnabled(this.windowManager?.notificationPrefs)) {
-      console.log(`⏭️ ${label} update check skipped (app updates disabled)`);
-      return;
-    }
     console.log(`🔄 ${label} update check...`);
     this._backgroundCheck = true;
     autoUpdater.checkForUpdates().catch((err) => {
@@ -323,7 +349,7 @@ class UpdateManager {
   }
 
   checkForUpdatesOnStartup() {
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV !== "development" && isUpdaterSupported) {
       setTimeout(() => {
         this._autoCheckForUpdates("Startup");
       }, 3000);

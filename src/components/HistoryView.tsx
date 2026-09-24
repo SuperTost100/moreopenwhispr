@@ -1,8 +1,11 @@
 import { Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { cn } from "./lib/utils";
+import { useUiLocale } from "../hooks/useUiLocale";
 import { Button } from "./ui/button";
-import { Loader2, Sparkles, Cloud, X, Trash2, Archive } from "lucide-react";
+import { Loader2, Sparkles, X, Mic, Trash2, Archive } from "./icons";
 import TranscriptionItem from "./ui/TranscriptionItem";
+import EmptyStateCard from "./ui/EmptyStateCard";
 import type { TranscriptionItem as TranscriptionItemType } from "../types/electron";
 import { formatHotkeyLabel, parseHotkeyList } from "../utils/hotkeys";
 import { formatDateGroup } from "../utils/dateFormatting";
@@ -13,12 +16,12 @@ import { useSettingsStore } from "../stores/settingsStore";
 import { effectiveLocalHistoryEnabled } from "../stores/policyRules";
 import { usePolicyStore } from "../stores/policyStore";
 
+const EMPTY_PREVIEW_WIDTHS = ["w-full", "w-4/5", "w-3/5"];
+
 interface HistoryViewProps {
   history: TranscriptionItemType[];
   isLoading: boolean;
   hotkey: string;
-  showCloudMigrationBanner: boolean;
-  setShowCloudMigrationBanner: (show: boolean) => void;
   aiCTADismissed: boolean;
   setAiCTADismissed: (dismissed: boolean) => void;
   useCleanupModel: boolean;
@@ -37,8 +40,6 @@ export default function HistoryView({
   history,
   isLoading,
   hotkey,
-  showCloudMigrationBanner,
-  setShowCloudMigrationBanner,
   aiCTADismissed,
   setAiCTADismissed,
   useCleanupModel,
@@ -53,6 +54,7 @@ export default function HistoryView({
   onToggleDiscarded,
 }: HistoryViewProps) {
   const { t } = useTranslation();
+  const locale = useUiLocale();
   const personalDataRetentionEnabled = useSettingsStore((s) => s.dataRetentionEnabled);
   const dataRetentionEnabled = usePolicyStore((policyState) =>
     effectiveLocalHistoryEnabled(policyState, personalDataRetentionEnabled)
@@ -66,7 +68,7 @@ export default function HistoryView({
     let currentLabel: string | null = null;
 
     for (const item of history) {
-      const label = formatDateGroup(item.timestamp, t);
+      const label = formatDateGroup(item.timestamp, t, locale);
 
       if (label !== currentLabel) {
         groups.push({ label, items: [item] });
@@ -77,7 +79,7 @@ export default function HistoryView({
     }
 
     return groups;
-  }, [history, t]);
+  }, [history, t, locale]);
 
   const historyToolbar = (
     <div
@@ -115,45 +117,6 @@ export default function HistoryView({
           </h1>
           <p className="cp-history__page-subtitle">{t("controlPanel.history.pageSubtitle")}</p>
         </header>
-
-        {showCloudMigrationBanner && (
-          <div className="cp-history__banner cp-history__banner--info">
-            <button
-              type="button"
-              onClick={() => {
-                setShowCloudMigrationBanner(false);
-                localStorage.setItem("cloudMigrationShown", "true");
-              }}
-              aria-label={t("common.close")}
-              className="cp-history__banner-dismiss"
-            >
-              <X size={16} aria-hidden="true" />
-            </button>
-            <div className="cp-history__banner-body">
-              <div className="cp-history__banner-icon" aria-hidden="true">
-                <Cloud size={16} />
-              </div>
-              <div className="cp-history__banner-copy">
-                <p className="cp-history__banner-title">{t("controlPanel.cloudMigration.title")}</p>
-                <p className="cp-history__banner-description">
-                  {t("controlPanel.cloudMigration.description")}
-                </p>
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="cp-history__banner-action"
-                  onClick={() => {
-                    setShowCloudMigrationBanner(false);
-                    localStorage.setItem("cloudMigrationShown", "true");
-                    onOpenSettings("transcription");
-                  }}
-                >
-                  {t("controlPanel.cloudMigration.viewSettings")}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {!useCleanupModel && !aiCTADismissed && (
           <div className="cp-history__banner cp-history__banner--info">
@@ -219,104 +182,38 @@ export default function HistoryView({
               </div>
             ) : history.length === 0 ? (
               <div className="cp-history__panel cp-history__panel--empty">
-                <div className="cp-history__empty-state">
-                  <svg
-                    className="cp-history__empty-art"
-                    width="64"
-                    height="64"
-                    viewBox="0 0 64 64"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <rect
-                      x="24"
-                      y="6"
-                      width="16"
-                      height="28"
-                      rx="8"
-                      fill="currentColor"
-                      fillOpacity={0.04}
-                      stroke="currentColor"
-                      strokeOpacity={0.1}
-                    />
-                    <rect
-                      x="28"
-                      y="12"
-                      width="8"
-                      height="3"
-                      rx="1.5"
-                      fill="currentColor"
-                      fillOpacity={0.06}
-                    />
-                    <path
-                      d="M18 28c0 7.7 6.3 14 14 14s14-6.3 14-14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <line
-                      x1="32"
-                      y1="42"
-                      x2="32"
-                      y2="50"
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <line
-                      x1="26"
-                      y1="50"
-                      x2="38"
-                      y2="50"
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M12 20a2 2 0 0 1 0 8"
-                      stroke="currentColor"
-                      strokeOpacity={0.04}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M8 18a2 2 0 0 1 0 12"
-                      stroke="currentColor"
-                      strokeOpacity={0.03}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M52 20a2 2 0 0 0 0 8"
-                      stroke="currentColor"
-                      strokeOpacity={0.04}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M56 18a2 2 0 0 0 0 12"
-                      stroke="currentColor"
-                      strokeOpacity={0.03}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <h3 className="cp-history__empty-title">{t("controlPanel.history.empty")}</h3>
-                  <div className="cp-history__empty-hint">
-                    <span>{t("controlPanel.history.press")}</span>
-                    {parseHotkeyList(hotkey).map((hk, index) => (
-                      <Fragment key={hk}>
-                        {index > 0 && <span className="cp-history__empty-sep">/</span>}
-                        <kbd className="cp-history__hotkey">{formatHotkeyLabel(hk)}</kbd>
-                      </Fragment>
+                <EmptyStateCard
+                  icon={Mic}
+                  title={t("controlPanel.history.empty")}
+                  description={t("controlPanel.history.emptyDescription")}
+                >
+                  {/* Ghost rows preview the list this card becomes. */}
+                  <div aria-hidden="true" className="mb-1 w-56 space-y-2">
+                    {EMPTY_PREVIEW_WIDTHS.map((width) => (
+                      <span
+                        key={width}
+                        className={cn(
+                          "block h-2 rounded-full bg-foreground/6 dark:bg-white/8",
+                          width
+                        )}
+                      />
                     ))}
-                    <span>{t("controlPanel.history.toStart")}</span>
                   </div>
-                </div>
+                  <span className="inline-flex h-[30px] items-center gap-1.5 rounded-full bg-surface-3 px-3 text-xs font-medium text-foreground/70 dark:bg-surface-3">
+                    {t("controlPanel.history.press")}
+                    <span dir="ltr" className="inline-flex items-center gap-1">
+                      {parseHotkeyList(hotkey).map((hk, index) => (
+                        <Fragment key={hk}>
+                          {index > 0 && <span className="text-foreground/45">/</span>}
+                          <kbd className="rounded-md bg-background px-1.5 py-px font-sans text-[11px] font-medium text-foreground/80 shadow-sm dark:bg-surface-2">
+                            {formatHotkeyLabel(hk)}
+                          </kbd>
+                        </Fragment>
+                      ))}
+                    </span>
+                    {t("controlPanel.history.toStart")}
+                  </span>
+                </EmptyStateCard>
               </div>
             ) : (
               <div className="cp-history__groups">

@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles } from "../../icons";
 import { useTranslation } from "react-i18next";
 import { ChatMessages } from "../../chat/ChatMessages";
 import { ChatInput } from "../../chat/ChatInput";
@@ -73,7 +73,7 @@ export function OverviewAskSection({
               disabled={agentState !== "idle"}
               className="cp-notes__chip inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border text-[11px] text-foreground/55 hover:text-foreground/80 hover:border-border/70 hover:bg-foreground/3 dark:hover:bg-white/3 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
             >
-              <Sparkles size={10} className="text-foreground/30 shrink-0" />
+              <Sparkles size={10} className="text-foreground/45 shrink-0" />
               {t(key)}
             </button>
           ))}
