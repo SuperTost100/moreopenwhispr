@@ -1138,7 +1138,13 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             )}
             <div className="flex-1" />
             {!isSidePanelLayout && (
-              <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+              <div
+                // On macOS there are no trailing WindowControls to hold the strip's
+                // end padding, so the button would otherwise sit flush against the
+                // window edge — match the 24px page padding used elsewhere.
+                className={platform === "darwin" ? "pe-6" : ""}
+                style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+              >
                 <NewNoteMenu
                   onNewNote={handleNewNote}
                   onNewChat={agentAllowedByPolicy ? () => setActiveView("chat") : undefined}

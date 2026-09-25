@@ -160,11 +160,11 @@ export default function DictionaryView() {
             {t("controlPanel.dictionary.pageSubtitle")}
           </p>
         </header>
-        <TabsList className="h-7 p-0.5 rounded-[7px]">
-          <TabsTrigger value="dictionary" className="h-6 px-2.5 text-xs rounded-[5px]">
+        <TabsList className="h-7 p-0.5 rounded-md">
+          <TabsTrigger value="dictionary" className="h-6 px-2.5 text-xs rounded-sm">
             {t("dictionary.tabDictionary")}
           </TabsTrigger>
-          <TabsTrigger value="snippets" className="h-6 px-2.5 text-xs rounded-[5px]">
+          <TabsTrigger value="snippets" className="h-6 px-2.5 text-xs rounded-sm">
             {t("dictionary.tabSnippets")}
           </TabsTrigger>
         </TabsList>

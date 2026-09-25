@@ -155,9 +155,7 @@ export function InferenceModeSelector({
         return (
           <SettingsPanelRow
             key={mode.id}
-            className={`transition-colors ${
-              isDisabled ? "" : "hover:bg-foreground/3 dark:hover:bg-white/3"
-            }`}
+            className={`transition-colors ${isDisabled ? "" : "hover:bg-hover"}`}
           >
             <button
               onClick={() => onSelect(mode.id)}

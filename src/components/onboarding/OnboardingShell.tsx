@@ -8,10 +8,6 @@ import { useTranslation } from "react-i18next";
 import { getPlatform } from "../../utils/platform";
 import { useWindowControls } from "../../hooks/useWindowControls";
 import { isMowBuild } from "../../config/mowProfile";
-// Imported (not referenced by path) so Vite fingerprints it and it resolves
-// under the packaged app's file:// origin. See .onboarding-compact-hero.
-import onboardingBackgroundLight from "@/assets/onboarding-bg-light.svg";
-import onboardingBackgroundDark from "@/assets/onboarding-bg-dark.svg";
 
 interface OnboardingShellProps {
   compact?: boolean;
@@ -206,12 +202,6 @@ export default function OnboardingShell({
   return (
     <main
       className={`onboarding-canvas relative flex h-screen flex-col overflow-hidden ${compact ? "compact" : ""}`}
-      style={
-        {
-          "--onboarding-background-light": `url(${onboardingBackgroundLight})`,
-          "--onboarding-background-dark": `url(${onboardingBackgroundDark})`,
-        } as CSSProperties
-      }
     >
       {/* This is the frameless window's only title bar, so it has to be a
           target someone can actually grab. Interactive overlays in this band
@@ -355,7 +345,6 @@ export function CompactOnboardingFrame({
 
   return (
     <section className="relative flex h-full min-h-screen w-full flex-col overflow-hidden bg-[var(--onboarding-surface)] text-[var(--onboarding-text-primary)]">
-      <div className="onboarding-compact-hero pointer-events-none absolute inset-x-0 top-0 h-33" />
       {showBrandMark && (
         <div
           className={cn(

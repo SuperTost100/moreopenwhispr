@@ -21,8 +21,6 @@ test("returning-user authentication renders the complete compact onboarding surf
       `,
       "onboarding-hero-dither.webp": `export default "hero-light.webp";`,
       "onboarding-hero-dither-dark.webp": `export default "hero-dark.webp";`,
-      "onboarding-bg-light.svg": `export default "background-light.svg";`,
-      "onboarding-bg-dark.svg": `export default "background-dark.svg";`,
       "/config/constants": `export const OPENWHISPR_API_URL = "";`,
       "/hooks/useAuth": `
         export function useAuth() {
@@ -56,7 +54,9 @@ test("returning-user authentication renders the complete compact onboarding surf
   );
 
   assert.match(markup, /<main class="onboarding-canvas[^"]*compact/);
-  assert.match(markup, /onboarding-compact-hero/);
+  // The compact hero band (purple gradient + halftone dither) was removed for
+  // the flat redesign — the brand tile now sits directly on the flat surface.
+  assert.doesNotMatch(markup, /onboarding-compact-hero/);
   assert.match(markup, /auth\.welcomeTitle/);
   assert.match(markup, /auth\.emailStep\.continueWithoutAccount/);
   // The fork can't point users at OpenWhispr's terms and privacy pages, so

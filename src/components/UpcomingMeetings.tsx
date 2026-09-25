@@ -288,7 +288,11 @@ export default function UpcomingMeetings({
 
   return (
     <div>
-      <p className="pt-2 pb-2.5 text-sm text-muted-foreground">{t("upcoming.title")}</p>
+      {/* Matches .cp-history__list-title ("Recent dictations") so the two column
+          headers share a size/weight/alignment baseline. */}
+      <p className="pb-2.5 text-[0.8125rem] leading-[1.3] font-semibold text-foreground">
+        {t("upcoming.title")}
+      </p>
 
       {/* Loading state */}
       {isLoading && (
