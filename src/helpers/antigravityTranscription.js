@@ -3,13 +3,14 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 const debugLogger = require("./debugLogger");
-const { createAntigravityError } = require("./antigravityOperation");
+const { createAntigravityError, createAntigravityOperation } = require("./antigravityOperation");
 const { getAntigravityAccessToken } = require("./antigravityAuth");
 const { transcribeAudioViaGateway, getAntigravityProjectId } = require("./antigravityGateway");
 const {
   getCatalog,
   notifyModelUnavailable,
   resolveAntigravityModels,
+  emptyCandidatesError,
 } = require("./antigravityModelCatalog");
 const {
   decideAntigravityFailover,
@@ -322,6 +323,18 @@ async function transcribeWithAntigravity({
   hadSpeech = true,
   audioDurationSec,
 }) {
+  // Callers that don't manage their own request budget (e.g. one-shot file
+  // uploads) would otherwise leave ffmpeg conversion, auth, and gateway
+  // calls unbounded — a stuck ffmpeg process used to hang these requests
+  // indefinitely. Give every call a budget so every downstream stage
+  // (conversion, auth, generation, subprocess fallback) is bounded.
+  const ownedOp =
+    op ||
+    createAntigravityOperation({
+      budgetMs: computeSttBudgetMs({ audioDurationSec }),
+      label: "antigravity-stt",
+    });
+  op = ownedOp;
   const startedAt = Date.now();
   const resolvedModel = isAntigravityTranscribeModel(model)
     ? model
@@ -368,6 +381,9 @@ async function transcribeWithAntigravity({
   const { notices } = resolved;
   const sttCandidates =
     resolved.candidates.stt?.length > 0 ? resolved.candidates.stt : [resolved.stt].filter(Boolean);
+  if (sttCandidates.length === 0) {
+    throw emptyCandidatesError(resolved, "stt");
+  }
   if (notices.length) {
     logStage("model-notices", { notices: notices.map((n) => `${n.slot}:${n.code}:${n.model}`) });
   }

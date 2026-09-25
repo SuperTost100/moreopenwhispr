@@ -12,6 +12,7 @@ const {
   getCatalog,
   notifyModelUnavailable,
   resolveAntigravityModels,
+  emptyCandidatesError,
 } = require("./antigravityModelCatalog");
 const {
   decideAntigravityFailover,
@@ -168,6 +169,9 @@ async function reasonWithAntigravityGateway({
     resolved.candidates.cleanup?.length > 0
       ? resolved.candidates.cleanup
       : [resolved.cleanup].filter(Boolean);
+  if (candidates.length === 0) {
+    throw emptyCandidatesError(resolved, "cleanup");
+  }
   let auth = await getAccessToken({ signal: op?.signal });
   let authRetried = false;
   let lastError = null;

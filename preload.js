@@ -606,6 +606,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("process-antigravity-reasoning", text, modelId, agentName, config),
   processAntigravityChatTurn: (payload) =>
     ipcRenderer.invoke("process-antigravity-chat-turn", payload),
+  cancelAntigravityRequest: (requestId) =>
+    ipcRenderer.send("cancel-antigravity-request", requestId),
   checkAntigravityAvailable: () => ipcRenderer.invoke("check-antigravity-available"),
   antigravityListModels: (options) => ipcRenderer.invoke("antigravity-list-models", options),
 

@@ -59,7 +59,9 @@ function freshAuthModule({
   const mod = require("../../src/helpers/antigravityAuth");
   Module._load = originalLoad;
 
-  mod._setUserDataDirForTests(userDataDir || fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-userdata-")));
+  mod._setUserDataDirForTests(
+    userDataDir || fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-userdata-"))
+  );
   if (fetchImpl) mod._setFetchImplForTests(fetchImpl);
 
   return {
@@ -76,7 +78,14 @@ function freshAuthModule({
 // Writes a fake "agy" binary containing embedded fake OAuth client id(s) and
 // secret(s), the same shape the real strings-scrape/extraction regexes look
 // for, but obviously fake so nothing here is a real credential.
-function writeFakeAgyBinary(dir, { clientIds = ["111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com"], secret = "GOCSPX-fakeSecretValueForTestsOnly1", padding = 0 } = {}) {
+function writeFakeAgyBinary(
+  dir,
+  {
+    clientIds = ["111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com"],
+    secret = "GOCSPX-fakeSecretValueForTestsOnly1",
+    padding = 0,
+  } = {}
+) {
   const binaryPath = path.join(dir, "fake-agy-binary");
   const parts = ["\x00\x00garbage-bytes-before\x00\x00"];
   for (const id of clientIds) {
@@ -402,7 +411,11 @@ test("direct refresh tries the wrong pair, then the next pair, then succeeds", a
     });
     const result = await mod.getAntigravityAccessToken({});
     assert.equal(result.accessToken, "refreshed-direct");
-    assert.equal(spawnCalls.length, 0, "agy models fallback must not run when direct refresh succeeds");
+    assert.equal(
+      spawnCalls.length,
+      0,
+      "agy models fallback must not run when direct refresh succeeds"
+    );
     assert.ok(fetchCalls.includes(badId));
     assert.ok(fetchCalls.includes(goodId));
     assert.equal(fetchCalls[fetchCalls.length - 1], goodId);
@@ -594,9 +607,106 @@ test("no write happens when the token file changed underneath a direct refresh",
       "must keep the concurrently-written token, not overwrite it with our own"
     );
     const onDisk = JSON.parse(
-      fs.readFileSync(path.join(homedir, ".gemini", "antigravity-cli", "antigravity-oauth-token"), "utf8")
+      fs.readFileSync(
+        path.join(homedir, ".gemini", "antigravity-cli", "antigravity-oauth-token"),
+        "utf8"
+      )
     );
     assert.equal(onDisk.token.access_token, "written-by-someone-else");
+  } finally {
+    restore();
+    fs.rmSync(homedir, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a direct refresh never recreates the token file if it was deleted mid-refresh", async () => {
+  const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-delete-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-delete-bin-"));
+  const tokenFile = path.join(homedir, ".gemini", "antigravity-cli", "antigravity-oauth-token");
+  const fetchImpl = async () => {
+    // Simulate the user (or another process) removing the credential file
+    // while our HTTP request to Google is in flight.
+    fs.rmSync(tokenFile, { force: true });
+    return fakeFetchResponse(200, {
+      access_token: "our-own-refreshed-token",
+      refresh_token: "refresh-me",
+      expires_in: 3600,
+    });
+  };
+  const { mod, restore } = freshAuthModule({
+    homedir,
+    agyBinaryPath: writeFakeAgyBinary(dir),
+    fetchImpl,
+    // agy fallback: pretend it also can't produce a token (file stays gone).
+    spawnBehavior: () => Promise.resolve({ stdout: "", stderr: "" }),
+  });
+  try {
+    writeToken(homedir, {
+      access_token: "expired",
+      refresh_token: "refresh-me",
+      expiry: "2000-01-01T00:00:00.000Z",
+    });
+    await assert.rejects(
+      () => mod.getAntigravityAccessToken({}),
+      (error) => {
+        assert.equal(error.code, "AGY_AUTH_REQUIRED");
+        return true;
+      }
+    );
+    assert.equal(
+      fs.existsSync(tokenFile),
+      false,
+      "a direct refresh must not recreate a deleted token file"
+    );
+  } finally {
+    restore();
+    fs.rmSync(homedir, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a direct refresh refuses to persist when the refresh token changed underneath it", async () => {
+  const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-rt-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-rt-bin-"));
+  const fetchImpl = async () => {
+    // Simulate a concurrent full re-auth (new refresh token) landing while
+    // our HTTP request to Google is in flight — same access_token/expiry
+    // shape as before the race would have missed this.
+    writeToken(homedir, {
+      access_token: "expired",
+      refresh_token: "brand-new-refresh-token",
+      expiry: "2000-01-01T00:00:00.000Z",
+    });
+    return fakeFetchResponse(200, {
+      access_token: "our-own-refreshed-token",
+      refresh_token: "refresh-me",
+      expires_in: 3600,
+    });
+  };
+  const { mod, restore } = freshAuthModule({
+    homedir,
+    agyBinaryPath: writeFakeAgyBinary(dir),
+    fetchImpl,
+  });
+  try {
+    writeToken(homedir, {
+      access_token: "expired",
+      refresh_token: "refresh-me",
+      expiry: "2000-01-01T00:00:00.000Z",
+    });
+    await mod.getAntigravityAccessToken({}).catch(() => {});
+    const onDisk = JSON.parse(
+      fs.readFileSync(
+        path.join(homedir, ".gemini", "antigravity-cli", "antigravity-oauth-token"),
+        "utf8"
+      )
+    );
+    assert.equal(
+      onDisk.token.refresh_token,
+      "brand-new-refresh-token",
+      "must not overwrite a concurrently-rotated refresh token with a stale-scoped refresh result"
+    );
   } finally {
     restore();
     fs.rmSync(homedir, { recursive: true, force: true });

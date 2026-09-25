@@ -245,6 +245,8 @@ async function readSseStream(response) {
   let buffer = "";
   let text = "";
   let finishReason = null;
+  let malformedLines = 0;
+  let validChunks = 0;
   const parts = [];
 
   const processLine = (rawLine) => {
@@ -256,7 +258,21 @@ async function readSseStream(response) {
     try {
       chunk = JSON.parse(payload);
     } catch {
+      malformedLines += 1;
       return; // tolerate a malformed/garbage SSE line rather than aborting
+    }
+    validChunks += 1;
+    // Error-shaped SSE event, e.g. `data: {"error":{"code":429,"message":...}}`
+    // — Google can emit this mid-stream instead of a non-2xx HTTP status.
+    // Surface it as the same typed error a non-2xx response would produce
+    // (429 -> AGY_RATE_LIMITED, otherwise AGY_HTTP) rather than silently
+    // treating it as an empty/malformed chunk.
+    if (chunk?.error && typeof chunk.error === "object") {
+      const status = Number.isFinite(chunk.error.code) ? chunk.error.code : undefined;
+      const message =
+        (typeof chunk.error.message === "string" && chunk.error.message.trim()) ||
+        "Antigravity stream returned an error event";
+      throwTypedGatewayError(status, message, chunk, response?.headers);
     }
     const candidate = chunk?.response?.candidates?.[0] ?? chunk?.candidates?.[0];
     if (typeof candidate?.finishReason === "string" && candidate.finishReason) {
@@ -312,7 +328,7 @@ async function readSseStream(response) {
   }
   if (buffer) processLine(buffer);
 
-  return { text: text.trim(), finishReason, parts };
+  return { text: text.trim(), finishReason, parts, malformedLines, validChunks };
 }
 
 // --- Project id / loadCodeAssist -------------------------------------------
@@ -540,6 +556,26 @@ function checkFinishReason(finishReason) {
   }
 }
 
+// A live check against the real gateway (3 streamGenerateContent calls,
+// see mow-work/finishReason-check.cjs) confirmed every complete response
+// carries a terminal finishReason ("STOP" in all 3 runs) — so a stream that
+// parsed at least one valid SSE chunk but never saw a finishReason really
+// did get cut short (premature EOF, dropped connection, etc.), not a quirk
+// of a normal complete response. A stream with zero valid chunks (nothing
+// parsed at all, e.g. every line was malformed) is left to the existing
+// empty-text/empty-content checks in the two callers, which throw
+// AGY_EMPTY_OUTPUT — that's a materially different failure than a stream
+// that started producing real content and then got cut off.
+function checkStreamCompleteness(parsed) {
+  if (!parsed.finishReason && parsed.validChunks > 0) {
+    throw createAntigravityError(
+      "AGY_TRUNCATED",
+      "Antigravity stream ended without a completion signal",
+      { malformedLines: parsed.malformedLines }
+    );
+  }
+}
+
 async function generateContent({
   accessToken,
   projectId,
@@ -623,6 +659,7 @@ async function streamGenerateContent({
     throw wrapFetchAbort(error, operation);
   }
 
+  checkStreamCompleteness(parsed);
   checkFinishReason(parsed.finishReason);
   if (!parsed.text) {
     throw createAntigravityError("AGY_EMPTY_OUTPUT", "Antigravity returned no text content");
@@ -690,6 +727,7 @@ async function streamChatTurn({
     throw wrapFetchAbort(error, operation);
   }
 
+  checkStreamCompleteness(parsed);
   checkFinishReason(parsed.finishReason);
 
   const functionCalls = [];
@@ -698,9 +736,10 @@ async function streamChatTurn({
     if (part.functionCall) {
       functionCalls.push({
         name: part.functionCall.name,
-        args: part.functionCall.args && typeof part.functionCall.args === "object"
-          ? part.functionCall.args
-          : {},
+        args:
+          part.functionCall.args && typeof part.functionCall.args === "object"
+            ? part.functionCall.args
+            : {},
         thoughtSignature: part.thoughtSignature,
         ...(typeof part.functionCall.id === "string" ? { id: part.functionCall.id } : {}),
       });

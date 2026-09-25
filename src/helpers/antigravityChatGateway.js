@@ -25,6 +25,7 @@ const {
   getCatalog,
   notifyModelUnavailable,
   resolveAntigravityModels,
+  emptyCandidatesError,
 } = require("./antigravityModelCatalog");
 const {
   decideAntigravityFailover,
@@ -32,9 +33,10 @@ const {
   isNetworkUnreachableError,
 } = require("./antigravityFailover");
 const { createAntigravityError } = require("./antigravityOperation");
-const { buildFunctionDeclarations, flattenGeminiContentsToMessages } = require(
-  "./antigravityFunctionCalling"
-);
+const {
+  buildFunctionDeclarations,
+  flattenGeminiContentsToMessages,
+} = require("./antigravityFunctionCalling");
 const { runToolLoopTurn } = require("./antigravityReasoning");
 
 /**
@@ -129,9 +131,16 @@ async function runAntigravityChatTurn({
   };
   const resolved = resolveAntigravityModels(getCatalog(), prefs);
   const candidates =
-    resolved.candidates.chat?.length > 0 ? resolved.candidates.chat : [resolved.chat].filter(Boolean);
+    resolved.candidates.chat?.length > 0
+      ? resolved.candidates.chat
+      : [resolved.chat].filter(Boolean);
+  if (candidates.length === 0) {
+    throw emptyCandidatesError(resolved, "chat");
+  }
   const functionDeclarations = buildFunctionDeclarations(tools);
-  const systemInstruction = systemPrompt?.trim() ? { parts: [{ text: systemPrompt.trim() }] } : undefined;
+  const systemInstruction = systemPrompt?.trim()
+    ? { parts: [{ text: systemPrompt.trim() }] }
+    : undefined;
 
   let auth = await getAccessToken({ signal: op?.signal });
   let authRetried = false;
@@ -142,7 +151,10 @@ async function runAntigravityChatTurn({
     op?.throwIfDone?.();
     try {
       const catalogEntry = getCatalog()?.models?.[gatewayModel];
-      const preparedContents = stripUnsupportedImages(contents, catalogEntry?.supportsImages === true);
+      const preparedContents = stripUnsupportedImages(
+        contents,
+        catalogEntry?.supportsImages === true
+      );
       const projectId = await getProjectId({
         accessToken: auth.accessToken,
         accountKey: auth.accountKey,

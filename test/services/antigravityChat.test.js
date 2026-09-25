@@ -18,10 +18,10 @@ function withWindow(t, electronAPI) {
 
 test("buildInitialContents attaches a screenshot to the first user turn", async () => {
   const { buildInitialContents } = await loadModule();
-  const contents = buildInitialContents(
-    [{ role: "user", content: "what's on my screen?" }],
-    { data: "abc123", mediaType: "image/png" }
-  );
+  const contents = buildInitialContents([{ role: "user", content: "what's on my screen?" }], {
+    data: "abc123",
+    mediaType: "image/png",
+  });
   assert.equal(contents.length, 1);
   assert.equal(contents[0].role, "user");
   assert.deepEqual(contents[0].parts[1], { inlineData: { mimeType: "image/png", data: "abc123" } });
@@ -96,7 +96,7 @@ test("dedupeKeyForCall prefers the call id, else hashes name+args independent of
 
 // --- runAntigravityChatStream loop ---------------------------------------------------
 
-test("runAntigravityChatStream executes each distinct valid call once, skips a duplicate id and an invalid call, then finishes on text", async (t) => {
+test("runAntigravityChatStream executes each distinct valid call once, returns the cached result for a duplicate id, and finishes on text", async (t) => {
   const turnResponses = [
     {
       success: true,
@@ -152,7 +152,13 @@ test("runAntigravityChatStream executes each distinct valid call once, skips a d
   assert.equal(responseTurn.role, "user");
   assert.equal(responseTurn.parts.length, 3);
   assert.ok("result" in responseTurn.parts[0].functionResponse.response);
-  assert.ok("error" in responseTurn.parts[1].functionResponse.response);
+  // A repeated call id returns the cached result from the first execution
+  // without re-executing — not an error (see the invocation-wide
+  // executedById cache: `executed.length` above stays 1).
+  assert.deepEqual(
+    responseTurn.parts[1].functionResponse.response,
+    responseTurn.parts[0].functionResponse.response
+  );
   assert.ok("error" in responseTurn.parts[2].functionResponse.response);
 });
 
@@ -190,6 +196,83 @@ test("runAntigravityChatStream stops executing remaining calls in a turn once ca
     // drain
   }
   assert.deepEqual(executed, ["a"]);
+});
+
+test("runAntigravityChatStream returns the cached result for a call id repeated on a later turn, without re-executing", async (t) => {
+  // Regression: seenKeys used to be recreated per turn, so a call id
+  // repeated on turn 2 (e.g. the model re-issuing an id from turn 1) would
+  // execute again — e.g. a repeated create_note id creating a second note.
+  const turnResponses = [
+    {
+      success: true,
+      textParts: [],
+      functionCalls: [{ name: "create_note", args: { title: "a" }, id: "dup-id" }],
+    },
+    {
+      success: true,
+      textParts: [],
+      // Same id resurfaces on the next turn.
+      functionCalls: [{ name: "create_note", args: { title: "a" }, id: "dup-id" }],
+    },
+    { success: true, textParts: [{ text: "done" }], functionCalls: [] },
+  ];
+  let turn = 0;
+  withWindow(t, {
+    processAntigravityChatTurn: async () => turnResponses[turn++],
+  });
+
+  const { runAntigravityChatStream } = await loadModule();
+  const executed = [];
+  const stream = runAntigravityChatStream({
+    systemPrompt: "",
+    messages: [{ role: "user", content: "make a note" }],
+    tools: [{ name: "create_note", description: "", parameters: { type: "object" } }],
+    model: "m",
+    executeToolCall: async (name) => {
+      executed.push(name);
+      return { data: "note-created", displayText: "created" };
+    },
+  });
+  for await (const _chunk of stream) {
+    // drain
+  }
+  assert.deepEqual(executed, ["create_note"], "the second turn's repeated id must not re-execute");
+});
+
+test("runAntigravityChatStream wires the abortSignal to cancel the specific in-flight main-process request", async (t) => {
+  const cancelledRequestIds = [];
+  let sentRequestId = null;
+  const controller = new AbortController();
+  withWindow(t, {
+    processAntigravityChatTurn: async (payload) => {
+      sentRequestId = payload.requestId;
+      controller.abort();
+      return { success: true, textParts: [{ text: "should never be seen" }], functionCalls: [] };
+    },
+    cancelAntigravityRequest: (requestId) => {
+      cancelledRequestIds.push(requestId);
+    },
+  });
+
+  const { runAntigravityChatStream } = await loadModule();
+  const chunks = [];
+  const stream = runAntigravityChatStream({
+    systemPrompt: "",
+    messages: [{ role: "user", content: "hi" }],
+    tools: [{ name: "a", description: "", parameters: { type: "object" } }],
+    model: "m",
+    abortSignal: controller.signal,
+  });
+  for await (const chunk of stream) chunks.push(chunk);
+
+  assert.ok(sentRequestId, "a requestId must be sent with the chat-turn payload");
+  assert.deepEqual(
+    cancelledRequestIds,
+    [sentRequestId],
+    "abort must send cancelAntigravityRequest with the same requestId the turn used"
+  );
+  // Recheck-after-IPC: a response that raced the abort must yield nothing.
+  assert.deepEqual(chunks, []);
 });
 
 test("runAntigravityChatStream throws once it exceeds the max tool-loop iterations", async (t) => {

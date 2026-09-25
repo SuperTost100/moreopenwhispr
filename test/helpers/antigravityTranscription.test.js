@@ -67,7 +67,7 @@ test("transcribeWithAntigravity uses daily gateway stream path by default", asyn
       return {
         ok: true,
         text: async () =>
-          'data: {"response":{"candidates":[{"content":{"parts":[{"text":"spoken words"}]}}]}}\n',
+          'data: {"response":{"candidates":[{"content":{"parts":[{"text":"spoken words"}]},"finishReason":"STOP"}]}}\n',
       };
     },
   });
@@ -114,6 +114,58 @@ test("prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversi
       return true;
     }
   );
+});
+
+test("transcribeWithAntigravity creates a default bounded operation when the caller passes none", async () => {
+  // Regression for an unbounded ffmpeg wait: callers that don't manage their
+  // own request budget (e.g. one-shot file-upload transcription) used to
+  // pass no `op`, so prepareAudioBuffer's ffmpeg conversion got no abort
+  // signal and could hang forever. transcribeWithAntigravity must now build
+  // its own operation (via computeSttBudgetMs) and thread it through.
+  const antigravityOperationPath = require.resolve("../../src/helpers/antigravityOperation");
+  const transcriptionPath = require.resolve("../../src/helpers/antigravityTranscription");
+  delete require.cache[antigravityOperationPath];
+  delete require.cache[transcriptionPath];
+
+  const antigravityOperation = require("../../src/helpers/antigravityOperation");
+  const originalCreate = antigravityOperation.createAntigravityOperation;
+  let created = null;
+  antigravityOperation.createAntigravityOperation = (opts) => {
+    created = opts;
+    return originalCreate(opts);
+  };
+
+  try {
+    const {
+      transcribeWithAntigravity: freshTranscribe,
+    } = require("../../src/helpers/antigravityTranscription");
+    const result = await freshTranscribe({
+      audioBuffer: Buffer.from("fake-audio"),
+      contentType: "audio/wav",
+      language: "auto",
+      getAccessToken: fakeAuth,
+      fetchImpl: async (url) => {
+        if (String(url).includes("loadCodeAssist")) {
+          return { ok: true, json: async () => ({ cloudaicompanionProject: "daily-proj" }) };
+        }
+        return {
+          ok: true,
+          text: async () =>
+            'data: {"response":{"candidates":[{"content":{"parts":[{"text":"spoken words"}]},"finishReason":"STOP"}]}}\n',
+        };
+      },
+    });
+
+    assert.ok(created, "a default operation must be created when the caller passes none");
+    assert.ok(
+      Number.isFinite(created.budgetMs) && created.budgetMs > 0,
+      "the default operation must carry a positive, computeSttBudgetMs-derived budget"
+    );
+    assert.equal(result.text, "spoken words");
+  } finally {
+    antigravityOperation.createAntigravityOperation = originalCreate;
+    delete require.cache[transcriptionPath];
+  }
 });
 
 test("transcribeWithAntigravity falls back to agy only on network unreachable", async () => {

@@ -91,7 +91,9 @@ test("streamChatTurn sends tools/toolConfig/contents and parses a recorded-shape
       },
     }),
     async (base) => {
-      const contents = [{ role: "user", parts: [{ text: "search my notes and tell me the time" }] }];
+      const contents = [
+        { role: "user", parts: [{ text: "search my notes and tell me the time" }] },
+      ];
       const functionDeclarations = [
         { name: "search_notes", description: "Search notes", parameters: { type: "object" } },
         { name: "get_time", description: "Current time", parameters: { type: "object" } },
@@ -121,7 +123,9 @@ test("streamChatTurn sends tools/toolConfig/contents and parses a recorded-shape
 
       assert.deepEqual(capturedBody.request.contents, contents);
       assert.deepEqual(capturedBody.request.tools, [{ functionDeclarations }]);
-      assert.deepEqual(capturedBody.request.toolConfig, { functionCallingConfig: { mode: "AUTO" } });
+      assert.deepEqual(capturedBody.request.toolConfig, {
+        functionCallingConfig: { mode: "AUTO" },
+      });
       assert.equal(capturedBody.request.systemInstruction.parts[0].text, "You are an assistant.");
       assert.equal(capturedBody.request.generationConfig.thinkingConfig.thinkingLevel, "low");
       assert.equal(capturedBody.model, "gemini-3-flash");
@@ -159,12 +163,7 @@ test("streamChatTurn does not throw AGY_EMPTY_OUTPUT for a functionCall-only res
       streamGenerateContent: (req, res) => {
         res.writeHead(200, { "Content-Type": "text/event-stream" });
         res.end(
-          sseBody([
-            candidateChunk(
-              [{ functionCall: { name: "get_time", args: {} } }],
-              "STOP"
-            ),
-          ])
+          sseBody([candidateChunk([{ functionCall: { name: "get_time", args: {} } }], "STOP")])
         );
       },
     }),
@@ -175,7 +174,9 @@ test("streamChatTurn does not throw AGY_EMPTY_OUTPUT for a functionCall-only res
         projectId: "proj-1",
         model: "gemini-3-flash",
         contents: [{ role: "user", parts: [{ text: "what time is it" }] }],
-        functionDeclarations: [{ name: "get_time", description: "", parameters: { type: "object" } }],
+        functionDeclarations: [
+          { name: "get_time", description: "", parameters: { type: "object" } },
+        ],
         fetchImpl: fetch,
       });
       assert.equal(result.functionCalls.length, 1);
@@ -218,7 +219,11 @@ test("runAntigravityChatTurn fails over to the next candidate model on a 500 and
           "gemini-3.8-flash-tiered": { supportsImages: true, supportedMimeTypes: {} },
           "gemini-3.5-flash-lite": { supportsImages: true, supportedMimeTypes: {} },
         },
-        tieredModelIds: { flash: ["gemini-3.8-flash-tiered"], flashLite: ["gemini-3.5-flash-lite"], pro: [] },
+        tieredModelIds: {
+          flash: ["gemini-3.8-flash-tiered"],
+          flashLite: ["gemini-3.5-flash-lite"],
+          pro: [],
+        },
         deprecatedModelIds: {},
       }));
 
@@ -276,5 +281,56 @@ test("runAntigravityChatTurn routes to the agy CLI subprocess leg when the gatew
     );
   } finally {
     catalog.getCatalog = originalGetCatalog;
+  }
+});
+
+test("runAntigravityChatTurn surfaces AGY_RATE_LIMITED with a reset time when every chat candidate (including the pinned fallback) is cooling, never calling the gateway", async () => {
+  // Regression: the pinned fallback used to be pushed unconditionally, so
+  // this situation could never actually happen — candidates always had at
+  // least the pinned model, which then got retried even though it was
+  // already known to be unavailable.
+  _resetCatalogForTests();
+  _resetProjectIdCacheForTests();
+  const catalog = require("../../src/helpers/antigravityModelCatalog");
+  const originalGetCatalog = catalog.getCatalog;
+  catalog.getCatalog = () => ({
+    models: {
+      "gemini-3.8-flash-tiered": { supportsImages: false, supportedMimeTypes: {} },
+      "gemini-2.5-flash-lite": { supportsImages: false, supportedMimeTypes: {} },
+    },
+    tieredModelIds: { flash: ["gemini-3.8-flash-tiered"], flashLite: [], pro: [] },
+    deprecatedModelIds: {},
+  });
+  const resetAt = Date.now() + 5 * 60_000;
+  catalog.markModelCooldown("gemini-3.8-flash-tiered", resetAt);
+  catalog.markModelCooldown("gemini-2.5-flash-lite", resetAt);
+
+  const op = createAntigravityOperation({ budgetMs: 20_000, label: "test" });
+  let fetchCalled = false;
+  try {
+    await assert.rejects(
+      runAntigravityChatTurn({
+        systemPrompt: "sys",
+        contents: [{ role: "user", parts: [{ text: "hi" }] }],
+        tools: [],
+        fetchImpl: async () => {
+          fetchCalled = true;
+          throw new Error("must never reach the gateway with zero candidates");
+        },
+        getAccessToken: async () => ({ accessToken: "tok", accountKey: "acct" }),
+        getProjectId: async () => "proj-1",
+        op,
+      }),
+      (error) => {
+        assert.equal(error.code, "AGY_RATE_LIMITED");
+        assert.equal(error.scope, "account");
+        assert.ok(Number.isFinite(error.retryAfterMs) && error.retryAfterMs > 0);
+        return true;
+      }
+    );
+    assert.equal(fetchCalled, false);
+  } finally {
+    catalog.getCatalog = originalGetCatalog;
+    catalog.clearModelCooldowns();
   }
 });

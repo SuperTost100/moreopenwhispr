@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const AgentStreamRequestRegistry = require("../../src/helpers/agentStreamRequestRegistry");
-const { sttBudgetFromPayload } = require("../../src/helpers/antigravityIpc");
+const { sttBudgetFromPayload, chatPrefsFromPayload } = require("../../src/helpers/antigravityIpc");
 const {
   resolveAntigravityModels,
   STATIC_FALLBACK_CATALOG,
@@ -21,6 +21,36 @@ test("AgentStreamRequestRegistry cancel aborts matching requestId only", () => {
   assert.equal(b.signal.aborted, false);
   registry.cancelSender(1);
   assert.equal(b.signal.aborted, true);
+});
+
+test("chatPrefsFromPayload prefers an explicit per-turn model pick over the settings default", () => {
+  // Regression: process-antigravity-chat-turn used to ignore payload.model
+  // (the renderer's already-resolved chat model) entirely, so every
+  // tool-enabled chat turn resolved as "auto" no matter what the user
+  // picked.
+  assert.equal(
+    chatPrefsFromPayload({ model: "gemini-3.5-flash", antigravityChatModel: "gemini-2.5-pro" })
+      .chat,
+    "gemini-3.5-flash"
+  );
+});
+
+test("chatPrefsFromPayload falls back to the settings antigravityChatModel when no explicit pick is sent", () => {
+  assert.equal(
+    chatPrefsFromPayload({ antigravityChatModel: "gemini-2.5-pro" }).chat,
+    "gemini-2.5-pro"
+  );
+});
+
+test("chatPrefsFromPayload falls back to auto when neither an explicit pick nor a setting is present", () => {
+  assert.equal(chatPrefsFromPayload({}).chat, "auto");
+});
+
+test("chatPrefsFromPayload ignores a blank/whitespace-only explicit model", () => {
+  assert.equal(
+    chatPrefsFromPayload({ model: "   ", antigravityChatModel: "gemini-2.5-pro" }).chat,
+    "gemini-2.5-pro"
+  );
 });
 
 test("resolveAntigravityModels honors explicit stt pref from settings", () => {
