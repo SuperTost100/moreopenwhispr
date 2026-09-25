@@ -610,8 +610,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("proxy-antigravity-transcription", data),
   processAntigravityReasoning: (text, modelId, agentName, config) =>
     ipcRenderer.invoke("process-antigravity-reasoning", text, modelId, agentName, config),
-  processAntigravityToolTurn: (payload) =>
-    ipcRenderer.invoke("process-antigravity-tool-turn", payload),
+  processAntigravityChatTurn: (payload) =>
+    ipcRenderer.invoke("process-antigravity-chat-turn", payload),
   checkAntigravityAvailable: () => ipcRenderer.invoke("check-antigravity-available"),
   antigravityListModels: (options) => ipcRenderer.invoke("antigravity-list-models", options),
 

@@ -4789,42 +4789,34 @@ class IPCHandlers {
       }
     );
 
-    ipcMain.handle("process-antigravity-tool-turn", async (event, payload) => {
-      const fs = require("fs");
-      const os = require("os");
-      const path = require("path");
-      const { beginAntigravityOperation, toolTurnBudgetMs } = require("./antigravityIpc");
-      const { runToolLoopTurn } = require("./antigravityReasoning");
-      const { ensureWritableDir } = require("./antigravityCli");
+    // Phase B: one gateway streamGenerateContent call per chat turn with
+    // native Gemini function calling (see antigravityChatGateway.js). The
+    // renderer owns the multi-call tool loop and sends the full structured
+    // `contents` history each turn; this handler only resolves one turn and
+    // falls back to the agy CLI subprocess when the gateway is unreachable.
+    ipcMain.handle("process-antigravity-chat-turn", async (event, payload) => {
+      const { antigravityPrefsFromPayload, beginAntigravityOperation, chatTurnBudgetMs } =
+        require("./antigravityIpc");
+      const { runAntigravityChatTurn } = require("./antigravityChatGateway");
       const { op, controller, requestId } = beginAntigravityOperation(
         this._antigravityRequests,
         event,
         payload || {},
-        { budgetMs: toolTurnBudgetMs(payload || {}), label: "antigravity-tool-turn" }
+        { budgetMs: chatTurnBudgetMs(payload || {}), label: "antigravity-chat-turn" }
       );
-      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-antigravity-chat-"));
-      ensureWritableDir(tmpDir);
       try {
-        const { result, conversationId } = await runToolLoopTurn({
+        const { textParts, functionCalls, finishReason, notices } = await runAntigravityChatTurn({
           systemPrompt: payload?.systemPrompt || "",
-          messages: payload?.messages || [],
+          contents: payload?.contents || [],
           tools: payload?.tools || [],
-          model: payload?.model,
-          conversationId: payload?.conversationId,
-          timeoutMs: Math.min(payload?.timeoutMs || toolTurnBudgetMs(payload), op.remainingMs()),
-          cwd: tmpDir,
-          signal: op.signal,
+          op,
+          antigravityPrefs: antigravityPrefsFromPayload(payload || {}),
         });
-        return { success: true, result, conversationId };
+        return { success: true, textParts, functionCalls, finishReason, notices };
       } catch (error) {
         return { success: false, error: error.message, code: error.code };
       } finally {
         this._antigravityRequests.complete(event.sender.id, requestId, controller);
-        try {
-          fs.rmSync(tmpDir, { recursive: true, force: true });
-        } catch {
-          // best-effort cleanup
-        }
       }
     });
 
