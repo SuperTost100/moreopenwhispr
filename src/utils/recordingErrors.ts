@@ -11,6 +11,10 @@ type RecordingError = {
 };
 
 export function getRecordingErrorTitle(error: RecordingError, t: TFunction): string {
+  if (error.code === "ACCESSIBILITY_PERMISSION_REQUIRED") {
+    return t("hooks.audioRecording.pastePermission.title");
+  }
+  if (error.code === "PASTE_FAILED") return t("hooks.audioRecording.pasteFailed.title");
   if (error.code?.startsWith("SELECTION_EDIT_")) {
     return t("hooks.audioRecording.selectionEditing.notAppliedTitle");
   }
@@ -45,6 +49,9 @@ export function getRecordingErrorTitle(error: RecordingError, t: TFunction): str
 }
 
 export function getRecordingErrorDescription(error: RecordingError, t: TFunction): string {
+  if (error.code === "ACCESSIBILITY_PERMISSION_REQUIRED") {
+    return t("hooks.audioRecording.pastePermission.description");
+  }
   if (error.code === "AGY_AUTH_REQUIRED") {
     return t("hooks.audioRecording.errorDescriptions.antigravityAuthRequired");
   }
