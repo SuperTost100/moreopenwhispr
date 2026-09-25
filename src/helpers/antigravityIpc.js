@@ -18,6 +18,21 @@ function antigravityPrefsFromPayload(payload = {}) {
   };
 }
 
+// Chat-turn-specific prefs: an explicit model pick sent with this turn (the
+// renderer's already-resolved chat model, e.g. from antigravityChat.ts)
+// takes precedence over the antigravityChatModel setting, which in turn
+// takes precedence over "auto". antigravityPrefsFromPayload alone only
+// reads antigravityChatModel / antigravityPrefs.chat, neither of which the
+// chat-turn caller supplies, so without this every tool-enabled chat
+// resolved as "auto" regardless of the model the user picked in the UI.
+function chatPrefsFromPayload(payload = {}) {
+  const prefs = antigravityPrefsFromPayload(payload);
+  if (typeof payload?.model === "string" && payload.model.trim()) {
+    prefs.chat = payload.model.trim();
+  }
+  return prefs;
+}
+
 function beginAntigravityOperation(registry, event, payload, { budgetMs, label }) {
   const requestId =
     typeof payload?.requestId === "string" && payload.requestId.trim()
@@ -46,6 +61,7 @@ function chatTurnBudgetMs(payload = {}) {
 
 module.exports = {
   antigravityPrefsFromPayload,
+  chatPrefsFromPayload,
   beginAntigravityOperation,
   sttBudgetFromPayload,
   cleanupBudgetMs,

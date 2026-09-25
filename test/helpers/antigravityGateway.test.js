@@ -275,6 +275,151 @@ test("streamGenerateContent maps finishReason MAX_TOKENS to AGY_TRUNCATED", asyn
   );
 });
 
+test("streamGenerateContent with premature EOF and no finishReason throws AGY_TRUNCATED", async () => {
+  // Regression: a stream that ends after real, well-formed content but never
+  // emits a terminal finishReason (dropped connection, premature EOF) used
+  // to return success with finishReason: null instead of surfacing failure.
+  await withServer(
+    (req, res) => {
+      req.on("data", () => {});
+      req.on("end", () => {
+        if (req.url.includes("loadCodeAssist")) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ cloudaicompanionProject: "proj-1" }));
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "text/event-stream" });
+        // No finishReason on this (or any) chunk — the connection just ends.
+        res.end(sseBody([candidateChunk([{ text: "some words but then it just stops" }])]));
+      });
+    },
+    async (base) => {
+      await assert.rejects(
+        () =>
+          transcribeAudioViaGateway({
+            accessToken: "tok",
+            audioBase64: "abc",
+            mimeType: "audio/wav",
+            fetchImpl: fetch,
+            gatewayBase: base,
+          }),
+        (error) => {
+          assert.equal(error.code, "AGY_TRUNCATED");
+          return true;
+        }
+      );
+    }
+  );
+});
+
+test("streamGenerateContent surfaces an error-shaped SSE data event as a typed error", async () => {
+  await withServer(
+    (req, res) => {
+      req.on("data", () => {});
+      req.on("end", () => {
+        if (req.url.includes("loadCodeAssist")) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ cloudaicompanionProject: "proj-1" }));
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "text/event-stream" });
+        // Google can emit an in-band error event instead of (or after) a
+        // non-2xx HTTP status.
+        res.end(
+          sseBody([{ error: { code: 429, message: "Resource has been exhausted (daily quota)." } }])
+        );
+      });
+    },
+    async (base) => {
+      await assert.rejects(
+        () =>
+          transcribeAudioViaGateway({
+            accessToken: "tok",
+            audioBase64: "abc",
+            mimeType: "audio/wav",
+            fetchImpl: fetch,
+            gatewayBase: base,
+          }),
+        (error) => {
+          assert.equal(error.code, "AGY_RATE_LIMITED");
+          assert.equal(error.status, 429);
+          assert.equal(error.scope, "account");
+          return true;
+        }
+      );
+    }
+  );
+});
+
+test("streamGenerateContent surfaces a non-429 error-shaped SSE data event as AGY_HTTP", async () => {
+  await withServer(
+    (req, res) => {
+      req.on("data", () => {});
+      req.on("end", () => {
+        if (req.url.includes("loadCodeAssist")) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ cloudaicompanionProject: "proj-1" }));
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "text/event-stream" });
+        res.end(sseBody([{ error: { code: 500, message: "internal error mid-stream" } }]));
+      });
+    },
+    async (base) => {
+      await assert.rejects(
+        () =>
+          transcribeAudioViaGateway({
+            accessToken: "tok",
+            audioBase64: "abc",
+            mimeType: "audio/wav",
+            fetchImpl: fetch,
+            gatewayBase: base,
+          }),
+        (error) => {
+          assert.equal(error.code, "AGY_HTTP");
+          assert.equal(error.status, 500);
+          return true;
+        }
+      );
+    }
+  );
+});
+
+test("streamGenerateContent with a stream of only malformed lines throws AGY_EMPTY_OUTPUT, not AGY_TRUNCATED", async () => {
+  await withServer(
+    (req, res) => {
+      req.on("data", () => {});
+      req.on("end", () => {
+        if (req.url.includes("loadCodeAssist")) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ cloudaicompanionProject: "proj-1" }));
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "text/event-stream" });
+        // Zero valid chunks were ever parsed — distinct from a real
+        // truncation where some content was actually received.
+        res.end("data: {not valid json at all\n\ndata: {also broken\n\n");
+      });
+    },
+    async (base) => {
+      await assert.rejects(
+        () =>
+          transcribeAudioViaGateway({
+            accessToken: "tok",
+            audioBase64: "abc",
+            mimeType: "audio/wav",
+            fetchImpl: fetch,
+            gatewayBase: base,
+          }),
+        (error) => {
+          assert.equal(error.code, "AGY_EMPTY_OUTPUT");
+          return true;
+        }
+      );
+    }
+  );
+});
+
 test("streamGenerateContent with an empty stream throws AGY_EMPTY_OUTPUT", async () => {
   await withServer(
     (req, res) => {

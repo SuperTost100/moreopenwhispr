@@ -1915,6 +1915,7 @@ declare global {
         tools?: Array<{ name: string; description?: string; parameters?: Record<string, unknown> }>;
         model?: string;
         timeoutMs?: number;
+        requestId?: string;
       }) => Promise<{
         success: boolean;
         textParts?: Array<{ text: string; thoughtSignature?: string }>;
@@ -1929,6 +1930,8 @@ declare global {
         error?: string;
         code?: string;
       }>;
+      /** Aborts the in-flight antigravity request (STT/cleanup/chat-turn) with this requestId. */
+      cancelAntigravityRequest?: (requestId: string) => void;
       checkAntigravityAvailable?: () => Promise<{ available: boolean; error?: string }>;
       antigravityListModels?: (options?: { refresh?: boolean }) => Promise<{
         success: boolean;

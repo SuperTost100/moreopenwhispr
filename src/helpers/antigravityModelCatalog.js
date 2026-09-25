@@ -197,15 +197,47 @@ const SLOT_TIERS = {
   chat: ["flash"],
 };
 
+// Earliest known-future reset time across a slot's tiers (model quota
+// resetTime) and any active cooldowns, including the pinned fallback. Used
+// when a slot ends up with zero usable candidates, so the caller can surface
+// a concrete retry time instead of a generic failure.
+function soonestResetMsForSlot(catalog, slot, cooldowns, now) {
+  const models = catalog?.models || {};
+  let soonest = null;
+  const consider = (ms) => {
+    if (Number.isFinite(ms) && ms > now && (soonest === null || ms < soonest)) soonest = ms;
+  };
+  const considerModel = (id) => {
+    consider(Date.parse(models[id]?.quotaInfo?.resetTime || ""));
+    consider(cooldowns?.get?.(id));
+  };
+  for (const tier of SLOT_TIERS[slot] || []) {
+    for (const id of catalog?.tieredModelIds?.[tier] || []) considerModel(id);
+  }
+  considerModel(PINNED_FALLBACK_MODEL);
+  return soonest;
+}
+
 /**
  * resolveAntigravityModels(catalog, prefs, now, cooldowns?) ->
- *   { stt, cleanup, chat, candidates: { stt, cleanup, chat }, notices }
+ *   { stt, cleanup, chat, candidates: { stt, cleanup, chat }, notices,
+ *     emptyResetMs: { [slot]: number } }
  *
  * Each slot is the first entry of its ordered candidate list. An explicit
  * pick (after deprecation mapping) leads when it's in the catalog, capable
  * (STT needs an audio MIME type) and usable; otherwise the "auto" policy
  * leads and a notice explains why. Synthetic transcription-mode ids
  * (gemini-3.5-transcribe*) are modes, never explicit model picks.
+ *
+ * Quota/cooldown eligibility (`usable`) applies to every candidate,
+ * including the pinned fallback and an explicit pick: a model known (from
+ * current catalog data) to be quota-exhausted or cooling is never retried
+ * just because nothing else was offered. The one exception is a pick or
+ * pinned model *missing* from a possibly-stale catalog — its state is
+ * unknown, not known-bad, so it stays as a last resort. If every candidate
+ * for a slot is eliminated this way, `candidates[slot]` is empty and
+ * `emptyResetMs[slot]` carries the soonest known reset/cooldown time (if
+ * any) for callers to surface as AGY_RATE_LIMITED.
  */
 function resolveAntigravityModels(
   catalog,
@@ -215,7 +247,7 @@ function resolveAntigravityModels(
 ) {
   const models = catalog?.models || {};
   const notices = [];
-  const result = { candidates: {}, notices };
+  const result = { candidates: {}, notices, emptyResetMs: {} };
 
   const usable = (id) => {
     const entry = models[id];
@@ -232,7 +264,11 @@ function resolveAntigravityModels(
       if (id && !list.includes(id)) list.push(id);
     };
 
-    let lastResort = null;
+    // Only set when the explicit pick is absent from a possibly-stale
+    // catalog — the one case where it stays a last resort despite failing
+    // `usable`/`capable` checks below (its real availability is unknown,
+    // not known-bad).
+    let lastResortIfMissing = null;
     const raw = typeof prefs?.[slot] === "string" ? prefs[slot].trim() : "";
     if (raw && raw !== "auto" && !isAntigravityTranscribeModel(raw)) {
       const mapped = mapDeprecated(catalog, raw);
@@ -244,12 +280,13 @@ function resolveAntigravityModels(
       const pick = mapped.id;
       if (!models[pick]) {
         notices.push({ slot, code: "EXPLICIT_NOT_IN_CATALOG", model: pick });
-        lastResort = pick;
+        lastResortIfMissing = pick;
       } else if (!capable(pick)) {
         notices.push({ slot, code: "EXPLICIT_NOT_CAPABLE", model: pick });
       } else if (!usable(pick)) {
+        // Known quota-exhausted or cooling — do not reintroduce it as a
+        // last resort; retrying it wastes a request certain to fail again.
         notices.push({ slot, code: "EXPLICIT_UNAVAILABLE", model: pick });
-        lastResort = pick;
       } else {
         push(pick);
       }
@@ -261,15 +298,46 @@ function resolveAntigravityModels(
         if (capable(resolved) && usable(resolved)) push(resolved);
       }
     }
-    // The pinned model is always tried before giving up, even when the
-    // catalog doesn't list it or reports it cooling: it's the known-good path.
-    push(PINNED_FALLBACK_MODEL);
-    push(lastResort);
+    // The pinned model is a known-good last resort, but only when it isn't
+    // itself known-bad: skip it if current catalog data says it's
+    // quota-exhausted or cooling. If it's simply absent from a
+    // possibly-stale catalog, its state is unknown, so keep it as an
+    // unconditional fallback.
+    if (!models[PINNED_FALLBACK_MODEL] || usable(PINNED_FALLBACK_MODEL)) {
+      push(PINNED_FALLBACK_MODEL);
+    }
+    push(lastResortIfMissing);
 
     result.candidates[slot] = list;
     result[slot] = list[0];
+    if (list.length === 0) {
+      const resetMs = soonestResetMsForSlot(catalog, slot, cooldowns, now);
+      if (resetMs !== null) result.emptyResetMs[slot] = resetMs;
+    }
   }
   return result;
+}
+
+/**
+ * emptyCandidatesError(resolved, slot, now?) -> typed AGY_RATE_LIMITED error
+ *
+ * Callers of resolveAntigravityModels use this when `candidates[slot]` came
+ * back empty (every candidate, including the pinned fallback, is known
+ * quota-exhausted or cooling): an account-scoped rate limit with the
+ * soonest known reset time, rather than a generic failure that would just
+ * get retried against models already known to fail.
+ */
+function emptyCandidatesError(resolved, slot, now = Date.now()) {
+  const resetMs = resolved?.emptyResetMs?.[slot];
+  const hasResetMs = Number.isFinite(resetMs);
+  return createAntigravityError(
+    "AGY_RATE_LIMITED",
+    "Antigravity has no available models for this request right now (quota-exhausted or cooling down)",
+    {
+      scope: "account",
+      ...(hasResetMs ? { retryAfterMs: Math.max(0, resetMs - now), resetAt: resetMs } : {}),
+    }
+  );
 }
 
 function listSelectableModels(catalog) {
@@ -440,6 +508,7 @@ module.exports = {
   refreshCatalog,
   notifyModelUnavailable,
   resolveAntigravityModels,
+  emptyCandidatesError,
   listSelectableModels,
   markModelCooldown,
   clearModelCooldowns,

@@ -175,6 +175,58 @@ test("quota-exhausted and cooling models are skipped until they reset", () => {
   );
 });
 
+test("a quota-exhausted or cooling pinned fallback is never retried, even as the last resort", () => {
+  // Regression: PINNED_FALLBACK_MODEL used to be force-pushed unconditionally,
+  // so a known quota-exhausted/cooling pinned model kept getting retried.
+  const exhaustedPinned = fixture();
+  exhaustedPinned.models[PINNED_FALLBACK_MODEL].quotaInfo = {
+    remainingFraction: 0,
+    resetTime: "2026-09-24T18:00:00Z",
+  };
+  const resolved = resolveAntigravityModels(validateCatalog(exhaustedPinned), {}, NOW, noCooldowns);
+  assert.ok(!resolved.candidates.stt.includes(PINNED_FALLBACK_MODEL));
+
+  const cooling = new Map([[PINNED_FALLBACK_MODEL, NOW + 60_000]]);
+  const resolvedCooling = resolveAntigravityModels(catalog(), {}, NOW, cooling);
+  assert.ok(!resolvedCooling.candidates.stt.includes(PINNED_FALLBACK_MODEL));
+});
+
+test("an explicit pick that is in the catalog but quota-exhausted/cooling is dropped, not reintroduced as a last resort", () => {
+  // Regression: an explicitly selected unavailable model (present in the
+  // catalog, but known quota-exhausted or cooling) used to be reintroduced
+  // through `lastResort`, so it kept getting retried instead of failing
+  // over to something that could actually succeed.
+  const exhaustedPick = fixture();
+  exhaustedPick.models["gemini-3.9-pro"].quotaInfo = {
+    remainingFraction: 0,
+    resetTime: "2026-09-24T18:00:00Z",
+  };
+  const resolved = resolveAntigravityModels(
+    validateCatalog(exhaustedPick),
+    { stt: "gemini-3.9-pro" },
+    NOW,
+    noCooldowns
+  );
+  assert.ok(!resolved.candidates.stt.includes("gemini-3.9-pro"));
+  assert.ok(
+    resolved.notices.some((n) => n.code === "EXPLICIT_UNAVAILABLE" && n.model === "gemini-3.9-pro")
+  );
+  // The auto candidates plus the (usable) pinned fallback still resolve.
+  assert.ok(resolved.candidates.stt.length > 0);
+});
+
+test("an empty candidate list (every candidate quota-exhausted or cooling) reports the soonest reset time", () => {
+  const allExhausted = fixture();
+  const resetTime = "2026-09-24T18:00:00Z";
+  for (const id of Object.keys(allExhausted.models)) {
+    allExhausted.models[id].quotaInfo = { remainingFraction: 0, resetTime };
+  }
+  const resolved = resolveAntigravityModels(validateCatalog(allExhausted), {}, NOW, noCooldowns);
+  assert.deepEqual(resolved.candidates.stt, []);
+  assert.equal(resolved.stt, undefined);
+  assert.equal(resolved.emptyResetMs.stt, Date.parse(resetTime));
+});
+
 test("an explicit pick missing from the catalog falls back to auto, stays last, and adds a notice", () => {
   const resolved = resolveAntigravityModels(
     catalog(),

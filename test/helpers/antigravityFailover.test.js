@@ -38,6 +38,10 @@ test("decideAntigravityFailover decision table", () => {
   failover(err("AGY_EMPTY_OUTPUT"), { slot: "stt", hadSpeech: true });
   stop(err("AGY_EMPTY_OUTPUT"), { slot: "stt", hadSpeech: false });
 
+  // A stream that ends without a terminal finishReason is a stage failure,
+  // not a dead end — the next candidate model should get a shot.
+  failover(err("AGY_TRUNCATED"));
+
   assert.equal(
     decideAntigravityFailover(Object.assign(new TypeError("fetch failed"), { code: "ENOTFOUND" }), {
       remainingMs: 9000,

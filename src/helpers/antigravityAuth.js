@@ -136,7 +136,13 @@ function invalidateTokenFileCache() {
 }
 
 function tokenObjEqual(a, b) {
-  return Boolean(a && b && a.access_token === b.access_token && a.expiry === b.expiry);
+  return Boolean(
+    a &&
+    b &&
+    a.access_token === b.access_token &&
+    a.expiry === b.expiry &&
+    a.refresh_token === b.refresh_token
+  );
 }
 
 // Atomic write: tmp file in the same dir + rename, mode 0600. Callers pass
@@ -455,17 +461,25 @@ async function performDirectRefresh() {
 
   persistLastKnownGoodClientId(result.clientId);
 
-  // Re-read right before writing: if the file's access token/expiry changed
-  // since beforeData was captured, someone else already refreshed it (e.g.
-  // another process, or agy itself racing us) — keep theirs, don't clobber.
+  // Re-read right before writing: if the file went missing or became
+  // unreadable since beforeData was captured, refuse to persist — writing
+  // here would recreate a file the user (or another process) deliberately
+  // removed, resurrecting deleted credentials. If the file's token
+  // (access/refresh token or expiry) changed, someone else already
+  // refreshed it (e.g. another process, or agy itself racing us) — keep
+  // theirs, don't clobber.
   const latest = readTokenFileUncached();
-  if (latest?.token && !tokenObjEqual(latest.token, beforeData?.token)) {
+  if (!latest || !latest.token) {
+    invalidateTokenFileCache();
+    return { ok: false, reason: "token_file_missing" };
+  }
+  if (!tokenObjEqual(latest.token, beforeData?.token)) {
     invalidateTokenFileCache();
     return { ok: true, tokenObj: latest.token, wrote: false };
   }
 
   const mergedData = {
-    ...(latest || beforeData || {}),
+    ...latest,
     token: { ...(beforeData?.token || {}), ...result.token },
   };
   writeTokenFileAtomic(mergedData);

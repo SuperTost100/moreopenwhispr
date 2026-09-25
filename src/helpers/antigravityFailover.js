@@ -66,6 +66,13 @@ function decideAntigravityFailover(error, context = {}) {
     return { action: "failover", error, refreshCatalog: true };
   }
 
+  // A stream that parsed real content but never reached a terminal
+  // finishReason (premature EOF / dropped connection) — treat like any
+  // other stage failure and let the next candidate model retry.
+  if (code === "AGY_TRUNCATED") {
+    return { action: "failover", error };
+  }
+
   if (code === "AGY_HTTP") {
     if (error.status === 401 && !authRetried) return { action: "retry_auth", error };
     if (error.status === 401) return { action: "stop", error };

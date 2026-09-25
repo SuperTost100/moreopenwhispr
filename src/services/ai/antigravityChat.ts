@@ -142,7 +142,9 @@ export function validateToolArguments(
   const safeArgs = args && typeof args === "object" ? args : {};
 
   const required = Array.isArray((schema as { required?: unknown }).required)
-    ? ((schema as { required: unknown[] }).required.filter((k) => typeof k === "string") as string[])
+    ? ((schema as { required: unknown[] }).required.filter(
+        (k) => typeof k === "string"
+      ) as string[])
     : [];
   for (const key of required) {
     if (!(key in safeArgs)) {
@@ -182,7 +184,11 @@ function stableArgsKey(value: unknown): string {
 }
 
 /** dedupeKeyForCall(call) -> the call's own `id` when present, else a name+args hash. */
-export function dedupeKeyForCall(call: { name: string; args: Record<string, unknown>; id?: string }): string {
+export function dedupeKeyForCall(call: {
+  name: string;
+  args: Record<string, unknown>;
+  id?: string;
+}): string {
   return call.id || `${call.name}:${stableArgsKey(call.args || {})}`;
 }
 
@@ -208,6 +214,24 @@ export async function* runAntigravityChatStream({
     throw new Error("Antigravity chat is not available in this environment");
   }
 
+  // A single request id for the whole invocation: only one main-process
+  // antigravity operation (STT/cleanup/chat-turn share the same registry) is
+  // ever in flight per turn here, so reusing one id across turns is safe —
+  // and it's what lets the renderer's abortSignal reach the specific
+  // in-flight operation instead of only being checked locally after the
+  // fact (which left generation running for up to 60s post-cancel).
+  const requestId = crypto.randomUUID();
+  let cancelSent = false;
+  const sendCancel = () => {
+    if (cancelSent) return;
+    cancelSent = true;
+    api.cancelAntigravityRequest?.(requestId);
+  };
+  if (abortSignal) {
+    if (abortSignal.aborted) sendCancel();
+    else abortSignal.addEventListener("abort", sendCancel, { once: true });
+  }
+
   const resolvedScreenContext = screenContext || screenContextFromMessages(messages);
 
   if (!tools.length) {
@@ -219,8 +243,12 @@ export async function* runAntigravityChatStream({
     }
     const result = await api.processAntigravityReasoning(userText, model, null, {
       systemPrompt,
+      requestId,
       ...(resolvedScreenContext ? { screenContext: resolvedScreenContext } : {}),
     });
+    // Recheck immediately after the IPC returns, before touching the
+    // result: a cancel that raced the response must yield nothing further.
+    if (abortSignal?.aborted) return;
     if (!result.success) {
       throw new Error(result.error || "Antigravity reasoning failed");
     }
@@ -232,6 +260,12 @@ export async function* runAntigravityChatStream({
 
   let contents = buildInitialContents(messages, resolvedScreenContext);
   const schemaByName = new Map(tools.map((tool) => [tool.name, tool.parameters]));
+  // Invocation-wide: a call id that already executed returns its cached
+  // result on any later turn instead of re-executing (e.g. a repeated
+  // create_note id must not create a second note). Name+args dedupe for
+  // calls without an id stays scoped to `seenKeys` below (per turn only) —
+  // an intentional repeat with a fresh id on a later turn must still run.
+  const executedById = new Map<string, Record<string, unknown>>();
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
     if (abortSignal?.aborted) return;
@@ -242,7 +276,12 @@ export async function* runAntigravityChatStream({
       tools,
       model,
       timeoutMs: 60_000,
+      requestId,
     });
+
+    // Recheck immediately after the IPC returns, before yielding content,
+    // done, or executing any tool calls the response carries.
+    if (abortSignal?.aborted) return;
 
     if (!response.success) {
       throw new Error(response.error || "Antigravity chat turn failed");
@@ -270,7 +309,9 @@ export async function* runAntigravityChatStream({
     // echoed back on the follow-up request.
     const modelParts: GeminiPart[] = [
       ...textParts.map((p) =>
-        p.thoughtSignature ? { text: p.text, thoughtSignature: p.thoughtSignature } : { text: p.text }
+        p.thoughtSignature
+          ? { text: p.text, thoughtSignature: p.thoughtSignature }
+          : { text: p.text }
       ),
       ...functionCalls.map((call) => ({
         functionCall: { name: call.name, args: call.args, ...(call.id ? { id: call.id } : {}) },
@@ -283,11 +324,16 @@ export async function* runAntigravityChatStream({
     const seenKeys = new Set<string>();
 
     for (const call of functionCalls) {
-      const key = dedupeKeyForCall(call);
       const withId = (response: Record<string, unknown>): GeminiPart => ({
         functionResponse: { name: call.name, response, ...(call.id ? { id: call.id } : {}) },
       });
 
+      if (call.id && executedById.has(call.id)) {
+        functionResponseParts.push(withId(executedById.get(call.id)!));
+        continue;
+      }
+
+      const key = dedupeKeyForCall(call);
       if (seenKeys.has(key)) {
         functionResponseParts.push(withId({ error: "Duplicate call skipped" }));
         continue;
@@ -296,7 +342,9 @@ export async function* runAntigravityChatStream({
 
       const validation = validateToolArguments(schemaByName.get(call.name), call.args);
       if (!validation.valid) {
-        functionResponseParts.push(withId({ error: validation.error }));
+        const payload = { error: validation.error };
+        if (call.id) executedById.set(call.id, payload);
+        functionResponseParts.push(withId(payload));
         continue;
       }
 
@@ -308,6 +356,7 @@ export async function* runAntigravityChatStream({
 
       try {
         const toolResult = await executeToolCall(call.name, argsJson);
+        if (abortSignal?.aborted) return;
         yield {
           type: "tool_result",
           callId,
@@ -315,11 +364,13 @@ export async function* runAntigravityChatStream({
           displayText: toolResult.displayText,
           metadata: toolResult.metadata,
         };
-        functionResponseParts.push(withId({ result: toolResult.data }));
+        const payload = { result: toolResult.data };
+        if (call.id) executedById.set(call.id, payload);
+        functionResponseParts.push(withId(payload));
       } catch (error) {
-        functionResponseParts.push(
-          withId({ error: error instanceof Error ? error.message : String(error) })
-        );
+        const payload = { error: error instanceof Error ? error.message : String(error) };
+        if (call.id) executedById.set(call.id, payload);
+        functionResponseParts.push(withId(payload));
       }
     }
 

@@ -4756,8 +4756,11 @@ class IPCHandlers {
     // `contents` history each turn; this handler only resolves one turn and
     // falls back to the agy CLI subprocess when the gateway is unreachable.
     ipcMain.handle("process-antigravity-chat-turn", async (event, payload) => {
-      const { antigravityPrefsFromPayload, beginAntigravityOperation, chatTurnBudgetMs } =
-        require("./antigravityIpc");
+      const {
+        chatPrefsFromPayload,
+        beginAntigravityOperation,
+        chatTurnBudgetMs,
+      } = require("./antigravityIpc");
       const { runAntigravityChatTurn } = require("./antigravityChatGateway");
       const { op, controller, requestId } = beginAntigravityOperation(
         this._antigravityRequests,
@@ -4771,7 +4774,7 @@ class IPCHandlers {
           contents: payload?.contents || [],
           tools: payload?.tools || [],
           op,
-          antigravityPrefs: antigravityPrefsFromPayload(payload || {}),
+          antigravityPrefs: chatPrefsFromPayload(payload || {}),
         });
         return { success: true, textParts, functionCalls, finishReason, notices };
       } catch (error) {
@@ -4779,6 +4782,16 @@ class IPCHandlers {
       } finally {
         this._antigravityRequests.complete(event.sender.id, requestId, controller);
       }
+    });
+
+    // Per-request cancellation for a single in-flight antigravity chat turn
+    // (STT/cleanup/chat-turn all share this._antigravityRequests). The
+    // renderer's abortSignal wires here so stopping a chat actually aborts
+    // the main-process operation instead of leaving it running for up to
+    // chatTurnBudgetMs after the UI moved on.
+    ipcMain.on("cancel-antigravity-request", (event, requestId) => {
+      if (typeof requestId !== "string" || !requestId.trim()) return;
+      this._antigravityRequests.cancel(event.sender.id, requestId.trim());
     });
 
     ipcMain.handle("check-antigravity-available", async () => {
