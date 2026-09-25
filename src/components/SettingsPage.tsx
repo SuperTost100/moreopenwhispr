@@ -1335,6 +1335,7 @@ export default function SettingsPage({
     setWhisperVadSamplesOverlap,
   } = useSettings();
 
+  const meetingProcessDetection = useSettingsStore((state) => state.meetingProcessDetection);
   const voiceAgentKey = useSettingsStore((s) => s.voiceAgentKey);
   const setVoiceAgentKey = useSettingsStore((s) => s.setVoiceAgentKey);
   const translationKey = useSettingsStore((s) => s.translationKey);
@@ -1626,6 +1627,7 @@ export default function SettingsPage({
     hyprlandConfigStatus,
     supportsPushToTalk,
     pushToTalkUnavailableReason,
+    linuxInputAccessDenied,
   } = useHotkeyModeInfo("settings", dictationKey);
   const [effectiveDefaultHotkey, setEffectiveDefaultHotkey] = useState<string | null>(null);
   const [linuxPttAvailable, setLinuxPttAvailable] = useState(true);
@@ -1656,8 +1658,14 @@ export default function SettingsPage({
       notificationsEnabled,
       notifyMeetingDetection,
       notifyCalendarReminders,
+      meetingProcessDetection,
     });
-  }, [notificationsEnabled, notifyMeetingDetection, notifyCalendarReminders]);
+  }, [
+    notificationsEnabled,
+    notifyMeetingDetection,
+    notifyCalendarReminders,
+    meetingProcessDetection,
+  ]);
 
   const handleAutoStartChange = async (enabled: boolean) => {
     if (!window.electronAPI?.setAutoStartEnabled) return;
@@ -4079,9 +4087,12 @@ EOF`,
                         }
                       />
                     </div>
-                    {getCachedPlatform() === "linux" && activationMode === "push" && (
-                      <LinuxPttSetupInfo isAvailable={linuxPttAvailable} />
-                    )}
+                    {getCachedPlatform() === "linux" &&
+                      (activationMode === "push" || linuxInputAccessDenied) && (
+                        <LinuxPttSetupInfo
+                          isAvailable={!linuxInputAccessDenied && linuxPttAvailable}
+                        />
+                      )}
                   </SettingsPanelRow>
                 )}
               </SettingsPanel>

@@ -208,6 +208,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const {
     supportsPushToTalk,
     pushToTalkUnavailableReason,
+    linuxInputAccessDenied,
     loaded: hotkeyModeLoaded,
   } = useHotkeyModeInfo("onboarding", dictationHotkey);
   const { activationMode, setActivationMode } = settings;
@@ -1017,8 +1018,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                     }
                   />
                 </div>
-                {platform === "linux" && activationMode === "push" && (
-                  <LinuxPttSetupInfo isAvailable={supportsPushToTalk} />
+                {platform === "linux" && (activationMode === "push" || linuxInputAccessDenied) && (
+                  <LinuxPttSetupInfo isAvailable={!linuxInputAccessDenied && supportsPushToTalk} />
                 )}
               </div>
             )}
