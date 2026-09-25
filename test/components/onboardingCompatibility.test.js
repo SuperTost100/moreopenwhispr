@@ -22,8 +22,6 @@ async function createOnboardingRenderer(t, platform = "linux") {
       `,
       "onboarding-hero-dither.webp": `export default "hero-light.webp";`,
       "onboarding-hero-dither-dark.webp": `export default "hero-dark.webp";`,
-      "onboarding-bg-light.svg": `export default "background-light.svg";`,
-      "onboarding-bg-dark.svg": `export default "background-dark.svg";`,
       "onboarding-permission-microphone.webp": `export default "microphone.webp";`,
       "onboarding-permission-accessibility.webp": `export default "accessibility.webp";`,
       "onboarding-permission-system-audio.webp": `export default "system-audio.webp";`,

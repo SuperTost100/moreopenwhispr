@@ -113,13 +113,16 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
         style={{ animation: "float-up 0.4s ease-out" }}
       >
         <div className="flex flex-col items-center text-center">
+          {/* text-accent was a neutral hover-surface token, not a foreground
+              colour — against bg-primary-soft it was nearly the same lightness
+              as the tile in dark mode, so the icon effectively disappeared. */}
           <div className="w-10 h-10 rounded-lg bg-primary-soft border border-border flex items-center justify-center mb-3">
-            <Sparkles size={17} strokeWidth={1.5} className="text-accent/60" />
+            <Sparkles size={17} strokeWidth={1.5} className="text-primary" />
           </div>
           <h2 className="text-sm font-semibold text-foreground mb-1">
             {t("notes.onboarding.actions.title")}
           </h2>
-          <p className="text-xs text-foreground/45 leading-relaxed max-w-[320px]">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-[320px]">
             {t("notes.onboarding.actions.description")}
           </p>
         </div>

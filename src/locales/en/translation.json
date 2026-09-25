@@ -183,7 +183,7 @@
     "model": "Model",
     "loading": "Loading...",
     "unknown": "Unknown",
-    "availableModels": "Available Models",
+    "availableModels": "Available models",
     "fast": "Fast",
     "hold": "Hold",
     "private": "Private",
@@ -381,7 +381,7 @@
           "local": {
             "title": "Local setup takes a few extra steps",
             "description": "Local processing keeps your speech on this device, but requires a one-time setup and at least {{minimumSpace}} GB of free space.",
-            "continue": "Setup Locally",
+            "continue": "Setup locally",
             "steps": {
               "1": "Choose a transcription engine",
               "2": "Configure or download a model, about {{modelSize}}",
@@ -389,9 +389,9 @@
             }
           }
         },
-        "useCloud": "Use Cloud instead",
+        "useCloud": "Use cloud instead",
         "continueSetup": "Continue setup",
-        "showMore": "Show More Options",
+        "showMore": "Show more options",
         "moreOptions": {
           "title": "Choose your API setup",
           "description": "Add an API key or connect a self-hosted model.",
@@ -421,12 +421,12 @@
         "optional": "Optional",
         "modelId": "Model ID",
         "modelIdPlaceholder": "Write your model ID",
-        "testConnection": "Test Connection",
+        "testConnection": "Test connection",
         "proceed": "Proceed",
         "clinical": "FOR CLINICAL TRANSCRIPTION",
         "clientId": "Client ID",
         "clientSecret": "Client secret",
-        "runTest": "Run Test",
+        "runTest": "Run test",
         "testing": "Testing…",
         "connected": "Connected",
         "connectionFailed": "The connection could not be verified.",
@@ -488,13 +488,13 @@
       "microphoneTitle": "Microphone",
       "microphoneDescription": "Turns your speech into text. Nothing is recorded until you press your hotkey.",
       "grant": "Grant",
-      "grantAccess": "Grant Access",
+      "grantAccess": "Grant access",
       "accessibilityTitle": "Accessibility",
       "accessibilityDescription": "Types the finished text straight into whatever app you're in — docs, email, chat.",
-      "testAndGrant": "Test & Grant",
+      "testAndGrant": "Test & grant",
       "requiredForApp": "Required for OpenWhispr to work",
       "microphoneRequired": "Microphone access required",
-      "openSystemSettings": "Open System Settings",
+      "openSystemSettings": "Open system settings",
       "systemAudioTitle": "System Audio",
       "systemAudioDescription": "Lets the meeting recorder hear the other side of your calls — meetings, lectures, podcasts. You can turn this on later in Settings.",
       "optional": "Optional",
@@ -589,7 +589,7 @@
       "cloudDescription": "You're on OpenWhispr Cloud — fast, accurate, zero data retention, 2,000 words free every week. Prefer everything on-device? Switch to local processing in Settings.",
       "localDescription": "You're set up with local processing or your own key. Adjust how your audio is processed anytime in Settings.",
       "cleanupNote": "AI text cleanup runs with sensible defaults. You can adjust it anytime in Settings.",
-      "openSettings": "Open Settings",
+      "openSettings": "Open settings",
       "skipForNow": "Skip for now",
       "corti": {
         "title": "You told us you're here for clinical transcription",
@@ -657,8 +657,8 @@
       "couldNotDownloadTitle": "Couldn't download update",
       "couldNotDownloadDescription": "Check your internet connection and try again.",
       "installing": "Installing...",
-      "installButton": "Install Update",
-      "availableButton": "Update Available"
+      "installButton": "Install update",
+      "availableButton": "Update available"
     },
     "limit": {
       "weeklyTitle": "Weekly limit reached",
@@ -707,7 +707,7 @@
       "viewRawTranscript": "View raw transcript",
       "showInFolder": "Reveal in Finder",
       "showInFolderWindows": "Show in Explorer",
-      "showInFolderLinux": "Show in File Manager",
+      "showInFolderLinux": "Show in file manager",
       "retryTranscription": "Re-transcribe",
       "retrying": "Re-transcribing...",
       "retrySuccess": "Transcription updated",
@@ -758,12 +758,12 @@
     "cloudMigration": {
       "title": "Welcome to OpenWhispr Cloud",
       "description": "We've switched your transcription to OpenWhispr Cloud for faster, more accurate results. Your previous settings are saved — switch back anytime in Settings.",
-      "viewSettings": "View Settings"
+      "viewSettings": "View settings"
     },
     "aiCta": {
       "title": "Enhance your transcriptions with AI",
       "description": "Automatically fix grammar, punctuation, and formatting as you speak.",
-      "enable": "Enable AI Enhancement"
+      "enable": "Enable AI enhancement"
     },
     "loading": "Loading...",
     "gpu": {
@@ -781,7 +781,7 @@
     "cloudNudge": {
       "title": "You're signed in",
       "description": "Dictation still runs on your own setup. You can switch to OpenWhispr Cloud anytime.",
-      "action": "Open Settings"
+      "action": "Open settings"
     },
     "processingRoute": {
       "title": "Configured processing route",
@@ -862,7 +862,7 @@
       "localAi": "(LocalAI)",
       "apiKeyOptional": "API Key (Optional)",
       "apiKeyHelp": "Optional. Sent as a Bearer token for authentication. This is separate from your OpenAI API key.",
-      "applyAndRefresh": "Apply & Refresh",
+      "applyAndRefresh": "Apply & refresh",
       "queryPrefix": "We'll query",
       "querySuffix": "for available models.",
       "modelsReloadHint": "Models will reload when you click away from the URL field or click \"Apply & Refresh\".",
@@ -880,8 +880,8 @@
       "keyRequiredHint": "An API key is required for inference — add one to use this provider."
     },
     "getApiKey": "Get your API key ->",
-    "selectModel": "Select Model",
-    "availableModels": "Available Models",
+    "selectModel": "Select model",
+    "availableModels": "Available models",
     "disableThinking": {
       "label": "Disable thinking output",
       "help": "Skips reasoning tokens for cleaner output. Recommended for cleanup. Some servers ignore this hint."
@@ -892,7 +892,7 @@
     "enterprise": {
       "title": "Enterprise Providers",
       "description": "Connect to cloud providers using your organization's credentials.",
-      "testConnection": "Test Connection",
+      "testConnection": "Test connection",
       "testing": "Testing...",
       "testSuccess": "Connected",
       "testFailed": "Connection failed",
@@ -1244,7 +1244,7 @@
       "invalidEmail": "Enter a valid email address",
       "plusAliasUnsupported": "Email aliases with '+' are not supported"
     },
-    "getStarted": "Get Started",
+    "getStarted": "Get started",
     "legal": {
       "and": "and",
       "prefix": "By continuing, you agree to our",
@@ -1336,10 +1336,10 @@
     "connectHere": "Connect them here",
     "openMeetingLink": "Open meeting link",
     "systemAudioRequired": "System Audio permission is needed to capture other participants' audio.",
-    "openSettings": "Open System Settings",
+    "openSettings": "Open system settings",
     "connectCalendar": "Connect your calendar",
     "connectCalendarDescription": "See your meetings and join them without leaving OpenWhispr.",
-    "connectCalendarButton": "Connect Calendar"
+    "connectCalendarButton": "Connect calendar"
   },
   "cleanupPrompt": "Cleanup",
   "developerSection": {
@@ -1350,7 +1350,7 @@
       "label": "Debug mode"
     },
     "description": "Capture detailed logs to help diagnose issues",
-    "openLogsFolder": "Open Logs Folder",
+    "openLogsFolder": "Open logs folder",
     "performanceNote": {
       "description": "Debug logging writes to disk continuously and may slightly affect performance. Disable when not troubleshooting.",
       "label": "Note"
@@ -1412,7 +1412,7 @@
     "description": "Create keys to access the OpenWhispr API programmatically.",
     "docsLink": "API Docs",
     "empty": "No API keys yet",
-    "createButton": "Create API Key",
+    "createButton": "Create API key",
     "create": {
       "title": "Create API Key",
       "nameLabel": "Key Name",
@@ -1433,7 +1433,7 @@
       "title": "API Key Created",
       "warning": "Copy this key now. It won't be shown again.",
       "copied": "Copied!",
-      "copyButton": "Copy to Clipboard",
+      "copyButton": "Copy to clipboard",
       "done": "Done"
     },
     "scopes": {
@@ -1671,7 +1671,7 @@
       "processing": "Processing...",
       "openwhisprCloud": "OpenWhispr Cloud",
       "providerLabel": "Provider",
-      "run": "Run Test",
+      "run": "Run test",
       "customEndpoint": "Custom endpoint",
       "apiKeyMissing": "{{provider}} API key not configured. Add it in AI Models settings.",
       "translateHint": "The text will be translated to {{language}}",
@@ -1722,11 +1722,11 @@
       },
       "llms": {
         "description": "Models for chat, cleanup & summaries",
-        "label": "Language Models"
+        "label": "Language models"
       },
       "privacyData": {
         "description": "Privacy, permissions & analytics",
-        "label": "Privacy & Data"
+        "label": "Privacy & data"
       },
       "system": {
         "description": "Updates, storage & developer tools",

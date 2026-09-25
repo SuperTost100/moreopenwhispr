@@ -210,7 +210,7 @@ export default function ShortcutSetupStep({
                 type="button"
                 onClick={() => void confirm(hotkey)}
                 disabled={isConfirming}
-                className={`onboarding-pressable rounded-md bg-[var(--onboarding-surface-tertiary)] text-[var(--onboarding-text-secondary)] hover:bg-[var(--onboarding-surface-tertiary-hover)] hover:text-[var(--onboarding-text-primary)] disabled:cursor-default ${
+                className={`onboarding-pressable rounded-md border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface-secondary)] text-[var(--onboarding-text-primary)] hover:bg-[var(--onboarding-surface-tertiary-hover)] disabled:cursor-default ${
                   dense ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-sm"
                 }`}
               >
