@@ -1867,17 +1867,30 @@ declare global {
         agentName: string | null,
         config: any
       ) => Promise<{ success: boolean; text?: string; error?: string; code?: string }>;
-      processAntigravityToolTurn?: (payload: {
+      /**
+       * Phase B: one gateway streamGenerateContent turn with native Gemini
+       * function calling. `contents` is the full structured history in
+       * Gemini shape (user/model turns; model turns keep functionCall parts,
+       * tool results go back as functionResponse parts) — the renderer owns
+       * the multi-turn tool loop and calls this once per turn.
+       */
+      processAntigravityChatTurn?: (payload: {
         systemPrompt?: string;
-        messages?: Array<{ role?: string; content?: string }>;
-        tools?: Array<{ name?: string; description?: string }>;
+        contents: Array<{ role: "user" | "model"; parts: Array<Record<string, unknown>> }>;
+        tools?: Array<{ name: string; description?: string; parameters?: Record<string, unknown> }>;
         model?: string;
-        conversationId?: string;
         timeoutMs?: number;
       }) => Promise<{
         success: boolean;
-        result?: any;
-        conversationId?: string | null;
+        textParts?: Array<{ text: string; thoughtSignature?: string }>;
+        functionCalls?: Array<{
+          name: string;
+          args: Record<string, unknown>;
+          thoughtSignature?: string;
+          id?: string;
+        }>;
+        finishReason?: string | null;
+        notices?: unknown;
         error?: string;
         code?: string;
       }>;

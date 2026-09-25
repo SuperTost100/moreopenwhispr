@@ -235,11 +235,17 @@ async function readJsonBody(response) {
  * whole response before parsing. Skips `part.thought === true` parts (Gemini
  * "thinking" trace, never spoken/displayed content) and tracks the last
  * `finishReason` seen across all streamed candidates.
+ *
+ * Also collects the raw non-thought parts (text and functionCall alike,
+ * each keeping its `thoughtSignature` verbatim when present) into `parts`
+ * so callers that need native function calling (the chat tool loop) don't
+ * have to re-walk the stream a second time.
  */
 async function readSseStream(response) {
   let buffer = "";
   let text = "";
   let finishReason = null;
+  const parts = [];
 
   const processLine = (rawLine) => {
     const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
@@ -256,11 +262,17 @@ async function readSseStream(response) {
     if (typeof candidate?.finishReason === "string" && candidate.finishReason) {
       finishReason = candidate.finishReason;
     }
-    const parts = candidate?.content?.parts;
-    if (Array.isArray(parts)) {
-      for (const part of parts) {
+    const candidateParts = candidate?.content?.parts;
+    if (Array.isArray(candidateParts)) {
+      for (const part of candidateParts) {
         if (part?.thought === true) continue;
         if (typeof part?.text === "string") text += part.text;
+        if (typeof part?.text === "string" || part?.functionCall) {
+          const kept = { thoughtSignature: part.thoughtSignature };
+          if (typeof part.text === "string") kept.text = part.text;
+          if (part.functionCall) kept.functionCall = part.functionCall;
+          parts.push(kept);
+        }
       }
     }
   };
@@ -300,7 +312,7 @@ async function readSseStream(response) {
   }
   if (buffer) processLine(buffer);
 
-  return { text: text.trim(), finishReason };
+  return { text: text.trim(), finishReason, parts };
 }
 
 // --- Project id / loadCodeAssist -------------------------------------------
@@ -621,6 +633,92 @@ async function streamGenerateContent({
   return { text: parsed.text, finishReason: parsed.finishReason };
 }
 
+/**
+ * One chat-tool-loop turn (Phase B): a single streamGenerateContent call
+ * carrying the full structured conversation (`contents`) and, when tools
+ * are offered, native Gemini `functionDeclarations` + AUTO tool-calling.
+ * Unlike streamGenerateContent/generateContent above, an empty `text` is
+ * not itself an error here — a turn that only returns functionCall parts
+ * (no text) is the normal shape of a tool-invoking response. Retirement
+ * detection only runs on a text-only response (a functionCall is never
+ * mistaken for one).
+ */
+async function streamChatTurn({
+  accessToken,
+  base = DAILY_CLOUDCODE_BASE,
+  projectId,
+  model,
+  systemInstruction,
+  contents,
+  functionDeclarations,
+  thinkingLevel = "low",
+  fetchImpl = fetch,
+  op,
+  stageMs,
+}) {
+  const operation = ensureOperation(op, DEFAULT_OPERATION_BUDGET_MS, "antigravity-chatTurn");
+  const request = { contents };
+  if (systemInstruction) request.systemInstruction = systemInstruction;
+  if (Array.isArray(functionDeclarations) && functionDeclarations.length > 0) {
+    request.tools = [{ functionDeclarations }];
+    request.toolConfig = { functionCallingConfig: { mode: "AUTO" } };
+  }
+  request.generationConfig = { thinkingConfig: { thinkingLevel } };
+
+  const envelope = buildEnvelope({ projectId, model, request });
+  let response;
+  try {
+    response = await fetchImpl(`${base}/v1internal:streamGenerateContent?alt=sse`, {
+      method: "POST",
+      headers: gatewayHeaders(accessToken),
+      body: JSON.stringify(envelope),
+      signal: operation.stageSignal(stageMs ?? operation.remainingMs()),
+    });
+  } catch (error) {
+    throw wrapFetchAbort(error, operation);
+  }
+
+  if (!response.ok) {
+    const { bodyText, payload } = await readJsonBody(response);
+    throwTypedGatewayError(response.status, bodyText, payload, response.headers);
+  }
+
+  let parsed;
+  try {
+    parsed = await readSseStream(response);
+  } catch (error) {
+    throw wrapFetchAbort(error, operation);
+  }
+
+  checkFinishReason(parsed.finishReason);
+
+  const functionCalls = [];
+  const textParts = [];
+  for (const part of parsed.parts) {
+    if (part.functionCall) {
+      functionCalls.push({
+        name: part.functionCall.name,
+        args: part.functionCall.args && typeof part.functionCall.args === "object"
+          ? part.functionCall.args
+          : {},
+        thoughtSignature: part.thoughtSignature,
+        ...(typeof part.functionCall.id === "string" ? { id: part.functionCall.id } : {}),
+      });
+    } else if (typeof part.text === "string" && part.text) {
+      textParts.push({ text: part.text, thoughtSignature: part.thoughtSignature });
+    }
+  }
+
+  if (!parsed.text && functionCalls.length === 0) {
+    throw createAntigravityError("AGY_EMPTY_OUTPUT", "Antigravity returned no content");
+  }
+  if (functionCalls.length === 0 && isModelRetirementNotice(parsed.text)) {
+    throw createAntigravityError("AGY_MODEL_UNAVAILABLE", parsed.text);
+  }
+
+  return { text: parsed.text, textParts, functionCalls, finishReason: parsed.finishReason };
+}
+
 function buildTranscriptionSystemPrompt({ mode, language, keyterms }) {
   const lines = [
     "You are a speech-to-text engine.",
@@ -752,6 +850,7 @@ module.exports = {
   resolveUserDataDir,
   generateContent,
   streamGenerateContent,
+  streamChatTurn,
   transcribeAudioViaGateway,
   generateTextViaGateway,
   extractResponseText,

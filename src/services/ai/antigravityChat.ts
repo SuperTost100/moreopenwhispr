@@ -1,6 +1,11 @@
 import type { AgentStreamChunk } from "../ReasoningService";
 import type { ScreenContextImage } from "../../types/electron";
 
+// Phase B: the assistant tool loop now spends one gateway streamGenerateContent
+// call per turn (native Gemini function calling) instead of spawning
+// `agy --print` per turn (10-30s). This module owns the multi-turn loop:
+// execute the calls a turn returns, append functionResponse parts, and ask
+// the main process for another turn until the model answers with text only.
 const MAX_TURNS = 8;
 
 export type AntigravityToolSchema = {
@@ -16,6 +21,16 @@ export type AntigravityToolExecutionResult = {
 };
 
 type ChatMessage = { role: string; content: string };
+
+export type GeminiPart = Record<string, unknown> & {
+  text?: string;
+  functionCall?: { name: string; args: Record<string, unknown>; id?: string };
+  functionResponse?: { name: string; response: Record<string, unknown>; id?: string };
+  inlineData?: { mimeType: string; data: string };
+  thoughtSignature?: string;
+};
+
+export type GeminiContent = { role: "user" | "model"; parts: GeminiPart[] };
 
 function chatMessagesFromHistory(
   messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }>
@@ -57,6 +72,120 @@ function screenContextFromMessages(
   return null;
 }
 
+/**
+ * buildInitialContents(messages, screenContext) -> GeminiContent[]
+ *
+ * Converts the caller's plain user/assistant text history into Gemini
+ * `contents` (assistant -> "model"), and — per the goal — attaches a
+ * captured screenshot as an `inlineData` part on the first user turn (or, if
+ * there is no prior user turn yet, as its own leading user turn).
+ */
+export function buildInitialContents(
+  messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }>,
+  screenContext?: ScreenContextImage | null
+): GeminiContent[] {
+  const conversation = chatMessagesFromHistory(messages);
+  const contents: GeminiContent[] = conversation.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  if (screenContext?.data) {
+    const imagePart: GeminiPart = {
+      inlineData: { mimeType: screenContext.mediaType || "image/jpeg", data: screenContext.data },
+    };
+    const firstUserIndex = contents.findIndex((c) => c.role === "user");
+    if (firstUserIndex >= 0) {
+      contents[firstUserIndex] = {
+        ...contents[firstUserIndex],
+        parts: [...contents[firstUserIndex].parts, imagePart],
+      };
+    } else {
+      contents.push({ role: "user", parts: [imagePart] });
+    }
+  }
+
+  return contents;
+}
+
+function matchesJsonSchemaType(value: unknown, type: string): boolean {
+  switch (type) {
+    case "string":
+      return typeof value === "string";
+    case "number":
+      return typeof value === "number" && Number.isFinite(value);
+    case "integer":
+      return typeof value === "number" && Number.isInteger(value);
+    case "boolean":
+      return typeof value === "boolean";
+    case "object":
+      return typeof value === "object" && value !== null && !Array.isArray(value);
+    case "array":
+      return Array.isArray(value);
+    case "null":
+      return value === null;
+    default:
+      return true; // unknown/unsupported schema type keyword: don't block on it
+  }
+}
+
+/**
+ * validateToolArguments(schema, args) -> required-field + type check against
+ * a tool's JSON Schema `parameters`, run before executing a returned call.
+ * Never throws — a malformed schema is treated as "nothing to check".
+ */
+export function validateToolArguments(
+  schema: Record<string, unknown> | undefined,
+  args: Record<string, unknown>
+): { valid: boolean; error?: string } {
+  if (!schema || typeof schema !== "object") return { valid: true };
+  const safeArgs = args && typeof args === "object" ? args : {};
+
+  const required = Array.isArray((schema as { required?: unknown }).required)
+    ? ((schema as { required: unknown[] }).required.filter((k) => typeof k === "string") as string[])
+    : [];
+  for (const key of required) {
+    if (!(key in safeArgs)) {
+      return { valid: false, error: `Missing required argument: ${key}` };
+    }
+  }
+
+  const properties = (schema as { properties?: unknown }).properties;
+  if (properties && typeof properties === "object") {
+    for (const [key, value] of Object.entries(safeArgs)) {
+      const propSchema = (properties as Record<string, unknown>)[key];
+      if (!propSchema || typeof propSchema !== "object") continue;
+      const expectedType = (propSchema as { type?: unknown }).type;
+      if (typeof expectedType !== "string") continue;
+      if (!matchesJsonSchemaType(value, expectedType)) {
+        return {
+          valid: false,
+          error: `Argument "${key}" expected type ${expectedType}, got ${typeof value}`,
+        };
+      }
+    }
+  }
+
+  return { valid: true };
+}
+
+/** Stable (key-sorted) JSON encoding, so arg order never breaks the dedupe hash. */
+function stableArgsKey(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableArgsKey).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
+      a < b ? -1 : a > b ? 1 : 0
+    );
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableArgsKey(v)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** dedupeKeyForCall(call) -> the call's own `id` when present, else a name+args hash. */
+export function dedupeKeyForCall(call: { name: string; args: Record<string, unknown>; id?: string }): string {
+  return call.id || `${call.name}:${stableArgsKey(call.args || {})}`;
+}
+
 export async function* runAntigravityChatStream({
   systemPrompt,
   messages,
@@ -75,7 +204,7 @@ export async function* runAntigravityChatStream({
   screenContext?: ScreenContextImage | null;
 }): AsyncGenerator<AgentStreamChunk, void, unknown> {
   const api = window.electronAPI;
-  if (!api?.processAntigravityToolTurn) {
+  if (!api?.processAntigravityChatTurn) {
     throw new Error("Antigravity chat is not available in this environment");
   }
 
@@ -101,88 +230,100 @@ export async function* runAntigravityChatStream({
     return;
   }
 
-  let conversation: ChatMessage[] = chatMessagesFromHistory(messages);
-  if (resolvedScreenContext) {
-    // Tool-loop turns are text-only over JSON schema; ground the first user turn
-    // with a note that the screenshot was captured with the request (main-process
-    // multimodal attach is reserved for the no-tools reasoning path).
-    conversation = [
-      ...conversation,
-      {
-        role: "user",
-        content:
-          "[Screen context was attached to this request. Use it if the question refers to what is on screen.]",
-      },
-    ];
-  }
-  let conversationId: string | undefined;
+  let contents = buildInitialContents(messages, resolvedScreenContext);
+  const schemaByName = new Map(tools.map((tool) => [tool.name, tool.parameters]));
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
     if (abortSignal?.aborted) return;
 
-    const response = await api.processAntigravityToolTurn({
+    const response = await api.processAntigravityChatTurn({
       systemPrompt,
-      messages: conversation,
+      contents,
       tools,
       model,
-      conversationId,
-      timeoutMs: 180_000,
+      timeoutMs: 60_000,
     });
 
     if (!response.success) {
-      throw new Error(response.error || "Antigravity tool turn failed");
+      throw new Error(response.error || "Antigravity chat turn failed");
     }
 
-    if (typeof response.conversationId === "string" && response.conversationId.trim()) {
-      conversationId = response.conversationId.trim();
-    }
+    const textParts = response.textParts || [];
+    const functionCalls = response.functionCalls || [];
 
-    const parsed = response.result as {
-      type: string;
-      content?: string;
-      tool_call?: { name: string; arguments: Record<string, unknown> };
-    };
-
-    if (parsed?.type === "final") {
-      const text = (parsed.content || "").trim();
+    if (functionCalls.length === 0) {
+      const text = textParts
+        .map((p) => p.text)
+        .join("")
+        .trim();
       if (text) yield { type: "content", text };
       yield { type: "done", finishReason: "stop" };
       return;
     }
 
-    if (parsed?.type === "tool_call" && parsed.tool_call) {
-      if (!executeToolCall) {
-        throw new Error(`Tool ${parsed.tool_call.name} requested but no executor configured`);
-      }
-      const { name, arguments: args } = parsed.tool_call;
-      const callId = crypto.randomUUID();
-      const argsJson = JSON.stringify(args ?? {});
-      yield {
-        type: "tool_calls",
-        calls: [{ id: callId, name, arguments: argsJson }],
-      };
-
-      const toolResult = await executeToolCall(name, argsJson);
-      yield {
-        type: "tool_result",
-        callId,
-        toolName: name,
-        displayText: toolResult.displayText,
-        metadata: toolResult.metadata,
-      };
-
-      conversation = [
-        ...conversation,
-        {
-          role: "assistant",
-          content: JSON.stringify({ type: "tool_call", tool_call: parsed.tool_call }),
-        },
-        { role: "user", content: `Tool result for ${name}: ${toolResult.data}` },
-      ];
-      continue;
+    if (!executeToolCall) {
+      throw new Error(`Tool ${functionCalls[0].name} requested but no executor configured`);
     }
 
-    throw new Error("Invalid Antigravity tool loop response");
+    // Keep the model's turn (any text plus every functionCall it made) in
+    // history verbatim, thoughtSignature included — Gemini 3 requires it
+    // echoed back on the follow-up request.
+    const modelParts: GeminiPart[] = [
+      ...textParts.map((p) =>
+        p.thoughtSignature ? { text: p.text, thoughtSignature: p.thoughtSignature } : { text: p.text }
+      ),
+      ...functionCalls.map((call) => ({
+        functionCall: { name: call.name, args: call.args, ...(call.id ? { id: call.id } : {}) },
+        ...(call.thoughtSignature ? { thoughtSignature: call.thoughtSignature } : {}),
+      })),
+    ];
+    contents = [...contents, { role: "model", parts: modelParts }];
+
+    const functionResponseParts: GeminiPart[] = [];
+    const seenKeys = new Set<string>();
+
+    for (const call of functionCalls) {
+      const key = dedupeKeyForCall(call);
+      const withId = (response: Record<string, unknown>): GeminiPart => ({
+        functionResponse: { name: call.name, response, ...(call.id ? { id: call.id } : {}) },
+      });
+
+      if (seenKeys.has(key)) {
+        functionResponseParts.push(withId({ error: "Duplicate call skipped" }));
+        continue;
+      }
+      seenKeys.add(key);
+
+      const validation = validateToolArguments(schemaByName.get(call.name), call.args);
+      if (!validation.valid) {
+        functionResponseParts.push(withId({ error: validation.error }));
+        continue;
+      }
+
+      if (abortSignal?.aborted) return;
+
+      const callId = call.id || crypto.randomUUID();
+      const argsJson = JSON.stringify(call.args ?? {});
+      yield { type: "tool_calls", calls: [{ id: callId, name: call.name, arguments: argsJson }] };
+
+      try {
+        const toolResult = await executeToolCall(call.name, argsJson);
+        yield {
+          type: "tool_result",
+          callId,
+          toolName: call.name,
+          displayText: toolResult.displayText,
+          metadata: toolResult.metadata,
+        };
+        functionResponseParts.push(withId({ result: toolResult.data }));
+      } catch (error) {
+        functionResponseParts.push(
+          withId({ error: error instanceof Error ? error.message : String(error) })
+        );
+      }
+    }
+
+    contents = [...contents, { role: "user", parts: functionResponseParts }];
   }
 
   throw new Error("Antigravity tool loop exceeded maximum turns");
