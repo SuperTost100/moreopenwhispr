@@ -85,6 +85,13 @@ const APP_CHANNEL = resolveAppChannel();
 process.env.OPENWHISPR_CHANNEL = APP_CHANNEL;
 
 function configureChannelUserDataPath() {
+  // Test harnesses need a throwaway profile. app.getPath("appData") ignores
+  // $HOME on macOS, so an isolated HOME alone still lands in the real profile.
+  if (process.env.OPENWHISPR_USER_DATA_DIR && !app.isPackaged) {
+    app.setPath("userData", process.env.OPENWHISPR_USER_DATA_DIR);
+    return;
+  }
+
   const directoryName = resolveUserDataDirectoryName({
     isMowBuild: isMowBuild(),
     channel: APP_CHANNEL,
