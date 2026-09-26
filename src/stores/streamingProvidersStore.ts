@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import logger from "../utils/logger";
+import { isMowBuild } from "../config/mowProfile";
 import type {
   NoteRecordingConfigFailure,
   NoteRecordingConfigResult,
@@ -21,6 +22,12 @@ let inFlight: Promise<NoteRecordingConfigResult | null> | null = null;
 
 export async function fetchProviders(): Promise<NoteRecordingConfigResult | null> {
   if (inFlight) return inFlight;
+  // Managed providers come from OpenWhispr Cloud, which the fork never
+  // contacts. BYOK providers are listed separately, so nothing is lost.
+  if (isMowBuild()) {
+    useStreamingProvidersStore.setState({ providers: [] });
+    return null;
+  }
   if (!window.electronAPI?.getNoteRecordingConfig) return null;
 
   inFlight = (async () => {
