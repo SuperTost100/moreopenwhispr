@@ -304,6 +304,7 @@ const ParakeetManager = require("./src/helpers/parakeet");
 const DiarizationManager = require("./src/helpers/diarization");
 const TrayManager = require("./src/helpers/tray");
 const dockManager = require("./src/helpers/dockManager");
+const { resolveActivateAction } = require("./src/helpers/dockPolicy");
 const autoStart = require("./src/helpers/autoStart");
 const IPCHandlers = require("./src/helpers/ipcHandlers");
 const CliBridge = require("./src/helpers/cliBridge");
@@ -1970,30 +1971,42 @@ if (gotSingleInstanceLock) {
   });
 
   app.on("activate", () => {
-    // On macOS, re-create windows when dock icon is clicked
-    if (BrowserWindow.getAllWindows().length === 0) {
+    // "activate" also fires when our own code activates a process (e.g. the
+    // paste-time NSWorkspace activation in textEditMonitor.js), not just on a
+    // real Dock click. Showing+focusing the control panel — a normal window
+    // that isn't on every Space — in response to that jumps the user to its
+    // Space for no reason they triggered (finding I04). windowManager tracks
+    // that window with a flag set right around such activations.
+    const action = resolveActivateAction({
+      windowCount: BrowserWindow.getAllWindows().length,
+      programmaticActivation: windowManager?.isProgrammaticActivation?.() ?? false,
+    });
+    if (action === "noop") return;
+
+    if (action === "recreate") {
       if (windowManager) {
         windowManager.createMainWindow();
         windowManager.createControlPanelWindow();
       }
-    } else {
-      // Show control panel when dock icon is clicked (most common user action)
-      if (windowManager && isLiveWindow(windowManager.controlPanelWindow)) {
-        if (windowManager.controlPanelWindow.isMinimized()) {
-          windowManager.controlPanelWindow.restore();
-        }
-        windowManager.controlPanelWindow.show();
-        windowManager.controlPanelWindow.focus();
-        dockManager.setControlPanelVisible(true);
-      } else if (windowManager) {
-        // If control panel doesn't exist, create it
-        windowManager.createControlPanelWindow();
-      }
+      return;
+    }
 
-      // Ensure dictation panel maintains its always-on-top status
-      if (windowManager && isLiveWindow(windowManager.mainWindow)) {
-        windowManager.enforceMainWindowOnTop();
+    // Show control panel when dock icon is clicked (most common user action)
+    if (windowManager && isLiveWindow(windowManager.controlPanelWindow)) {
+      if (windowManager.controlPanelWindow.isMinimized()) {
+        windowManager.controlPanelWindow.restore();
       }
+      windowManager.controlPanelWindow.show();
+      windowManager.controlPanelWindow.focus();
+      dockManager.setControlPanelVisible(true);
+    } else if (windowManager) {
+      // If control panel doesn't exist, create it
+      windowManager.createControlPanelWindow();
+    }
+
+    // Ensure dictation panel maintains its always-on-top status
+    if (windowManager && isLiveWindow(windowManager.mainWindow)) {
+      windowManager.enforceMainWindowOnTop();
     }
   });
 

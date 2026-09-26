@@ -69,3 +69,30 @@ test("captures refresh once the reuse window has passed", darwinOnly, async () =
   assert.equal(await m.captureTargetPid(), 2222);
   assert.equal(m.lastTargetPid, 2222);
 });
+
+// Finding I04: the lookup is async and the hotkey path shows the dictation
+// overlay without waiting for it, so it can resolve to whatever is frontmost
+// once it finishes — which can be us. A captured own pid must never become
+// the paste target: activating it later raises the control panel (a normal
+// window, not on every Space) and jumps the user to its Space.
+test("a capture never stores our own pid as the paste target", darwinOnly, async () => {
+  const m = new TextEditMonitor();
+  m._readFrontmostPid = () => Promise.resolve(process.pid);
+
+  assert.equal(await m.captureTargetPid(), null);
+  assert.equal(m.lastTargetPid, null);
+});
+
+test("a late lookup resolving to our own pid cannot overwrite the target", darwinOnly, async () => {
+  const m = new TextEditMonitor();
+  const lookup = stubFrontmostPid(m, process.pid);
+
+  const capture = m.captureTargetPid();
+  // Simulate the hotkey path showing the overlay (or otherwise focusing us)
+  // while the lookup is still in flight.
+  assert.equal(m.lastTargetPid, null);
+  lookup.release();
+
+  assert.equal(await capture, null);
+  assert.equal(m.lastTargetPid, null);
+});

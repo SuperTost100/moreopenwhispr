@@ -100,6 +100,10 @@ class WindowManager {
     this._assistantPanelBusy = false;
     this._pendingMeetingNoteNavigation = null;
     this._pendingNoteNavigation = null;
+    // Set while our own code activates another process (paste-time NSWorkspace
+    // activation) so main.js's app.on("activate") handler can tell that apart
+    // from a real Dock click (finding I04) and skip re-raising the control panel.
+    this._programmaticActivation = false;
 
     app.on("before-quit", () => {
       this.isQuitting = true;
@@ -969,6 +973,22 @@ class WindowManager {
   // The tray's listen item is a toggle over this state, like the pill's.
   isDictating() {
     return this._isDictatingToggle;
+  }
+
+  // Mark/unmark that we are the ones activating a process right now (see
+  // _programmaticActivation above). Callers must clear it once the activation
+  // call settles, success or failure, so a later real Dock click is never stuck
+  // being ignored.
+  beginProgrammaticActivation() {
+    this._programmaticActivation = true;
+  }
+
+  endProgrammaticActivation() {
+    this._programmaticActivation = false;
+  }
+
+  isProgrammaticActivation() {
+    return this._programmaticActivation === true;
   }
 
   _sendAgentDictationPillState() {
