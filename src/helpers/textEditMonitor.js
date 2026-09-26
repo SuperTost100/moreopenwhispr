@@ -3,6 +3,7 @@ const path = require("path");
 const EventEmitter = require("events");
 const fs = require("fs");
 const debugLogger = require("./debugLogger");
+const { app } = require("electron");
 
 const POLL_INTERVAL_MS = 500;
 const INITIAL_QUERY_DELAY_MS = 500; // Wait for paste to settle in target app
@@ -124,11 +125,39 @@ class TextEditMonitor extends EventEmitter {
     this._captureTargetPromise = this._readFrontmostPid().then((pid) => {
       this._captureTargetPromise = null;
       this._lastCaptureAt = Date.now();
-      this.lastTargetPid = pid;
-      debugLogger.debug("[TextEditMonitor] Captured target PID", { pid });
-      return pid;
+      // The lookup is async and the hotkey path shows the dictation overlay
+      // without waiting for it, so by the time it resolves the "frontmost"
+      // app it reports could be us (finding I04). Never store our own pid as
+      // a paste target — activating it later would raise the control panel
+      // (a normal window, not on every Space) and jump the user's Space.
+      const safePid = pid !== null && this._ownPids().has(pid) ? null : pid;
+      if (pid !== null && safePid === null) {
+        debugLogger.debug("[TextEditMonitor] Ignoring own pid as paste target", { pid });
+      }
+      this.lastTargetPid = safePid;
+      debugLogger.debug("[TextEditMonitor] Captured target PID", { pid: safePid });
+      return safePid;
     });
     return this._captureTargetPromise;
+  }
+
+  /**
+   * Every pid this process could be mistaken for: our own process plus any
+   * Electron helper processes (renderer/GPU/utility) from app.getAppMetrics().
+   * Used to make sure a paste never activates — and therefore never brings
+   * forward — our own app.
+   */
+  _ownPids() {
+    const pids = new Set([process.pid]);
+    try {
+      const metrics = typeof app?.getAppMetrics === "function" ? app.getAppMetrics() : [];
+      for (const metric of metrics) {
+        if (metric && typeof metric.pid === "number") pids.add(metric.pid);
+      }
+    } catch {
+      // Best effort — process.pid alone still covers the main case.
+    }
+    return pids;
   }
 
   /**
@@ -155,9 +184,13 @@ class TextEditMonitor extends EventEmitter {
   }
 
   /**
-   * macOS: request activation of the app with the given PID, bringing all its
-   * windows forward (AllWindows|IgnoringOtherApps) so one becomes key. Scans
-   * runningApplications because NSRunningApplication's PID lookup returns nil under JXA.
+   * macOS: request activation of the app with the given PID, so one of its
+   * windows becomes key. Uses IgnoringOtherApps only (2), not AllWindows (3):
+   * AllWindows also raises the target's other windows on other Spaces — for
+   * our own control panel that means jumping the user's Space (finding I04) —
+   * and IgnoringOtherApps alone is enough to bring the right window forward.
+   * Scans runningApplications because NSRunningApplication's PID lookup
+   * returns nil under JXA.
    */
   _activateApp(pid) {
     return new Promise((resolve) => {
@@ -166,7 +199,7 @@ class TextEditMonitor extends EventEmitter {
         const apps = $.NSWorkspace.sharedWorkspace.runningApplications;
         for (let i = 0; i < apps.count; i++) {
           const a = apps.objectAtIndex(i);
-          if (a.processIdentifier === ${pid}) { a.activateWithOptions(3); break; }
+          if (a.processIdentifier === ${pid}) { a.activateWithOptions(2); break; }
         }
       `;
       execFile("osascript", ["-l", "JavaScript", "-e", script], { timeout: 2000 }, () => resolve());
@@ -189,6 +222,8 @@ class TextEditMonitor extends EventEmitter {
 
   async activatePid(pid) {
     if (process.platform !== "darwin" || !pid) return false;
+    // Last line of defense (see captureTargetPid): never activate ourselves.
+    if (this._ownPids().has(pid)) return false;
     if ((await this._readFrontmostPid()) === pid) return true;
 
     await this._activateApp(pid);

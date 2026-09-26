@@ -1,5 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const Module = require("node:module");
 
 const TextEditMonitor = require("../../src/helpers/textEditMonitor");
 
@@ -19,6 +20,89 @@ test("activateTargetPid resolves false for an unmapped PID", async () => {
   const result = await m.activateTargetPid();
   assert.equal(result, false);
   assert.ok(Date.now() - start < 3000);
+});
+
+// Finding I04: activatePid must never bring our own process forward — that
+// raises the control panel (see main.js's app.on("activate") guard) and can
+// jump the user's Space. This is the last line of defense after
+// captureTargetPid's own-pid filtering.
+test("activatePid never activates our own pid", async () => {
+  const textEditMonitorPath = require.resolve("../../src/helpers/textEditMonitor");
+  const originalLoad = Module._load;
+  let execFileCalled = false;
+
+  Module._load = function loadWithMocks(request, parent, isMain) {
+    if (request === "child_process") {
+      const real = originalLoad.call(this, request, parent, isMain);
+      return {
+        ...real,
+        execFile: (...args) => {
+          execFileCalled = true;
+          const callback = args[args.length - 1];
+          if (typeof callback === "function") callback(null, "", "");
+        },
+      };
+    }
+    return originalLoad.call(this, request, parent, isMain);
+  };
+
+  let MockedTextEditMonitor;
+  try {
+    delete require.cache[textEditMonitorPath];
+    MockedTextEditMonitor = require("../../src/helpers/textEditMonitor");
+  } finally {
+    Module._load = originalLoad;
+    delete require.cache[textEditMonitorPath];
+  }
+
+  const m = new MockedTextEditMonitor();
+  const result = await m.activatePid(process.pid);
+
+  assert.equal(result, false);
+  assert.equal(execFileCalled, false, "osascript must never run against our own pid");
+});
+
+// The old script used activateWithOptions(3) — AllWindows|IgnoringOtherApps —
+// which also raises the target's other windows on other Spaces. For a
+// different (real) target pid, the script must request IgnoringOtherApps (2)
+// only, and must never fall back to option 3.
+test("the activation script uses IgnoringOtherApps only, never AllWindows", async () => {
+  const textEditMonitorPath = require.resolve("../../src/helpers/textEditMonitor");
+  const originalLoad = Module._load;
+  let capturedScript = null;
+
+  Module._load = function loadWithMocks(request, parent, isMain) {
+    if (request === "child_process") {
+      const real = originalLoad.call(this, request, parent, isMain);
+      return {
+        ...real,
+        execFile: (command, args, options, callback) => {
+          if (command === "osascript") {
+            const scriptFlagIndex = args.indexOf("-e");
+            if (scriptFlagIndex !== -1) capturedScript = args[scriptFlagIndex + 1];
+          }
+          callback(null, "", "");
+        },
+      };
+    }
+    return originalLoad.call(this, request, parent, isMain);
+  };
+
+  let MockedTextEditMonitor;
+  try {
+    delete require.cache[textEditMonitorPath];
+    MockedTextEditMonitor = require("../../src/helpers/textEditMonitor");
+  } finally {
+    Module._load = originalLoad;
+    delete require.cache[textEditMonitorPath];
+  }
+
+  const m = new MockedTextEditMonitor();
+  await m._activateApp(424242);
+
+  assert.ok(capturedScript, "expected the activation script to run osascript");
+  assert.match(capturedScript, /activateWithOptions\(2\)/);
+  assert.doesNotMatch(capturedScript, /activateWithOptions\(3\)/);
 });
 
 test("getSelectedText fails closed for a missing target", async () => {

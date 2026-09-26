@@ -14,3 +14,15 @@ export function resolveDockVisibility({ platform, controlPanelVisible }) {
   if (platform !== "darwin") return null;
   return !!controlPanelVisible;
 }
+
+// What app.on("activate") should do (finding I04). A real Dock click (or
+// Finder relaunch) is the only case that should raise/focus the control
+// panel: activation can also fire because our own code activated a process
+// (e.g. the paste-time NSWorkspace activation in textEditMonitor.js), and
+// showing+focusing the control panel there jumps the user to its Space for
+// no reason they triggered. `windowCount === 0` still recreates the windows
+// on a real reopen (upstream behavior, unaffected by the flag).
+export function resolveActivateAction({ windowCount, programmaticActivation }) {
+  if (programmaticActivation) return "noop";
+  return windowCount === 0 ? "recreate" : "show-control-panel";
+}

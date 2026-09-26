@@ -3006,7 +3006,17 @@ class IPCHandlers {
       // focus hand-off for Chromium apps like Claude desktop and Brave (#668).
       let activated = false;
       if (process.platform === "darwin" && this.textEditMonitor) {
-        activated = await this.textEditMonitor.activateTargetPid();
+        // Guard main.js's app.on("activate") handler: if this ever activates
+        // our own process (should already be excluded upstream — see
+        // textEditMonitor.js — but this is the last line of defense), a
+        // resulting macOS "activate" event must not raise the control panel
+        // and jump the user to its Space (finding I04).
+        this.windowManager?.beginProgrammaticActivation?.();
+        try {
+          activated = await this.textEditMonitor.activateTargetPid();
+        } finally {
+          this.windowManager?.endProgrammaticActivation?.();
+        }
       }
 
       if (!activated && mainWindow && !mainWindow.isDestroyed() && mainWindow.isFocused()) {
