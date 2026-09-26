@@ -443,6 +443,12 @@ body.dark:has(.onboarding-canvas) {
   letter-spacing: normal;
 }
 
+/* Setup-choice cards — same hairline stroke as the control panel (12px radius). */
+.onboarding-setup-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
 /* Step entry. Onboarding is seen once, which is the one place delight is worth
    spending on — a step change is an occasional, deliberate transition, not a
    keyboard action. 8px is enough to read as arrival without feeling like travel;
