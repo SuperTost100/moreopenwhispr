@@ -47,7 +47,7 @@ import {
 } from "./policyRules";
 import { usePolicyStore } from "./policyStore";
 import { coerceCloudMode, coerceInferenceMode, isMowBuild } from "../config/mowProfile";
-import { DEFAULT_ANTIGRAVITY_MODEL, resolveAgyCliModel } from "../helpers/antigravityModels";
+import { resolveAgyCliModel } from "../helpers/antigravityModels";
 import type {
   TranscriptionSettings,
   CleanupSettings,
@@ -1573,7 +1573,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   autoGenerateNoteTitle: readBoolean("autoGenerateNoteTitle", true),
   useCleanupModel: readBoolean("useCleanupModel", true),
   useDictationAgent: readBoolean("useDictationAgent", true),
-  cleanupModel: resolveAgyCliModel(readString("cleanupModel", DEFAULT_ANTIGRAVITY_MODEL)),
+  // "auto" resolves to the newest usable tier in the live Antigravity
+  // catalog at request time; pinning a version id here would go stale every
+  // time the catalog rotates in a new model generation.
+  cleanupModel: resolveAgyCliModel(readString("cleanupModel", "auto")),
   cleanupProvider: readString("cleanupProvider", "antigravity"),
 
   // Secrets hydrate from main process in initializeSettings, never from localStorage.
@@ -1914,7 +1917,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ translationTargets: normalized });
   },
 
-  chatAgentModel: resolveAgyCliModel(readString("chatAgentModel", "gemini-3.7-flash-medium")),
+  chatAgentModel: resolveAgyCliModel(readString("chatAgentModel", "auto")),
   chatAgentProvider: readString("chatAgentProvider", "antigravity"),
   chatAgentCloudMode: readCloudMode("chatAgentCloudMode", "byok"),
   chatAgentMode: readInferenceMode("chatAgentMode", "providers", [
@@ -1936,9 +1939,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     "enterprise",
   ]),
   dictationAgentProvider: readString("dictationAgentProvider", "antigravity"),
-  dictationAgentModel: resolveAgyCliModel(
-    readString("dictationAgentModel", "gemini-3.7-flash-medium")
-  ),
+  dictationAgentModel: resolveAgyCliModel(readString("dictationAgentModel", "auto")),
   dictationAgentCloudMode: readCloudMode("dictationAgentCloudMode", "byok"),
   dictationAgentCloudBaseUrl: readString("dictationAgentCloudBaseUrl", ""),
   dictationAgentRemoteUrl: readString("dictationAgentRemoteUrl", ""),

@@ -3,8 +3,10 @@ import type { CleanupSettings, TranscriptionSettings } from "../../hooks/useSett
 export const ANTIGRAVITY_ONBOARDING = {
   provider: "antigravity",
   transcriptionModel: "gemini-3.5-transcribe",
-  cleanupModel: "gemini-3.7-flash-low",
-  chatModel: "gemini-3.7-flash-medium",
+  // "auto" resolves to the newest usable tier in the live catalog, so a
+  // fresh setup never pins a model generation that goes stale later.
+  cleanupModel: "auto",
+  chatModel: "auto",
 } as const;
 
 type AntigravitySetupStore = {
