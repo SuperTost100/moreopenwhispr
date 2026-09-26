@@ -94,6 +94,52 @@ test("dedupeKeyForCall prefers the call id, else hashes name+args independent of
   assert.notEqual(a, c);
 });
 
+// --- screen context reaches the request even when tools are offered --------
+
+// rework-audit/important/01-assistant-drops-screenshot-when-tools-are-on:
+// on the old `agy --print`-per-turn architecture, a tool turn sent a text
+// placeholder ("[Screen context was attached to this request]...") instead
+// of the screenshot bytes. The gateway rewrite replaced that per-turn CLI
+// call with buildInitialContents(), which is shared by both the tools and
+// no-tools paths and always attaches the screenshot as inlineData — this
+// pins that a tool turn's IPC payload carries the real bytes, not a
+// placeholder sentence.
+test("runAntigravityChatStream attaches the screenshot as inlineData bytes on a turn with tools, never a placeholder sentence", async (t) => {
+  const receivedContents = [];
+  withWindow(t, {
+    processAntigravityChatTurn: async (payload) => {
+      receivedContents.push(payload.contents);
+      return { success: true, textParts: [{ text: "I can see it." }], functionCalls: [] };
+    },
+  });
+
+  const { runAntigravityChatStream } = await loadModule();
+  const stream = runAntigravityChatStream({
+    systemPrompt: "sys",
+    messages: [{ role: "user", content: "what's on my screen?" }],
+    tools: [{ name: "create_note", description: "create a note", parameters: { type: "object" } }],
+    model: "gemini-3-flash",
+    executeToolCall: async () => ({ data: "", displayText: "" }),
+    screenContext: { data: "QUJDRA==", mediaType: "image/jpeg" },
+  });
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+
+  assert.equal(receivedContents.length, 1);
+  const sentText = JSON.stringify(receivedContents[0]);
+  const imagePart = receivedContents[0]
+    .flatMap((turn) => turn.parts)
+    .find((part) => part.inlineData);
+  assert.ok(imagePart, "the tool-turn request must carry an inlineData image part");
+  assert.equal(imagePart.inlineData.data, "QUJDRA==");
+  assert.equal(imagePart.inlineData.mimeType, "image/jpeg");
+  assert.ok(
+    !sentText.includes("Screen context was attached"),
+    "the placeholder sentence must not stand in for the image bytes on a tool turn"
+  );
+  assert.equal(chunks.find((c) => c.type === "content")?.text, "I can see it.");
+});
+
 // --- runAntigravityChatStream loop ---------------------------------------------------
 
 test("runAntigravityChatStream executes each distinct valid call once, returns the cached result for a duplicate id, and finishes on text", async (t) => {
@@ -160,6 +206,45 @@ test("runAntigravityChatStream executes each distinct valid call once, returns t
     responseTurn.parts[0].functionResponse.response
   );
   assert.ok("error" in responseTurn.parts[2].functionResponse.response);
+});
+
+// rework-audit/important/02-cancel-still-runs-assistant-tools: aborting
+// while the gateway turn (processAntigravityChatTurn) is still pending used
+// to let a returned tool_call run anyway, since the signal was only checked
+// before the call went out. The recheck right after the IPC await (before
+// touching functionCalls) must make a create_note call that races the abort
+// never reach executeToolCall.
+test("runAntigravityChatStream never executes a tool call whose gateway turn resolved after the signal was aborted", async (t) => {
+  const controller = new AbortController();
+  const executed = [];
+  withWindow(t, {
+    processAntigravityChatTurn: async () => {
+      controller.abort(); // abort lands while this "request" is in flight
+      return {
+        success: true,
+        textParts: [],
+        functionCalls: [{ name: "create_note", args: { title: "should never be created" }, id: "c1" }],
+      };
+    },
+  });
+
+  const { runAntigravityChatStream } = await loadModule();
+  const chunks = [];
+  const stream = runAntigravityChatStream({
+    systemPrompt: "",
+    messages: [{ role: "user", content: "make a note" }],
+    tools: [{ name: "create_note", description: "", parameters: { type: "object" } }],
+    model: "m",
+    executeToolCall: async (name, argsJson) => {
+      executed.push({ name, argsJson });
+      return { data: "note-created", displayText: "created" };
+    },
+    abortSignal: controller.signal,
+  });
+  for await (const chunk of stream) chunks.push(chunk);
+
+  assert.deepEqual(executed, [], "a tool call must never run once the signal aborted before it was seen");
+  assert.deepEqual(chunks, [], "no chunks — including tool_calls — may be yielded after an abort");
 });
 
 test("runAntigravityChatStream stops executing remaining calls in a turn once cancelled mid-turn", async (t) => {
