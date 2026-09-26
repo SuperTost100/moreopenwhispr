@@ -8,10 +8,10 @@
         "screenContextSkipped": "تم تخطي سياق الشاشة",
         "dailyLimitReached": "تم الوصول إلى الحد اليومي",
         "providerRateLimited": "تم تقييد المعدل من قبل المزود",
-        "antigravityQuotaExceeded": "Antigravity Quota Exhausted",
-        "antigravityAuthRequired": "Antigravity Sign-In Required",
-        "antigravityTimeout": "Antigravity Request Timed Out",
-        "antigravityModelUnavailable": "Antigravity Model Unavailable"
+        "antigravityQuotaExceeded": "نفدت حصة Antigravity",
+        "antigravityAuthRequired": "يلزم تسجيل الدخول إلى Antigravity",
+        "antigravityTimeout": "انتهت مهلة طلب Antigravity",
+        "antigravityModelUnavailable": "نموذج Antigravity غير متاح"
       },
       "fallback": {
         "title": "الوضع الاحتياطي",
@@ -55,10 +55,10 @@
         "cleanupTruncated": "نفدت مساحة الإخراج لدى نموذج الذكاء الاصطناعي قبل أن يُكمل تنقيح إملائك.",
         "cleanupDuplicated": "كرر تنقيح الذكاء الاصطناعي النص. تم الاحتفاظ بالنص الأصلي.",
         "cleanupEmptyReply": "أرجع نموذج الذكاء الاصطناعي ردًا فارغًا بدلًا من الإملاء المنقَّح.",
-        "antigravityAuthRequired": "Antigravity sign-in expired. Run `agy auth login` in a terminal.",
-        "antigravityTimeout": "Antigravity did not finish in time. Check your connection or try a shorter clip.",
-        "antigravityModelUnavailable": "The chosen Antigravity model is unavailable. OpenWhispr will try another model automatically on the next request.",
-        "antigravityQuotaResetAt": "Quota resets around {{time}}."
+        "antigravityAuthRequired": "انتهت جلسة Antigravity. شغّل `agy auth login` في الطرفية.",
+        "antigravityTimeout": "لم ينهِ Antigravity في الوقت المحدد. تحقق من اتصالك أو جرّب مقطعًا أقصر.",
+        "antigravityModelUnavailable": "نموذج Antigravity المختار غير متاح. سيجرّب OpenWhispr نموذجًا آخر تلقائيًا في الطلب التالي.",
+        "antigravityQuotaResetAt": "تُعاد الحصة تقريبًا في {{time}}."
       },
       "translationFallback": {
         "unreachableTitle": "الترجمة غير متاحة",
@@ -254,8 +254,8 @@
         "mistral_voxtral_mini_latest": "تفريغ سريع متعدد اللغات",
         "gemini_3_5_transcribe": "تحويل الكلام إلى نص من Google Gemini",
         "gemini_3_5_transcribe_live": "تحويل الكلام إلى نص بالبث في الوقت الفعلي",
-        "antigravity_gemini_3_5_transcribe": "Fast cloud transcription via Antigravity subscription",
-        "antigravity_gemini_3_5_transcribe_live": "Live preview while you speak via Antigravity subscription",
+        "antigravity_gemini_3_5_transcribe": "تفريغ سحابي سريع عبر اشتراك Antigravity",
+        "antigravity_gemini_3_5_transcribe_live": "معاينة مباشرة أثناء الكلام عبر اشتراك Antigravity",
         "corti_transcribe": "تفريغ طبي بدرجة سريرية",
         "xai_grok_stt": "تعرف على الكلام بدقة عالية من xAI",
         "tinfoil_voxtral": "تفريغ خاص يمكن التحقق منه",
@@ -285,15 +285,15 @@
         "gemini_gemini_2_5_flash_lite": "أقل زمن انتقال وتكلفة",
         "gemini_gemma_4_31b_it": "أكبر نموذج Gemma 4 من Google، نموذج كثيف بحجم 31B، سياق 256K",
         "gemini_gemma_4_26b_a4b_it": "نموذج Gemma 4 MoE من Google، بمعلمات نشطة 4B، سياق 256K",
-        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
-        "antigravity_gemini_3_7_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_7_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
-        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
-        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
-        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription",
+        "antigravity_gemini_3_5_flash_low": "تنقيح سريع عبر اشتراك Antigravity",
+        "antigravity_gemini_3_5_flash_medium": "متوازن عبر Antigravity",
+        "antigravity_gemini_3_5_flash_high": "جودة أعلى عبر Antigravity",
+        "antigravity_gemini_3_7_flash_low": "تنقيح سريع عبر اشتراك Antigravity",
+        "antigravity_gemini_3_7_flash_medium": "متوازن عبر Antigravity",
+        "antigravity_gemini_3_7_flash_high": "أحدث Flash عبر Antigravity",
+        "antigravity_gemini_3_1_pro_high": "Frontier Pro عبر Antigravity",
+        "antigravity_claude_sonnet_4_6": "Claude عبر اشتراك Antigravity",
+        "antigravity_claude_opus_4_6": "Opus عبر اشتراك Antigravity",
         "groq_openai_gpt_oss_120b": "نموذج OpenAI مفتوح المصدر الرائد، 500 رمز/ثانية",
         "groq_openai_gpt_oss_20b": "نموذج سريع مفتوح المصدر، 1000 رمز/ثانية",
         "groq_compound": "نظام Groq المركب، 450 رمز/ثانية",
@@ -316,8 +316,8 @@
         "corti_corti_s1_mini_instant": "نموذج رعاية صحية مدمج، الأسرع والأقل تكلفة",
         "corti_corti_s1_mini": "نموذج سريري مدمج مع استنتاج بنصف السعر",
         "tinfoil_glm_5_3": "نموذج خاص للهندسة البرمجية بقدرات وكيلية في بيئات معزولة وآمنة، سياق 1M",
-        "tinfoil_deepseek_v4_pro": "Private long-context reasoning in secure enclaves, 800K context",
-        "tinfoil_glm_5_2": "Private agentic engineering model in secure enclaves, 384K context"
+        "tinfoil_deepseek_v4_pro": "استدلال خاص بسياق طويل في حاويات آمنة، سياق 800K",
+        "tinfoil_glm_5_2": "نموذج هندسة وكيل خاص في حاويات آمنة، سياق 384K"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "نموذج Claude الأكثر قدرة. الأفضل لأصعب مهام المساعد.",
@@ -502,21 +502,21 @@
       "euOnly": "نماذج Corti متوفرة فقط في منطقة الاتحاد الأوروبي."
     },
     "antigravity": {
-      "checking": "Checking Antigravity CLI…",
-      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
-      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
+      "checking": "جارٍ التحقق من Antigravity CLI…",
+      "ready": "يستخدم Antigravity CLI (agy) المحلي. بدون مفتاح API — سجّل الدخول بـ agy إذا فشلت المطالبات.",
+      "missing": "لم يُعثر على Antigravity CLI (agy) في PATH. ثبّته وشغّل agy لتسجيل الدخول."
     }
   },
   "controlPanel": {
     "shell": {
-      "forkDisclosureNoAccount": "No account required.",
-      "forkDisclosureUnofficial": "Unofficial {{upstreamName}} fork.",
-      "forkDisclosureNotAffiliated": "Not affiliated with Google."
+      "forkDisclosureNoAccount": "لا يلزم حساب.",
+      "forkDisclosureUnofficial": "فرع غير رسمي من {{upstreamName}}.",
+      "forkDisclosureNotAffiliated": "غير تابع لـ Google."
     },
     "compactNav": {
-      "viewsMenu": "Switch view",
-      "viewsMenuLabel": "App navigation",
-      "moreLabel": "More"
+      "viewsMenu": "تبديل العرض",
+      "viewsMenuLabel": "تنقل التطبيق",
+      "moreLabel": "المزيد"
     },
     "updateRequiredByOrg": {
       "title": "التحديث مطلوب",
@@ -525,8 +525,8 @@
     "update": {
       "readyTitle": "التحديث جاهز للتثبيت",
       "readyDescription": "انقر فوق «تثبيت التحديث» لإعادة التشغيل باستخدام أحدث إصدار.",
-      "problemTitle": "Update ran into a problem",
-      "problemDescription": "We couldn't complete the update. Please try again later.",
+      "problemTitle": "واجه التحديث مشكلة",
+      "problemDescription": "تعذّر إكمال التحديث. يُرجى المحاولة لاحقًا.",
       "installTitle": "تثبيت التحديث",
       "installDescription": "سيتم إعادة تشغيل OpenWhispr لتطبيق التحديث. سيتم حفظ أي عمل قيد التقدم.",
       "couldNotInstallTitle": "تعذر تثبيت التحديث",
@@ -552,10 +552,10 @@
       "updatePayment": "تحديث الدفع"
     },
     "history": {
-      "pageTitle": "Dictation",
-      "pageSubtitle": "Current microphone, provider, cleanup mode, and output.",
-      "recentTitle": "Recent dictations",
-      "toolbarLabel": "History actions",
+      "pageTitle": "الإملاء",
+      "pageSubtitle": "الميكروفون الحالي، المزود، وضع التنقيح، والمخرجات.",
+      "recentTitle": "إملاءات حديثة",
+      "toolbarLabel": "إجراءات السجل",
       "couldNotLoadTitle": "تعذر تحميل سجلك",
       "couldNotLoadDescription": "حدث خطأ ما أثناء تحميل نصوصك المفرَّغة. حاول إغلاق التطبيق وإعادة فتحه.",
       "copiedTitle": "تم النسخ!",
@@ -617,24 +617,24 @@
       "clearAllDescriptionDevice": "ستتم إزالة جميع النصوص المفرَّغة والملفات الصوتية وعدادات الإحصاءات نهائيًا من هذا الجهاز. أما العدادات التي تمت مزامنتها مع حسابك فلا تتأثر."
     },
     "settings": {
-      "pageTitle": "Settings",
-      "pageSubtitle": "Preferences, hotkeys, speech-to-text, language models, privacy, and system."
+      "pageTitle": "الإعدادات",
+      "pageSubtitle": "التفضيلات، الاختصارات، تحويل الكلام إلى نص، نماذج اللغة، الخصوصية، والنظام."
     },
     "dictionary": {
-      "pageTitle": "Dictionary",
-      "pageSubtitle": "Custom words for transcription accuracy, and snippets that expand into saved text."
+      "pageTitle": "القاموس",
+      "pageSubtitle": "كلمات مخصصة لدقة التفريغ، ومقتطفات تتوسّع إلى نص محفوظ."
     },
     "upload": {
-      "pageTitle": "Upload",
-      "pageSubtitle": "Audio files and links, transcribed into notes with optional speaker detection."
+      "pageTitle": "رفع",
+      "pageSubtitle": "ملفات صوت وروابط، تُفرَّغ إلى ملاحظات مع تحديد المتحدث اختياريًا."
     },
     "chat": {
       "pageTitle": "Chat",
-      "pageSubtitle": "Conversations with access to your notes, transcripts, calendar, and web search."
+      "pageSubtitle": "محادثات مع الوصول إلى ملاحظاتك، النصوص المفرغة، التقويم، والبحث على الويب."
     },
     "cloudMigration": {
-      "title": "Welcome to OpenWhispr Cloud",
-      "description": "We've switched your transcription to OpenWhispr Cloud for faster, more accurate results. Your previous settings are saved — switch back anytime in Settings.",
+      "title": "مرحبًا بك في OpenWhispr Cloud",
+      "description": "حوّلنا تفريغك إلى OpenWhispr Cloud لنتائج أسرع وأدق. إعداداتك السابقة محفوظة — يمكنك العودة في أي وقت من الإعدادات.",
       "viewSettings": "View Settings"
     },
     "aiCta": {
@@ -661,60 +661,60 @@
       "action": "فتح الإعدادات"
     },
     "processingRoute": {
-      "title": "Configured processing route",
-      "subtitle": "Each stage names its location and credential.",
-      "subtitlePolicy": "Each stage reflects your organization policy and current settings.",
-      "ariaLabel": "Configured dictation processing route",
+      "title": "مسار المعالجة المُكوَّن",
+      "subtitle": "كل مرحلة تبيّن موقعها وبيانات اعتمادها.",
+      "subtitlePolicy": "كل مرحلة تعكس سياسة مؤسستك والإعدادات الحالية.",
+      "ariaLabel": "مسار معالجة الإملاء المُكوَّن",
       "boundaries": {
-        "onDevice": "On this device",
-        "audioLeavesDevice": "Audio leaves device",
-        "apiKey": "Uses your API key",
-        "customRoute": "Custom route",
-        "providerRequest": "Provider request"
+        "onDevice": "على هذا الجهاز",
+        "audioLeavesDevice": "الصوت يغادر الجهاز",
+        "apiKey": "يستخدم مفتاح API الخاص بك",
+        "customRoute": "مسار مخصص",
+        "providerRequest": "طلب إلى المزود"
       },
       "stages": {
-        "capture": "Capture",
-        "transcribe": "Transcribe",
-        "cleanup": "Cleanup",
-        "delivery": "Deliver"
+        "capture": "التقاط",
+        "transcribe": "تفريغ",
+        "cleanup": "تنقيح",
+        "delivery": "تسليم"
       },
       "details": {
         "capture": {
-          "systemMic": "Automatic microphone selection",
-          "builtInMic": "Built-in microphone",
-          "selectedMic": "Selected microphone",
+          "systemMic": "اختيار الميكروفون تلقائيًا",
+          "builtInMic": "ميكروفون مدمج",
+          "selectedMic": "ميكروفون محدّد",
           "specificMic": "{{label}}"
         },
         "transcribe": {
           "whisper": "Whisper · {{model}}",
           "parakeet": "Parakeet · {{model}}",
           "cohere": "Cohere · {{model}}",
-          "antigravitySmart": "Antigravity · smart transcription",
-          "antigravityVerbatim": "Antigravity · verbatim transcription",
-          "byok": "{{provider}} transcription",
-          "customHost": "Custom endpoint · {{host}}",
-          "customUnconfigured": "Custom endpoint not configured",
-          "selfHosted": "Self-hosted · {{host}}",
-          "selfHostedUnconfigured": "Self-hosted endpoint not configured",
-          "misconfigured": "Transcription route is not fully configured"
+          "antigravitySmart": "Antigravity · تفريغ ذكي",
+          "antigravityVerbatim": "Antigravity · تفريغ حرفي",
+          "byok": "تفريغ عبر {{provider}}",
+          "customHost": "نقطة نهاية مخصصة · {{host}}",
+          "customUnconfigured": "نقطة النهاية المخصصة غير مُكوَّنة",
+          "selfHosted": "مستضاف ذاتيًا · {{host}}",
+          "selfHostedUnconfigured": "نقطة النهاية المستضافة ذاتيًا غير مُكوَّنة",
+          "misconfigured": "مسار التفريغ غير مُكوَّن بالكامل"
         },
         "cleanup": {
-          "disabled": "Cleanup disabled",
-          "skippedFast": "Fast mode · second pass skipped",
-          "local": "Local model · {{model}}",
-          "selfHosted": "Self-hosted · {{host}}",
-          "selfHostedUnconfigured": "Self-hosted endpoint not configured",
+          "disabled": "التنقيح معطّل",
+          "skippedFast": "الوضع السريع · تخطّي المرحلة الثانية",
+          "local": "نموذج محلي · {{model}}",
+          "selfHosted": "مستضاف ذاتيًا · {{host}}",
+          "selfHostedUnconfigured": "نقطة النهاية المستضافة ذاتيًا غير مُكوَّنة",
           "enterprise": "Enterprise · {{provider}}",
-          "antigravityFast": "Antigravity · fast cleanup",
-          "antigravityPolished": "Antigravity · polished cleanup",
-          "customHost": "Custom endpoint · {{host}}",
-          "customUnconfigured": "Custom endpoint not configured",
-          "cloud": "OpenWhispr Cloud cleanup",
-          "byok": "{{provider}} cleanup"
+          "antigravityFast": "Antigravity · تنقيح سريع",
+          "antigravityPolished": "Antigravity · تنقيح مُنقَّى",
+          "customHost": "نقطة نهاية مخصصة · {{host}}",
+          "customUnconfigured": "نقطة النهاية المخصصة غير مُكوَّنة",
+          "cloud": "تنقيح OpenWhispr Cloud",
+          "byok": "تنقيح عبر {{provider}}"
         },
         "delivery": {
-          "paste": "Paste into the focused app",
-          "clipboardOnly": "Copy to clipboard only"
+          "paste": "لصق في التطبيق النشط",
+          "clipboardOnly": "نسخ إلى الحافظة فقط"
         }
       }
     }
@@ -857,7 +857,7 @@
       "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صالحة",
       "invalidEmail": "أدخل عنوان بريد إلكتروني صالحًا",
-      "plusAliasUnsupported": "Email aliases with '+' are not supported"
+      "plusAliasUnsupported": "لا يُدعم استخدام '+' في أسماء البريد البديلة"
     },
     "getStarted": "البدء",
     "legal": {
@@ -887,10 +887,10 @@
       "welcomeBack": "مرحبًا بك مرة أخرى"
     },
     "signedIn": {
-      "ready": "Ready",
+      "ready": "جاهز",
       "welcomeBack": "مرحبًا بك مرة أخرى",
       "notYou": "لست أنت؟ تسجيل الخروج",
-      "welcomeBackName": "Welcome back, {{name}}"
+      "welcomeBackName": "مرحبًا بعودتك، {{name}}"
     },
     "sso": {
       "continueWithSSO": "تسجيل الدخول باستخدام SSO",
@@ -1531,11 +1531,11 @@
   },
   "upcoming": {
     "title": "القادم",
-    "transcriptions": "Transcriptions",
+    "transcriptions": "تفريغات",
     "now": "الآن",
     "untitledEvent": "حدث بدون عنوان",
     "joinAndTranscribe": "انضمام وتفريغ صوتي",
-    "joinAndTakeNotes": "Join & take notes",
+    "joinAndTakeNotes": "انضم وسجّل الملاحظات",
     "takeNotes": "تدوين ملاحظات",
     "noEventsToday": "لا توجد أحداث اليوم",
     "noUpcomingEvents": "لا توجد أحداث قادمة",
@@ -1574,18 +1574,18 @@
       "createTitle": "إنشاء مساحة فريق",
       "createDescription": "منطقة مشتركة داخل مساحة عمل للأشخاص والمجموعات الذين تضيفهم.",
       "nameAndIconLabel": "الاسم والأيقونة",
-      "nameLabel": "Name",
+      "nameLabel": "الاسم",
       "emojiLabel": "Emoji",
       "create": "إنشاء",
       "couldNotCreate": "تعذر إنشاء المساحة",
       "created": "تم إنشاء {{space}}",
-      "rename": "Rename",
+      "rename": "إعادة تسمية",
       "changeEmoji": "تغيير الرمز التعبيري",
       "settings": "الإعدادات",
       "settingsTitle": "إعدادات المساحة",
       "couldNotRename": "تعذر إعادة تسمية المساحة",
       "couldNotChangeEmoji": "تعذّر تغيير الرمز التعبيري",
-      "renamed": "Renamed {{space}}",
+      "renamed": "تمت إعادة تسمية {{space}}",
       "deleteSpace": "حذف المساحة",
       "deleteHintTeam": "يزيل هذه المساحة للجميع. تبقى مجموعاتها كما هي.",
       "deleteHintLocal": "يحذف هذه المساحة نهائيًا مع مجلداتها وملاحظاتها على هذا الجهاز.",
@@ -1642,7 +1642,7 @@
       "editedBy": "تم التعديل بواسطة {{name}} · {{time}}",
       "members": {
         "addPeople": "إضافة أشخاص",
-        "addPeopleToTeam": "Add people to {{team}}",
+        "addPeopleToTeam": "إضافة أشخاص إلى {{team}}",
         "addedToTeam": "تمت إضافة {{name}} إلى {{team}}",
         "removedFromTeam": "تمت إزالة {{name}} من {{team}}",
         "stillViaGroups": "لا يزال {{name}} يملك الوصول عبر {{groups}}",
@@ -1674,7 +1674,7 @@
       "invitedTo_other": "ستنضم إلى {{count}} مساحة فريق",
       "invitedToSpaces": "ستنضم إلى {{spaces}}",
       "teamsMembers": {
-        "menu": "Teams & members…",
+        "menu": "الفرق والأعضاء…",
         "title": "أعضاء {{space}}",
         "noTeams": "لا توجد مجموعات لديها وصول إلى هذه المساحة بعد.",
         "addTeamLabel": "إضافة مجموعة إلى هذه المساحة",
@@ -1684,9 +1684,9 @@
         "removeTeamFromSpace": "إزالة من المساحة",
         "removeTeamConfirm": "إزالة {{team}} من {{space}}؟",
         "removeTeamConfirmDescription": "سيفقد أعضاؤها إمكانية الوصول إلى هذه المساحة ما لم يكونوا مضافين مباشرةً أو تشملهم مجموعة أخرى.",
-        "lastTeamWarning": "This is the only team with access to this space. After removing it, only workspace admins keep access.",
-        "affectsOtherSpaces_one": "Changes to {{team}} also apply to {{count}} other space it has access to.",
-        "affectsOtherSpaces_other": "Changes to {{team}} also apply to {{count}} other spaces it has access to.",
+        "lastTeamWarning": "هذا الفريق الوحيد الذي لديه وصول إلى هذه المساحة. بعد إزالته، يبقى الوصول لمسؤولي مساحة العمل فقط.",
+        "affectsOtherSpaces_one": "التغييرات على {{team}} تنطبق أيضًا على {{count}} مساحة أخرى يمكنها الوصول إليها.",
+        "affectsOtherSpaces_other": "التغييرات على {{team}} تنطبق أيضًا على {{count}} مساحات أخرى يمكنها الوصول إليها.",
         "accessLabel": "صلاحية الوصول إلى المساحة",
         "accessAdmin": "مسؤول",
         "accessMember": "عضو",
@@ -1694,9 +1694,9 @@
         "accessHint": "يدير مسؤولو {{team}} هذه المساحة فقط عندما يتم تعيين وصولها إلى مسؤول (Admin)."
       },
       "teams": {
-        "assignLabel": "Teams",
+        "assignLabel": "الفرق",
         "newTeam": "مجموعة جديدة",
-        "newTeamNameLabel": "Team name",
+        "newTeamNameLabel": "اسم الفريق",
         "loadError": "تعذر تحميل المجموعات."
       },
       "groups": {
@@ -1772,7 +1772,7 @@
       "asTranscriptMarkdown": "بصيغة Markdown (.md)",
       "raw": "خام",
       "aiSummary": "ملخص بالذكاء الاصطناعي",
-      "enhanced": "Enhanced",
+      "enhanced": "مُحسَّن",
       "saving": "جاري الحفظ",
       "transcriptEmptyTitle": "لم يتم تسجيل أي شيء بعد",
       "transcriptEmptyDescription": "اضغط على تسجيل لبدء النسخ. كل ما يُقال يظهر هنا لحظيًا.",
@@ -1920,8 +1920,8 @@
       "unsupportedSelfHosted": "لا يمكن لتسجيل الملاحظات استخدام نقطة نهاية مستضافة ذاتيًا بعد. افتح الإعدادات واختر «محلي» أو مزودًا يدعم البث.",
       "unsupportedProvider": "لا يمكن لتسجيل الملاحظات استخدام {{provider}} للتفريغ المباشر. افتح الإعدادات واختر «محلي» أو مزودًا يدعم البث.",
       "noProviderSelected": "لم يتم اختيار أي مزود لتسجيل الملاحظات. افتح الإعدادات واختر «محلي» أو مزودًا يدعم البث.",
-      "autoEnded": "Recording stopped automatically after your meeting ended.",
-      "restartFailed": "Couldn't restart the meeting recording.",
+      "autoEnded": "توقّف التسجيل تلقائيًا بعد انتهاء اجتماعك.",
+      "restartFailed": "تعذّر إعادة تشغيل تسجيل الاجتماع.",
       "systemAudioInterrupted": {
         "title": "انقطع صوت الاجتماع",
         "description": "توقف التقاط صوت النظام وتجري إعادة تشغيله. قد تفقد بضع ثوانٍ من المكالمة في النص المفرَّغ."
@@ -2182,10 +2182,10 @@
         "title": "تعرف على OpenWhispr Assistant",
         "titleLineOne": "تعرف على",
         "titleLineTwo": "OpenWhispr Assistant",
-        "description": "Speak a request, and OpenWhispr Assistant writes the result for you.",
+        "description": "انطق طلبك وسيكتب OpenWhispr Assistant النتيجة نيابةً عنك.",
         "senderName": "Eren Lauren",
         "senderEmail": "eren32@gmail.com",
-        "recipientLabel": "to John Doe",
+        "recipientLabel": "إلى John Doe",
         "email": {
           "subject": "قهوة الأسبوع المقبل؟",
           "senderName": "ماريا ألفاريز",
@@ -2211,8 +2211,8 @@
             "prompt": "جرب قول: “رد على ماريا بأنني أرحّب بذلك، واقترح بعد ظهر الأربعاء.”"
           }
         },
-        "prompt": "Reply that Tuesday at 3 works. Send an invite.",
-        "response": "Hi Eren,\n\nI’d love to catch up. Tuesday at 3 PM works well for me. If that suits you, I’ll send over a calendar invite.\nLooking forward to it,\nJohn"
+        "prompt": "أجب بأن يوم الثلاثاء الساعة 3 يناسبني. أرسل دعوة.",
+        "response": "مرحبًا Eren،\n\nيسعدني أن نلتقي. يوم الثلاثاء الساعة 3 مساءً يناسبني. إذا كان ذلك مناسبًا لك، سأرسل دعوة تقويم.\nبانتظار اللقاء،\nJohn"
       },
       "demo": {
         "listening": "جاري الاستماع...",
@@ -2238,7 +2238,7 @@
           "googleDescription": "مزامنة اجتماعاتك.",
           "microsoftTitle": "Microsoft Outlook",
           "microsoftDescription": "استيراد اجتماعات العمل والدعوات.",
-          "appleTitle": "Apple Calendar",
+          "appleTitle": "تقويم Apple",
           "appleDescription": "مزامنة الأحداث من جهازي Mac وiPhone الخاصين بك."
         }
       },
@@ -2265,13 +2265,13 @@
         },
         "antigravity": {
           "title": "Antigravity",
-          "description": "Use your Google Antigravity subscription through the local agy CLI. No extra API keys.",
-          "continue": "Use Antigravity",
+          "description": "استخدم اشتراك Google Antigravity عبر agy CLI المحلي. لا حاجة لمفاتيح API إضافية.",
+          "continue": "استخدام Antigravity",
           "features": {
-            "subscription": "Uses the Antigravity plan you already have",
-            "noKey": "No Gemini or OpenAI API key",
-            "localCli": "Talks to agy on this Mac",
-            "features": "Dictation, cleanup, and assistant on the same subscription"
+            "subscription": "يستخدم خطة Antigravity التي لديك بالفعل",
+            "noKey": "بدون مفتاح API لـ Gemini أو OpenAI",
+            "localCli": "يتواصل مع agy على هذا Mac",
+            "features": "الإملاء والتنقيح والمساعد ضمن الاشتراك نفسه"
           }
         },
         "byok": {
@@ -2353,7 +2353,7 @@
         "testing": "جاري الاختبار...",
         "connected": "متصل",
         "connectionFailed": "تعذر التحقق من الاتصال.",
-        "antigravityNote": "Uses the local Antigravity CLI (agy). No API key — sign in with agy if a test fails.",
+        "antigravityNote": "يستخدم Antigravity CLI (agy) المحلي. بدون مفتاح API — سجّل الدخول بـ agy إذا فشل اختبار.",
         "errors": {
           "endpointRequired": "أدخل عنوان URL لنقطة النهاية قبل الاختبار.",
           "invalidUrl": "يجب أن تكون نقطة النهاية عنوان URL صالحًا لـ HTTP أو HTTPS.",
@@ -2366,7 +2366,7 @@
           "providerStatus": "أعاد المزود رمز الحالة {{status}}.",
           "timeout": "انتهت مهلة اختبار الاتصال.",
           "network": "تعذر الوصول إلى المزود.",
-          "agyMissing": "Antigravity CLI (agy) was not found. Install it and sign in with agy."
+          "agyMissing": "لم يُعثر على Antigravity CLI (agy). ثبّته وسجّل الدخول بـ agy."
         }
       },
       "local": {
@@ -2375,7 +2375,7 @@
         "descriptionLineOne": "اختر النماذج التي تريد",
         "descriptionLineTwo": "تشغيلها على جهازك.",
         "providerLabel": "المزود",
-        "agent": "Agent",
+        "agent": "الوكيل",
         "download": "تنزيل",
         "downloadingShort": "جاري التنزيل",
         "selected": "محدد",
@@ -2395,7 +2395,7 @@
       "useCase": "عنك",
       "meeting": "الاجتماعات",
       "finish": "إنهاء",
-      "voiceAgent": "Voice Assistant"
+      "voiceAgent": "المساعد الصوتي"
     },
     "hotkey": {
       "couldNotRegisterTitle": "تعذر تسجيل هذا الاختصار",
@@ -2423,7 +2423,7 @@
       "optional": "اختياري",
       "recommended": "موصى به",
       "accessibilityTroubleshooting": "في إعدادات النظام ← تسهيلات الاستخدام، أوقف مفتاح تبديل OpenWhispr ثم أعد تشغيله. إذا لم يكن OpenWhispr موجودًا في القائمة أصلًا، فانقر على + وأضفه من مجلد التطبيقات. هل ما زلت تواجه مشكلة؟ راسلنا على support@openwhispr.com.",
-      "electronDevHint": "This is a development build. Click Enable: Finder will highlight Electron.app. In System Settings click +, choose that highlighted app, and turn the toggle on. After Screen Recording, quit and reopen Electron."
+      "electronDevHint": "هذا إصدار تطوير. انقر «تمكين»: سيُبرز Finder تطبيق Electron.app. في «إعدادات النظام» انقر +، واختر ذلك التطبيق المُبرز، وفعّل المفتاح. بعد «تسجيل الشاشة»، أغلق Electron وأعد فتحه."
     },
     "transcription": {
       "title": "إعداد التفريغ",
@@ -2443,20 +2443,20 @@
       "textareaPlaceholder": "انقر هنا واستخدم اختصار لوحة المفاتيح الخاص بك للإملاء..."
     },
     "voiceAgent": {
-      "title": "Voice Assistant Setup",
-      "description": "Talk to your AI assistant with a single keypress",
-      "hotkey": "Hotkey",
-      "howItWorks": "Press the key and say what you want — for example “write a short thank-you note”. If text is highlighted, {{agentName}} edits and replaces it. If a writable text field is focused, the answer is pasted at the cursor; otherwise it opens in a floating panel. No need to say “Hey {{agentName}}” first.",
-      "test": "Try it",
-      "testInstruction": "Select the sample text below, then press {{hotkey}} and say “make this shorter” — the edit lands right in the text box",
-      "testSetHotkey": "Set a hotkey above to try it",
-      "sampleText": "The meeting from thursday got moved, so lets sync up early next week to go over the launch plan and divide up the remaining tasks.",
+      "title": "إعداد المساعد الصوتي",
+      "description": "تحدّث مع مساعدك الذكي بضغطة واحدة",
+      "hotkey": "اختصار",
+      "howItWorks": "اضغط المفتاح وقل ما تريد — مثلًا «اكتب رسالة شكر قصيرة». إذا كان هناك نص محدّد، يحرّره {{agentName}} ويستبدله. إذا كان حقل نص قابلًا للكتابة في بؤرة التركيز، تُلصق الإجابة عند المؤشر؛ وإلا تُفتح في لوحة عائمة. لا حاجة لقول «Hey {{agentName}}» أولًا.",
+      "test": "جرّبه",
+      "testInstruction": "حدّد النص النموذجي أدناه، ثم اضغط {{hotkey}} وقل «اجعله أقصر» — يظهر التعديل مباشرة في مربع النص",
+      "testSetHotkey": "عيّن اختصارًا أعلاه لتجربته",
+      "sampleText": "تم تأجيل اجتماع الخميس، لذا لننسّق في بداية الأسبوع المقبل لمراجعة خطة الإطلاق وتقسيم المهام المتبقية.",
       "examples": [
         "Translate to Italian: “I talk faster than I type”",
         "Write a short email to my boss telling him I want a promotion, his name is Mark",
         "What is 5 × 5?"
       ],
-      "optionalNote": "Optional — you can set or change it anytime in Settings."
+      "optionalNote": "اختياري — يمكنك تعيينه أو تغييره في أي وقت من الإعدادات."
     },
     "connectivity": {
       "title": "لا يمكننا الوصول إلى OpenWhispr Cloud من هذه الشبكة",
@@ -3212,8 +3212,8 @@
         "meetingDetectionDescription": "إعلام عند اكتشاف اجتماع حتى تتمكن من بدء التسجيل",
         "calendarReminders": "تذكيرات التقويم",
         "calendarRemindersDescription": "إعلام عند اقتراب موعد بدء اجتماع مجدول",
-        "updates": "App updates",
-        "updatesDescription": "Notify when a new version is available"
+        "updates": "تحديثات التطبيق",
+        "updatesDescription": "إشعار عند توفر إصدار جديد"
       },
       "clipboard": {
         "title": "الحافظة",
@@ -3354,8 +3354,8 @@
             "title": "تحديث متاح"
           },
           "updateError": {
-            "description": "Something went wrong with the update. Please try again.",
-            "title": "Update Error"
+            "description": "حدث خطأ أثناء التحديث. يُرجى المحاولة مرة أخرى.",
+            "title": "خطأ في التحديث"
           }
         },
         "downloadUpdate": "تنزيل التحديث {{version}}",
@@ -3547,26 +3547,26 @@
       "transcriptionPreviewDescription": "إظهار التفريغ في نافذة عائمة قبل التنقيح",
       "antigravity": {
         "dictationStyle": {
-          "label": "Dictation style",
-          "description": "Fast skips the cleanup pass after transcription. Polished runs an extra AI cleanup step.",
-          "fast": "Fast",
-          "polished": "Polished"
+          "label": "أسلوب الإملاء",
+          "description": "الوضع السريع يتخطّى مرحلة التنقيح بعد التفريغ. المُنقَّى يشغّل خطوة تنقيح إضافية بالذكاء الاصطناعي.",
+          "fast": "سريع",
+          "polished": "مُنقَّى"
         },
         "transcriptionFidelity": {
-          "label": "Transcription fidelity",
-          "description": "Smart adds natural punctuation. Verbatim keeps wording closer to what you said.",
-          "smart": "Smart",
-          "verbatim": "Verbatim"
+          "label": "دقة التفريغ",
+          "description": "الذكي يضيف ترقيمًا طبيعيًا. الحرفي يبقي الصياغة أقرب إلى ما قلته.",
+          "smart": "ذكي",
+          "verbatim": "حرفي"
         },
         "backendModel": {
-          "sttLabel": "Transcription model",
-          "sttDescription": "Gateway model for speech-to-text. Automatic picks the latest audio-capable tier from your Antigravity catalog.",
-          "cleanupLabel": "Cleanup model",
-          "cleanupDescription": "Gateway model for the optional polished cleanup pass.",
-          "chatLabel": "Assistant model",
-          "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
-          "automatic": "Automatic (latest)",
-          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
+          "sttLabel": "نموذج التفريغ",
+          "sttDescription": "نموذج البوابة لتحويل الكلام إلى نص. «تلقائي» يختار أحدث مستوى يدعم الصوت من فهرس Antigravity.",
+          "cleanupLabel": "نموذج التنقيح",
+          "cleanupDescription": "نموذج البوابة لمرحلة التنقيح المُنقَّى الاختيارية.",
+          "chatLabel": "نموذج المساعد",
+          "chatDescription": "نموذج البوابة لدردشة Antigravity ودورات الأدوات (عند عدم استخدام subprocess agy).",
+          "automatic": "تلقائي (الأحدث)",
+          "resolverNotice": "النموذج الذي اخترته أُوقِف أو غير متاح؛ يُستخدم {{model}}."
         }
       },
       "vad": {
@@ -4132,7 +4132,7 @@
     "title": "الإعدادات"
   },
   "sidebar": {
-    "dictation": "Dictation",
+    "dictation": "الإملاء",
     "home": "الرئيسية",
     "notes": "الملاحظات",
     "upload": "رفع",
@@ -4344,7 +4344,7 @@
   },
   "support": {
     "documentation": "الوثائق",
-    "forkDocumentation": "Fork setup guide",
+    "forkDocumentation": "دليل إعداد الفرع",
     "forkUpstream": "Upstream OpenWhispr",
     "joinDiscord": "انضم إلى Discord",
     "contactSupport": "التواصل مع الدعم",
@@ -4377,7 +4377,7 @@
     "activationFailedDescription": "انتقل OpenWhispr إلى استخدام وحدة المعالجة المركزية (CPU) للتفريغ الصوتي.",
     "reasoningActivationFailedDescription": "انتقل OpenWhispr إلى استخدام وحدة المعالجة المركزية (CPU) للمعالجة.",
     "retryActivation": "إعادة محاولة تفعيل GPU",
-    "retry": "Retry",
+    "retry": "إعادة المحاولة",
     "remove": "إزالة",
     "dismiss": "ليس الآن",
     "cancel": "إلغاء"
@@ -4425,7 +4425,7 @@
     "allSpaces": "جميع المساحات",
     "title": "البحث",
     "description": "البحث في جميع الملاحظات والنصوص المفرَّغة",
-    "shortPlaceholder": "Search",
+    "shortPlaceholder": "بحث",
     "placeholder": "البحث في الملاحظات والنصوص المفرَّغة...",
     "sections": {
       "notes": "الملاحظات",
@@ -4458,9 +4458,9 @@
     }
   },
   "updateNotification": {
-    "title": "OpenWhispr Update Available",
-    "body": "Version {{version}} is ready to download",
-    "cta": "Update Now"
+    "title": "يتوفر تحديث OpenWhispr",
+    "body": "الإصدار {{version}} جاهز للتنزيل",
+    "cta": "حدّث الآن"
   },
   "permissionsGate": {
     "title": "الأذونات مطلوبة",
@@ -4527,13 +4527,13 @@
     "start": "تدوين الملاحظات",
     "join": "انضمام وتفريغ صوتي",
     "autoEnd": {
-      "title": "Meeting recording ended",
+      "title": "انتهى تسجيل الاجتماع",
       "body": {
-        "micReleased": "No other app is using your microphone, so recording stopped automatically. Restart within {{seconds}}s.",
-        "silence": "No audio was detected, so recording stopped automatically. Restart within {{seconds}}s.",
-        "processExit": "Your meeting app closed, so recording stopped automatically. Restart within {{seconds}}s."
+        "micReleased": "لا يستخدم تطبيق آخر الميكروفون، لذا توقّف التسجيل تلقائيًا. أعد التشغيل خلال {{seconds}} ث.",
+        "silence": "لم يُكتشف صوت، لذا توقّف التسجيل تلقائيًا. أعد التشغيل خلال {{seconds}} ث.",
+        "processExit": "أُغلق تطبيق الاجتماع، لذا توقّف التسجيل تلقائيًا. أعد التشغيل خلال {{seconds}} ث."
       },
-      "restart": "Restart recording"
+      "restart": "إعادة تشغيل التسجيل"
     }
   }
 }
