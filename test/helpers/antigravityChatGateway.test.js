@@ -334,3 +334,71 @@ test("runAntigravityChatTurn surfaces AGY_RATE_LIMITED with a reset time when ev
     catalog.clearModelCooldowns();
   }
 });
+
+// rework-audit/medium/01-missing-model-reported-as-rate-limit: on the old
+// two-host retry loop, exhausting every candidate for a 404'd model rewrote
+// the failure to a hardcoded HTTP 429, which the renderer showed as a
+// rate-limit toast. The gateway (src/helpers/antigravityGateway.js) now
+// throws AGY_MODEL_UNAVAILABLE with the real 404 status per attempt
+// (asserted directly against generateContent in antigravityGateway.test.js);
+// this pins the same guarantee one level up, once every chat candidate model
+// has been asked and all of them 404 — the error that reaches the renderer
+// must still be the real 404/not-found shape, never AGY_RATE_LIMITED/429.
+test("runAntigravityChatTurn surfaces a 404 as AGY_MODEL_UNAVAILABLE with status 404 once every candidate model has been tried, never a rate-limit error", async (t) => {
+  _resetCatalogForTests();
+  _resetProjectIdCacheForTests();
+  const modelsCalled = [];
+  await withServer(
+    (req, res) => {
+      let raw = "";
+      req.on("data", (chunk) => (raw += chunk));
+      req.on("end", () => {
+        if (req.url.includes("loadCodeAssist")) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ cloudaicompanionProject: "proj-1" }));
+          return;
+        }
+        const body = JSON.parse(raw);
+        modelsCalled.push(body.model);
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: { message: `models/${body.model} is not found` } }));
+      });
+    },
+    async (base) => {
+      const catalog = require("../../src/helpers/antigravityModelCatalog");
+      t.mock.method(catalog, "getCatalog", () => ({
+        models: {
+          "gemini-3.8-flash-tiered": { supportsImages: true, supportedMimeTypes: {} },
+          "gemini-3.5-flash-lite": { supportsImages: true, supportedMimeTypes: {} },
+        },
+        tieredModelIds: {
+          flash: ["gemini-3.8-flash-tiered"],
+          flashLite: ["gemini-3.5-flash-lite"],
+          pro: [],
+        },
+        deprecatedModelIds: {},
+      }));
+
+      const op = createAntigravityOperation({ budgetMs: 20_000, label: "test" });
+      await assert.rejects(
+        runAntigravityChatTurn({
+          systemPrompt: "sys",
+          contents: [{ role: "user", parts: [{ text: "hi" }] }],
+          tools: [],
+          fetchImpl: fetch,
+          getAccessToken: async () => ({ accessToken: "tok", accountKey: "acct" }),
+          getProjectId: async () => "proj-1",
+          gatewayBase: base,
+          op,
+        }),
+        (error) => {
+          assert.equal(error.code, "AGY_MODEL_UNAVAILABLE");
+          assert.equal(error.status, 404);
+          assert.match(error.message, /is not found/);
+          return true;
+        }
+      );
+      assert.ok(modelsCalled.length >= 2, "every candidate model must have been tried");
+    }
+  );
+});
