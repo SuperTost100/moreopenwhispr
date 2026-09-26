@@ -43,7 +43,7 @@ test("resolveAgyCliModel maps retired 3.5 flash ids onto current agy catalog", (
   assert.equal(resolveAgyCliModel("gemini-3.5-flash-low"), "gemini-3.7-flash-low");
   assert.equal(resolveAgyCliModel("gemini-3.5-flash-medium"), "gemini-3.7-flash-medium");
   assert.equal(resolveAgyCliModel("gemini-3.7-flash-low"), "gemini-3.7-flash-low");
-  assert.equal(resolveAgyCliModel(""), "gemini-3.7-flash-low");
+  assert.equal(resolveAgyCliModel(""), "gemini-3.8-flash-low");
 });
 
 test("buildAgyArgs remaps retired 3.5 flash ids and never forwards --effort", () => {
