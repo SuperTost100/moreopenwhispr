@@ -81,7 +81,7 @@ function Feature({
 // Compact setup card: content stays pinned to the top and the action to the bottom.
 function SetupCard({ children }: { children: React.ReactNode }) {
   return (
-    <section className="relative flex h-[350px] w-68 shrink-0 flex-col justify-between overflow-hidden rounded-xl border border-[var(--onboarding-control-border)] bg-[var(--onboarding-surface)] px-4 pb-5 pt-4 text-start">
+    <section className="onboarding-setup-card relative flex h-[350px] w-68 shrink-0 flex-col justify-between overflow-hidden rounded-xl border border-border bg-[var(--onboarding-surface)] px-4 pb-5 pt-4 text-start">
       {children}
     </section>
   );

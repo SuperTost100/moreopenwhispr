@@ -1009,7 +1009,7 @@
       "docsLink": "Read the docs"
     },
     "antigravity": {
-      "transportNote": "Uses your local Antigravity CLI (agy) and Google subscription. No API key. Run agy once to sign in if prompts fail."
+      "transportNote": "Uses your Google Antigravity subscription through the agy sign-in on this Mac. No API key. If it stops working, sign in to agy again."
     }
   },
   "hooks": {
@@ -2646,14 +2646,14 @@
       "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement"
     },
     "transcription": {
-      "customSetup": "Custom Setup",
+      "customSetup": "Custom setup",
       "customSetupDescription": "Use your own provider and API key.",
       "description": "Choose how OpenWhispr transcribes your voice",
       "modes": {
         "openwhispr": "OpenWhispr Cloud",
-        "providers": "Cloud Providers",
+        "providers": "Cloud providers",
         "local": "Local",
-        "selfHosted": "Self-Hosted",
+        "selfHosted": "Self-hosted",
         "openwhisprDesc": "Reliable accuracy. No setup needed.",
         "providersDesc": "Bring your own API key.",
         "localDesc": "On-device models. Fully private.",
@@ -2671,18 +2671,18 @@
         },
         "switchedCustom": {
           "description": "Configure your own provider and API key.",
-          "title": "Switched to Custom Setup"
+          "title": "Switched to custom setup"
         },
         "switchedProviders": {
-          "title": "Cloud Providers",
+          "title": "Cloud providers",
           "description": "Using your own API keys."
         },
         "switchedLocal": {
-          "title": "On Device",
+          "title": "On device",
           "description": "Transcription runs locally on your machine."
         },
         "switchedSelfHosted": {
-          "title": "Self-Hosted",
+          "title": "Self-hosted",
           "description": "Using your own server."
         },
         "switchedEnterprise": {
@@ -2695,7 +2695,7 @@
         "description": "GPU used for local speech-to-text"
       },
       "diarization": {
-        "title": "Speaker Identification",
+        "title": "Speaker identification",
         "description": "Identify individual speakers in meeting recordings",
         "modelsReady": "Models Ready",
         "deleteModels": "Delete Models"

@@ -1009,7 +1009,7 @@
       "docsLink": "查看文件"
     },
     "antigravity": {
-      "transportNote": "Uses your local Antigravity CLI (agy) and Google subscription. No API key. Run agy once to sign in if prompts fail."
+      "transportNote": "透過此 Mac 上的 agy 登入使用您的 Google Antigravity 訂閱。不需要 API 金鑰。若無法使用，請重新登入 agy。"
     }
   },
   "hooks": {
