@@ -2855,8 +2855,8 @@
         "assemblyai_universal_streaming_english": "Unveränderliche Echtzeit-Transkripte, Englisch",
         "assemblyai_universal_streaming_multilingual": "Unveränderliche Echtzeit-Transkripte, mehrsprachig",
         "assemblyai_universal_3_5_pro": "Höchste Genauigkeit in Echtzeit, 18 Sprachen",
-        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
-        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)"
+        "antigravity_gemini_3_5_transcribe": "Schnelle Cloud-Transkription über Antigravity-Abo",
+        "antigravity_gemini_3_5_transcribe_live": "Live-Vorschau beim Sprechen über Antigravity-Abo"
       },
       "cloud": {
         "openai_gpt_5_2": "Starkes Reasoning-Modell",
@@ -2903,15 +2903,15 @@
         "corti_corti_s1": "Leistungsfähigstes klinisches Modell mit Reasoning",
         "corti_corti_s1_mini_instant": "Kompaktes Gesundheitsmodell, am schnellsten und günstigsten",
         "corti_corti_s1_mini": "Kompaktes klinisches Modell mit Reasoning zum halben Preis",
-        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
-        "antigravity_gemini_3_7_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_7_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
-        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
-        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
-        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription"
+        "antigravity_gemini_3_8_flash_low": "Schnelles Aufräumen über Antigravity-Abo",
+        "antigravity_gemini_3_8_flash_medium": "Ausgewogen über Antigravity",
+        "antigravity_gemini_3_8_flash_high": "Neuestes Flash über Antigravity",
+        "antigravity_gemini_3_7_flash_low": "Schnelles Aufräumen über Antigravity-Abo",
+        "antigravity_gemini_3_7_flash_medium": "Ausgewogen über Antigravity",
+        "antigravity_gemini_3_7_flash_high": "Vorherige Flash-Generation über Antigravity",
+        "antigravity_gemini_3_1_pro_high": "Frontier Pro über Antigravity",
+        "antigravity_claude_sonnet_4_6": "Claude über Antigravity-Abo",
+        "antigravity_claude_opus_4_6": "Opus über Antigravity-Abo"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "Leistungsstärkstes Claude-Modell. Ideal für die schwierigsten Assistenten-Aufgaben.",

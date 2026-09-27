@@ -2756,8 +2756,8 @@
         "assemblyai_universal_streaming_english": "変化しないリアルタイム文字起こし（英語）",
         "assemblyai_universal_streaming_multilingual": "変化しないリアルタイム文字起こし（多言語）",
         "assemblyai_universal_3_5_pro": "最高精度のリアルタイム、18言語",
-        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
-        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)"
+        "antigravity_gemini_3_5_transcribe": "Antigravityサブスクリプション経由の高速クラウド文字起こし",
+        "antigravity_gemini_3_5_transcribe_live": "話しながら確認できるAntigravityサブスクリプション経由のライブプレビュー"
       },
       "cloud": {
         "openai_gpt_5_2": "強力な推論モデル",
@@ -2804,15 +2804,15 @@
         "corti_corti_s1": "推論対応の最も高性能な臨床モデル",
         "corti_corti_s1_mini_instant": "コンパクトなヘルスケアモデル、最速かつ最も低コスト",
         "corti_corti_s1_mini": "推論対応のコンパクトな臨床モデルを半額で",
-        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
-        "antigravity_gemini_3_7_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_7_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
-        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
-        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
-        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription"
+        "antigravity_gemini_3_8_flash_low": "Antigravityサブスクリプション経由の高速クリーンアップ",
+        "antigravity_gemini_3_8_flash_medium": "Antigravity経由のバランス型",
+        "antigravity_gemini_3_8_flash_high": "Antigravity経由の最新Flash",
+        "antigravity_gemini_3_7_flash_low": "Antigravityサブスクリプション経由の高速クリーンアップ",
+        "antigravity_gemini_3_7_flash_medium": "Antigravity経由のバランス型",
+        "antigravity_gemini_3_7_flash_high": "Antigravity経由の旧世代Flash",
+        "antigravity_gemini_3_1_pro_high": "Antigravity経由のフロンティア級Pro",
+        "antigravity_claude_sonnet_4_6": "Antigravityサブスクリプション経由のClaude",
+        "antigravity_claude_opus_4_6": "Antigravityサブスクリプション経由のOpus"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "最も高性能な Claude モデル。最も難しいアシスタントタスクに最適です。",

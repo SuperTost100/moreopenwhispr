@@ -2772,8 +2772,8 @@
         "assemblyai_universal_streaming_english": "Неизменяемые расшифровки в реальном времени, английский",
         "assemblyai_universal_streaming_multilingual": "Неизменяемые расшифровки в реальном времени, многоязычные",
         "assemblyai_universal_3_5_pro": "Максимальная точность в реальном времени, 18 языков",
-        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
-        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)"
+        "antigravity_gemini_3_5_transcribe": "Быстрая облачная транскрипция через подписку Antigravity",
+        "antigravity_gemini_3_5_transcribe_live": "Живой предпросмотр во время речи через подписку Antigravity"
       },
       "cloud": {
         "openai_gpt_5_2": "Сильная модель рассуждения",
@@ -2820,15 +2820,15 @@
         "corti_corti_s1": "Самая мощная клиническая модель с рассуждением",
         "corti_corti_s1_mini_instant": "Компактная медицинская модель, самая быстрая и дешёвая",
         "corti_corti_s1_mini": "Компактная клиническая модель с рассуждением за полцены",
-        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
-        "antigravity_gemini_3_7_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_7_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
-        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
-        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
-        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription"
+        "antigravity_gemini_3_8_flash_low": "Быстрая очистка через подписку Antigravity",
+        "antigravity_gemini_3_8_flash_medium": "Сбалансированный вариант через Antigravity",
+        "antigravity_gemini_3_8_flash_high": "Новейший Flash через Antigravity",
+        "antigravity_gemini_3_7_flash_low": "Быстрая очистка через подписку Antigravity",
+        "antigravity_gemini_3_7_flash_medium": "Сбалансированный вариант через Antigravity",
+        "antigravity_gemini_3_7_flash_high": "Предыдущее поколение Flash через Antigravity",
+        "antigravity_gemini_3_1_pro_high": "Передовой Pro через Antigravity",
+        "antigravity_claude_sonnet_4_6": "Claude через подписку Antigravity",
+        "antigravity_claude_opus_4_6": "Opus через подписку Antigravity"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "Самая мощная модель Claude. Лучше всего для самых сложных задач помощника.",

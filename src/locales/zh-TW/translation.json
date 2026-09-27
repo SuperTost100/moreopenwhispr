@@ -2756,8 +2756,8 @@
         "assemblyai_universal_streaming_english": "不會變動的即時轉錄（英文）",
         "assemblyai_universal_streaming_multilingual": "不會變動的即時轉錄（多語言）",
         "assemblyai_universal_3_5_pro": "最高精度即時轉錄，支援 18 種語言",
-        "antigravity_gemini_3_5_transcribe": "Fast dedicated speech-to-text via Antigravity subscription",
-        "antigravity_gemini_3_5_transcribe_live": "Streaming speech-to-text (coming soon)"
+        "antigravity_gemini_3_5_transcribe": "透過 Antigravity 訂閱進行快速雲端轉錄",
+        "antigravity_gemini_3_5_transcribe_live": "邊說邊看的即時預覽（透過 Antigravity 訂閱）"
       },
       "cloud": {
         "openai_gpt_5_2": "強大的推理模型",
@@ -2804,15 +2804,15 @@
         "corti_corti_s1": "功能最強的臨床模型，帶推理",
         "corti_corti_s1_mini_instant": "精簡型醫療模型，最快且成本最低",
         "corti_corti_s1_mini": "精簡型臨床模型，半價提供推理",
-        "antigravity_gemini_3_5_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_5_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_5_flash_high": "Higher quality via Antigravity",
-        "antigravity_gemini_3_7_flash_low": "Fast cleanup via Antigravity subscription",
-        "antigravity_gemini_3_7_flash_medium": "Balanced via Antigravity",
-        "antigravity_gemini_3_7_flash_high": "Latest Flash via Antigravity",
-        "antigravity_gemini_3_1_pro_high": "Frontier Pro via Antigravity",
-        "antigravity_claude_sonnet_4_6": "Claude via Antigravity subscription",
-        "antigravity_claude_opus_4_6": "Opus via Antigravity subscription"
+        "antigravity_gemini_3_8_flash_low": "透過 Antigravity 訂閱進行快速清理",
+        "antigravity_gemini_3_8_flash_medium": "透過 Antigravity 達到均衡表現",
+        "antigravity_gemini_3_8_flash_high": "透過 Antigravity 使用最新 Flash",
+        "antigravity_gemini_3_7_flash_low": "透過 Antigravity 訂閱進行快速清理",
+        "antigravity_gemini_3_7_flash_medium": "透過 Antigravity 達到均衡表現",
+        "antigravity_gemini_3_7_flash_high": "透過 Antigravity 使用上一代 Flash",
+        "antigravity_gemini_3_1_pro_high": "透過 Antigravity 使用前沿級 Pro",
+        "antigravity_claude_sonnet_4_6": "透過 Antigravity 訂閱使用 Claude",
+        "antigravity_claude_opus_4_6": "透過 Antigravity 訂閱使用 Opus"
       },
       "enterprise": {
         "bedrock_claude_fable_5": "最強大的 Claude 模型。最適合最具挑戰性的助理任務。",
