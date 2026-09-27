@@ -1,0 +1,28 @@
+✔ parseExpiryTimestamp parses the 3-digit-ms Z form (5.802917ms)
+✔ parseExpiryTimestamp parses the 6-digit-us explicit-offset form (0.749042ms)
+✔ parseExpiryTimestamp returns 0 for garbage input (0.523041ms)
+✔ getAntigravityAccessToken returns a still-valid token with no refresh (2.425875ms)
+✔ getAntigravityAccessToken refreshes an expired token via `agy models` and re-reads the rewritten file (3.667333ms)
+✔ getAntigravityAccessToken single-flights concurrent refreshes into exactly one `agy models` spawn (8.716ms)
+✔ getAntigravityAccessToken rejects with AGY_AUTH_REQUIRED when refresh doesn't fix an expired token (2.638666ms)
+✔ getAntigravityAccessToken rejects with AGY_AUTH_REQUIRED when no token file exists at all (0.865042ms)
+✔ readTokenFile is mtime-cached: unchanged file is not re-parsed between calls (1.535083ms)
+✔ accountKeyFor derives a short, non-reversible fingerprint of the refresh token (0.520167ms)
+✔ a token with a few minutes left is used as-is, without spawning agy on the hot path (1.71025ms)
+✔ _extractCredentialsFromFile finds ids and secrets across chunk boundaries (3.113958ms)
+✔ direct refresh tries the wrong pair, then the next pair, then succeeds (4.017625ms)
+✔ the last-known-good client id is tried first on the next refresh (5.807042ms)
+✔ invalid_grant stops direct refresh immediately, falls back to agy, and ends in AGY_AUTH_REQUIRED (2.740333ms)
+✔ concurrent callers trigger exactly one direct-refresh HTTP request (9.176541ms)
+✔ no write happens when the token file changed underneath a direct refresh (3.522292ms)
+✔ a direct refresh never recreates the token file if it was deleted mid-refresh (4.201667ms)
+✔ a direct refresh refuses to persist when the refresh token changed underneath it (2.976958ms)
+✔ a successful direct refresh writes an atomic, 0600 file that preserves unrelated fields (3.361667ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.416666

@@ -1,0 +1,48 @@
+✖ prepareAudioBuffer kills a stuck ffmpeg and rejects within the timeout instead of hanging (30225.332041ms)
+✖ transcribeWithAntigravity falls back to the batch gateway for the live model instead of throwing (1.177667ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30291.087167
+
+✖ failing tests:
+
+test at test/helpers/antigravityTranscription.test.js:120:1
+✖ prepareAudioBuffer kills a stuck ffmpeg and rejects within the timeout instead of hanging (30225.332041ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'ENOENT'
+  - 'AGY_CANCELLED'
+  
+      at Object.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityTranscription.test.js:150:16)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityTranscription.test.js:141:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'ENOENT',
+    expected: 'AGY_CANCELLED',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/helpers/antigravityTranscription.test.js:249:1
+✖ transcribeWithAntigravity falls back to the batch gateway for the live model instead of throwing (1.177667ms)
+  Error: Antigravity live transcription must use the live preview stream during recording.
+      at transcribeWithAntigravity (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/antigravityTranscription.js:372:19)
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityTranscription.test.js:259:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'AGY_LIVE_REQUIRES_PREVIEW'
+  }

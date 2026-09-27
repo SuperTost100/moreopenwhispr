@@ -1,0 +1,12 @@
+✔ home uses dictation label key while keeping home id (125.368958ms)
+✔ getAllowedControlPanelNavItems applies agent and policy gates (0.491583ms)
+✔ getControlPanelNavLabelKey labels the settings view, which has no nav item (0.094084ms)
+✔ getControlPanelNavLabelKey never mislabels an unknown view as another tab (0.080167ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 203.266166

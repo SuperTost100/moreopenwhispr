@@ -1,0 +1,6 @@
+# after
+Moved to /Users/tost1/.Trash/openwhispr-stale-copies-2026-09-26 (restorable from Trash).
+git status --short in openwhispr:
+?? rework-audit/
+files named '* 2.*' outside node_modules/.git in both trees:
+       0

@@ -1,0 +1,76 @@
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-request',
+  elapsedMs: 1,
+  bytes: 10,
+  mimeType: 'audio/wav',
+  backendModel: 'gemini-3.8-flash-tiered',
+  candidate: 1
+}
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-done',
+  elapsedMs: 4,
+  transport: 'daily-stream-multimodal',
+  backendModel: 'gemini-3.8-flash-tiered'
+}
+[INFO][transcription] Antigravity STT stage { stage: 'agy-legacy-direct', elapsedMs: 0 }
+[INFO][transcription] Antigravity STT stage { stage: 'agy-legacy-done', elapsedMs: 0, transport: 'agy-write-file' }
+✔ buildTranscriptionPrompt includes the audio path, only-transcript rule, and write path (0.375833ms)
+✔ parseTranscriptText unwraps json transcript field (0.209958ms)
+✔ transcribeWithAntigravity uses daily gateway stream path by default (3.548ms)
+✔ transcribeWithAntigravity legacy agent path when useLegacyAgent (1.173875ms)
+✔ prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversion failed (1.744334ms)
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-request',
+  elapsedMs: 3,
+  bytes: 10,
+  mimeType: 'audio/wav',
+  backendModel: 'gemini-3.8-flash-tiered',
+  candidate: 1
+}
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-done',
+  elapsedMs: 4,
+  transport: 'daily-stream-multimodal',
+  backendModel: 'gemini-3.8-flash-tiered'
+}
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-request',
+  elapsedMs: 2,
+  bytes: 10,
+  mimeType: 'audio/wav',
+  backendModel: 'gemini-3.8-flash-tiered',
+  candidate: 1
+}
+[INFO][transcription] Antigravity STT stage { stage: 'agy-subprocess-fallback', elapsedMs: 2, code: 'ENOTFOUND' }
+[INFO][transcription] Antigravity STT stage { stage: 'agy-legacy-done', elapsedMs: 4, transport: 'agy-write-file' }
+[INFO][transcription] Antigravity STT stage {
+  stage: 'live-fallback-to-batch',
+  elapsedMs: 0,
+  reason: 'live preview stream did not commit a transcript'
+}
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-request',
+  elapsedMs: 2,
+  bytes: 10,
+  mimeType: 'audio/wav',
+  backendModel: 'gemini-3.8-flash-tiered',
+  candidate: 1
+}
+[INFO][transcription] Antigravity STT stage {
+  stage: 'gateway-done',
+  elapsedMs: 2,
+  transport: 'daily-stream-multimodal',
+  backendModel: 'gemini-3.8-flash-tiered'
+}
+✔ prepareAudioBuffer kills a stuck ffmpeg and rejects within the timeout instead of hanging (1807.364625ms)
+✔ transcribeWithAntigravity creates a default bounded operation when the caller passes none (6.057292ms)
+✔ transcribeWithAntigravity falls back to agy only on network unreachable (4.218916ms)
+✔ transcribeWithAntigravity falls back to the batch gateway for the live model instead of throwing (2.017292ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1888.513958

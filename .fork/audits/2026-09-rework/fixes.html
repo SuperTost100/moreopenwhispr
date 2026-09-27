@@ -1,0 +1,180 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Fixes for the rework audit</title><style>body{font:15px/1.5 -apple-system,sans-serif;max-width:900px;margin:2em auto;padding:0 1em}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:4px 8px;vertical-align:top}img{max-width:100%;border:1px solid #ccc;margin:4px 0}code{background:#f3f3f3;padding:0 3px}</style></head><body><h1>Fixes for the rework audit</h1>
+<p>The audit ran on branch <code>moreopenwhispr-ui-refresh</code> at <code>266f0703</code>. The work since then lives on <code>sync/upstream-2026-09</code> in the <code>openwhispr-sync</code> worktree. That branch contains <code>266f0703</code> plus the upstream merge and the Gemini rewrite, so every finding was checked and fixed there.</p>
+<p>Each finding has its own folder in <code>fixes/&lt;ID&gt;/</code> with:</p>
+<ul>
+<li><code>notes.md</code>: status, root cause, fix, and files.</li>
+<li><code>before.txt</code>: the new test failing on the old code, when the bug still existed.</li>
+<li><code>after.txt</code>: the same test passing.</li>
+<li><code>before.png</code> and <code>after.png</code>: screenshots, for the three UI findings.</li>
+</ul>
+<h2>Result</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Finding</th>
+<th>Status</th>
+<th>Commit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I01</td>
+<td>Assistant with tools drops the screenshot</td>
+<td>Already fixed by the gateway rewrite, test added</td>
+<td>0d8ecaf1, test 2321e9c6</td>
+</tr>
+<tr>
+<td>I02</td>
+<td>Stopping the assistant still runs the tool</td>
+<td>Already fixed, test added</td>
+<td>b9ac5337, test 2321e9c6</td>
+</tr>
+<tr>
+<td>I03</td>
+<td>Live transcription rejects the recording</td>
+<td>Fixed now</td>
+<td>ddff2862</td>
+</tr>
+<tr>
+<td>I04</td>
+<td>Paste focuses the app and switches Spaces</td>
+<td>Fixed now</td>
+<td>be018d8d</td>
+</tr>
+<tr>
+<td>M01</td>
+<td>Missing model reported as a rate limit</td>
+<td>Already fixed, tests added</td>
+<td>5369b4f1, test 2321e9c6</td>
+</tr>
+<tr>
+<td>M02</td>
+<td>Picked transcription model not sent</td>
+<td>Already fixed, test added</td>
+<td>5369b4f1, test 00e3e478</td>
+</tr>
+<tr>
+<td>M03</td>
+<td>Retired 3.5 Flash rows still in the picker</td>
+<td>Fixed now</td>
+<td>1a29f5f3</td>
+</tr>
+<tr>
+<td>M04</td>
+<td>Audio conversion has no deadline</td>
+<td>Fixed now</td>
+<td>ddff2862</td>
+</tr>
+<tr>
+<td>M05</td>
+<td>Narrow window says Dictation on Settings</td>
+<td>Fixed now</td>
+<td>b459f484</td>
+</tr>
+<tr>
+<td>M06</td>
+<td>Token refresh undoes a sign-out</td>
+<td>Already fixed and already tested</td>
+<td>b9ac5337</td>
+</tr>
+<tr>
+<td>M07</td>
+<td>Fork line calls the app a fork of itself</td>
+<td>Fixed now</td>
+<td>51d3d5a6</td>
+</tr>
+<tr>
+<td>M08</td>
+<td>First-run title on three lines, hint clipped</td>
+<td>Fixed now</td>
+<td>600efe65</td>
+</tr>
+<tr>
+<td>M09</td>
+<td>Gemini 3.7 still the default</td>
+<td>Fixed now, plus one follow-up</td>
+<td>1a29f5f3, 2acde933</td>
+</tr>
+<tr>
+<td>L01</td>
+<td>Antigravity blurbs left in English</td>
+<td>Fixed now</td>
+<td>fc6ee2fd</td>
+</tr>
+<tr>
+<td>L02</td>
+<td>Stale duplicate docs</td>
+<td>Fixed now (files moved to Trash)</td>
+<td>no commit</td>
+</tr>
+</tbody>
+</table>
+<p>Whole suite after all fixes: 5551 tests, 5279 pass, 0 fail, 271 skipped (platform and upstream-only tests). <code>npm run typecheck</code> is clean. Run <code>npm test</code> to reproduce.</p>
+<h2>Important</h2>
+<h3>I01 Assistant with tools drops the screenshot</h3>
+<p>Already fixed. The assistant no longer runs tool turns through <code>agy --print</code>. Since 0d8ecaf1 it uses the Gemini gateway with native function calling. The tool path and the no-tool path both build the first user turn with <code>buildInitialContents</code>, which attaches the screenshot as an <code>inlineData</code> image. The placeholder sentence is gone from the code.</p>
+<p>The only path that still can't send the image is the last-resort <code>agy</code> subprocess, used when the gateway is unreachable. That is documented and tested.</p>
+<p>Proof: a new test in <code>test/services/antigravityChat.test.js</code> runs a turn with a <code>create_note</code> tool and asserts that the image bytes are in the request and the placeholder is not. It passes.</p>
+<h3>I02 Stopping the assistant still runs the tool</h3>
+<p>Already fixed in b9ac5337. Every chat turn now sends a request id to the main process. Abort cancels that exact request. The loop checks the signal again after every await and before each tool runs.</p>
+<p>Proof: a new test aborts while a <code>create_note</code> call is pending, then releases the response. <code>executeToolCall</code> is never called. An existing test covers a cancel between two calls in the same turn.</p>
+<h3>I03 Live transcription rejects the recording</h3>
+<p>Fixed now. When the live stream does not return a clean transcript, <code>transcribeWithAntigravity</code> no longer throws <code>AGY_LIVE_REQUIRES_PREVIEW</code>. It sends the recording through the normal batch path instead, with the same model choice and failover as the non-live model. The result is tagged <code>fellBackFromLive: true</code> for the logs. The audio manager already skipped the batch call only for non-empty streamed text, so it needed no change.</p>
+<p>Proof: the test calls <code>transcribeWithAntigravity</code> with the live model and a wav buffer. Before: it threw. After: it returns text from the gateway.</p>
+<h3>I04 Paste focuses the app and switches Spaces</h3>
+<p>Fixed now. The audit's three causes all reproduced, and each one is fixed:</p>
+<ol>
+<li>The activation script used <code>activateWithOptions(3)</code>, which brings every window forward. It now uses <code>2</code>, which brings only the frontmost window of the target app. Activation also refuses our own process ids, meaning the main process and the Electron helpers from <code>app.getAppMetrics()</code>.</li>
+<li>The target capture could store our own pid if the lookup finished after focus moved to us. A lookup that resolves to us is now dropped.</li>
+<li><code>app.on(&quot;activate&quot;)</code> showed and focused the control panel for any activation. Its decision now lives in a pure function in <code>dockPolicy.js</code>. It does nothing while our own paste activation is running, and real Dock clicks behave as before.</li>
+</ol>
+<p>Proof: 7 new tests fail before the fix and pass after (31 in total across three files).</p>
+<p>Real Space switching can't be tested automatically. Please check it once by hand:</p>
+<ol>
+<li>Put a text editor on Space 1 and the control panel on Space 2.</li>
+<li>Focus the editor and dictate with the hotkey.</li>
+<li>macOS should stay on Space 1 and the text should land in the editor.</li>
+</ol>
+<h2>Medium</h2>
+<h3>M01 Missing model reported as a rate limit</h3>
+<p>Already fixed. The gateway rewrite (5369b4f1, 0d8ecaf1) turns a 404 into <code>AGY_MODEL_UNAVAILABLE</code> with the real status. The renderer error mapping in <code>src/utils/recordingErrors.ts</code> checks that code before any generic rate-limit key.</p>
+<p>Proof: new tests in <code>test/helpers/antigravityChatGateway.test.js</code> and <code>test/utils/recordingErrors.test.js</code>. A 404 never yields <code>providerRateLimited</code>.</p>
+<h3>M02 Picked transcription model not sent</h3>
+<p>Already fixed. The hard-coded <code>GATEWAY_STT_MODELS</code> list is gone since 5369b4f1. The Antigravity settings have a speech model picker, built from the live catalog, and an explicit pick is the first candidate in the request. The two registry entries, <code>gemini-3.5-transcribe</code> and <code>-live</code>, are mode labels (&quot;Antigravity transcription&quot; and &quot;with live preview&quot;), not model names.</p>
+<p>Proof: a new test asserts that the request body <code>model</code> equals the explicit pick.</p>
+<h3>M03 Retired 3.5 Flash rows still in the picker</h3>
+<p>Fixed now. The three <code>gemini-3.5-flash-*</code> rows are removed from the registry. <code>agy models</code> confirms 3.5 is no longer served. The alias map stays, so a saved 3.5 choice still resolves to a model that works.</p>
+<p>Proof: tests show no picker row is remapped to a different id and that a saved retired id still resolves.</p>
+<h3>M04 Audio conversion has no deadline</h3>
+<p>Fixed now. The conversion was already async, but a caller without an operation budget had no deadline. It now has a 20 second default, which tests can change. Testing also found a second bug. On abort, only the direct child was killed, so a stuck grandchild process kept the pipes open. ffmpeg now runs in its own process group, and the whole group is killed.</p>
+<p>Proof: a stand-in ffmpeg that runs <code>sleep 30</code>. Before: the call waited the full 30 s. After: it rejects within the deadline, and no process is left behind.</p>
+<h3>M05 Narrow window says Dictation on Settings</h3>
+<p>Fixed now. The compact nav looked the active view up in the list of nav items, and Settings is not one of them. On a miss it fell back to the first item. The label now comes from <code>getControlPanelNavLabelKey</code>, which knows about Settings, and an unknown view no longer borrows another tab's name.</p>
+<p>Before and after at 720 px wide with Settings open:</p>
+<p><img src="fixes/M05/before.png" alt="M05 before">
+<img src="fixes/M05/after.png" alt="M05 after"></p>
+<h3>M06 Token refresh undoes a sign-out</h3>
+<p>Already fixed in b9ac5337 and already covered by a test. Right before writing, the refresh reads the token file again. If the file is gone it writes nothing and reports signed out. If the token changed in the meantime, it keeps the newer one.</p>
+<h3>M07 Fork line calls the app a fork of itself</h3>
+<p>Fixed now. The brand rewrite ran after interpolation, so it also renamed the <code>upstreamName</code> value. It now rewrites the translation resources once at load, before any interpolation. Plain &quot;OpenWhispr&quot; in normal strings still becomes MoreOpenWhisperer, and the disclosure reads &quot;Unofficial OpenWhispr fork.&quot; All 11 locales and the prompts namespace were checked.</p>
+<p>The main-process i18n (<code>i18nMain.js</code>) uses the same pattern, but no main-process string interpolates the upstream name, so it shows no bug. I left it unchanged.</p>
+<p><img src="fixes/M07/before.png" alt="M07 before">
+<img src="fixes/M07/after.png" alt="M07 after"></p>
+<h3>M08 First-run title on three lines, hint clipped</h3>
+<p>Fixed now. The heading was capped at <code>max-w-72</code>, which was sized for the shorter upstream name. Without the cap, the title is two lines in English and German at 480 by 624, and the development hint fits without clipping. The stale comment was updated too.</p>
+<p><img src="fixes/M08/before.png" alt="M08 before">
+<img src="fixes/M08/after.png" alt="M08 after"></p>
+<h3>M09 Gemini 3.7 still the default</h3>
+<p>Fixed now. Fresh installs and onboarding now default the cleanup, chat and dictation agent models to Automatic. Automatic picks the newest tier the live catalog serves at request time, so the default can't go stale again. The registry gains <code>gemini-3.8-flash-low/medium/high</code>, and &quot;Latest Flash&quot; moved to 3.8 High. The static fallback used only by the offline <code>agy</code> path is now <code>gemini-3.8-flash-low</code>.</p>
+<p>Follow-up found in review (2acde933): with the default now &quot;auto&quot;, that value could have reached <code>agy --model auto</code>. &quot;auto&quot; is now treated as no model requested, so agy uses its own default.</p>
+<p>Proof: tests show fresh defaults do not pin 3.7, the registry has 3.8, and &quot;auto&quot; never becomes a <code>--model</code> flag.</p>
+<h2>Low</h2>
+<h3>L01 Antigravity blurbs left in English</h3>
+<p>Fixed now. All Antigravity model descriptions are translated in de, es, fr, it, ja, pt, ru, zh-CN and zh-TW. Arabic had a stale &quot;latest&quot; claim on 3.7, which is fixed, and it gained the 3.8 rows. The keys for the removed 3.5 rows are gone from every locale.</p>
+<p>Proof: a new locale test checks that every locale has exactly the keys the registry uses, and that no non-English value equals the English sentence. The existing translation coverage suite passes too.</p>
+<h3>L02 Stale duplicate docs</h3>
+<p>Fixed now. The 8 files ending in <code> 2</code> were iCloud sync copies, each an older version of a tracked file with nothing the original lacked. They were moved to <code>~/.Trash/openwhispr-stale-copies-2026-09-26</code>, so they can still be restored. Neither tree has any <code> 2</code> files now. Moving the repo out of the iCloud-synced <code>~/Documents</code> would stop new copies from appearing.</p>
+<h2>Verification by the user</h2>
+<p>On 2026-09-27 the user tested the dev app and the installed unsigned build and confirmed they work.</p>
+</body></html>

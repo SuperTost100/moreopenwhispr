@@ -1,0 +1,15 @@
+pasteTargetPid: 5150
+frontmostPid: 2200
+activationScriptRan: true
+scriptActivatesOwnPid: true
+activateWithOptions: 3
+ownPidExcluded: false
+duringShowLastTargetPid: null
+afterLookupLastTargetPid: 5150
+controlPanelType: normal
+controlPanelVisibleOnAllWorkspaces: false
+dictationWindowType: panel
+dictationWindowFocusable: false
+activateHandlerShow: true
+activateHandlerFocus: true
+activateHandlerChecksDockClick: false

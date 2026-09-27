@@ -1,0 +1,141 @@
+(node:89170) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/dockPolicy.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the Dock icon follows the control panel (1.003083ms)
+✔ hiding the dictation panel cannot resurrect the Dock icon (0.090417ms)
+✔ there is no Dock to act on outside macOS (0.079125ms)
+✖ a programmatic activation never shows the control panel (0.567ms)
+✖ a real Dock click with no visible windows recreates them (0.143083ms)
+✖ a real Dock click with windows already open shows the control panel (0.106417ms)
+✔ concurrent captures share one frontmost lookup (1.213959ms)
+✔ a just-completed capture is reused instead of respawning osascript (0.123584ms)
+✔ a failed capture is retried, not reused (0.079458ms)
+✔ captures refresh once the reuse window has passed (0.07275ms)
+✖ a capture never stores our own pid as the paste target (0.386417ms)
+✖ a late lookup resolving to our own pid cannot overwrite the target (0.09175ms)
+✔ activateTargetPid resolves false when no target PID was captured (0.585792ms)
+✔ activateTargetPid resolves false for an unmapped PID (596.471458ms)
+✖ activatePid never activates our own pid (158.97175ms)
+✖ the activation script uses IgnoringOtherApps only, never AllWindows (2.303333ms)
+✔ getSelectedText fails closed for a missing target (0.483959ms)
+✔ getSelectedText returns unavailable for an inaccessible target (1430.227334ms)
+✔ startMonitoring stops immediately without a target PID (0.369375ms)
+✔ startMonitoring self-terminates when the target has no accessible focused element (1807.702458ms)
+✔ getSelectedText caches a -25212 native failure per PID (10.095583ms)
+✔ getSelectedText skips the native binary for a cached PID (6.42175ms)
+✔ getSelectedText identifies an empty writable field (5.266541ms)
+✔ isFocusedEditable maps the native verdicts, including the dormant-tree UNKNOWN (13.829417ms)
+✔ isFocusedEditable answers from a stale binary's first monitor line (4.396708ms)
+✔ getSelectedText surfaces the native UNKNOWN verdict (4.468ms)
+✔ a non--25212 native failure is not cached (4.450833ms)
+✔ a run where the AX tree woke mid-retry is not cached (4.4975ms)
+✔ a monitor run ending in NO_ELEMENT with uniform -25212 teaches the cache (606.807458ms)
+✔ a timeout-killed selection read is not cached (404.992666ms)
+✔ startMonitoring skips the native monitor for a cached PID (0.306042ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 24
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5120.778666
+
+✖ failing tests:
+
+test at test/helpers/dockPolicy.test.js:34:1
+✖ a programmatic activation never shows the control panel (0.567ms)
+  TypeError: resolveActivateAction is not a function
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/dockPolicy.test.js:38:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/helpers/dockPolicy.test.js:48:1
+✖ a real Dock click with no visible windows recreates them (0.143083ms)
+  TypeError: resolveActivateAction is not a function
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/dockPolicy.test.js:52:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/helpers/dockPolicy.test.js:57:1
+✖ a real Dock click with windows already open shows the control panel (0.106417ms)
+  TypeError: resolveActivateAction is not a function
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/dockPolicy.test.js:61:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at test/helpers/textEditMonitorCaptureTarget.test.js:78:1
+✖ a capture never stores our own pid as the paste target (0.386417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  89171 !== null
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/textEditMonitorCaptureTarget.test.js:82:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 89171,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/helpers/textEditMonitorCaptureTarget.test.js:86:1
+✖ a late lookup resolving to our own pid cannot overwrite the target (0.09175ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  89171 !== null
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/textEditMonitorCaptureTarget.test.js:96:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 89171,
+    expected: null,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/helpers/textEditMonitorSelection.test.js:29:1
+✖ activatePid never activates our own pid (158.97175ms)
+  AssertionError [ERR_ASSERTION]: osascript must never run against our own pid
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/textEditMonitorSelection.test.js:62:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/helpers/textEditMonitorSelection.test.js:69:1
+✖ the activation script uses IgnoringOtherApps only, never AllWindows (2.303333ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /activateWithOptions\(2\)/. Input:
+  
+  '\n' +
+    '        ObjC.import("AppKit");\n' +
+    '        const apps = $.NSWorkspace.sharedWorkspace.runningApplications;\n' +
+    '        for (let i = 0; i < apps.count; i++) {\n' +
+    '          const a = apps.objectAtIndex(i);\n' +
+    '          if (a.processIdentifier === 424242) { a.activateWithOptions(3); break; }\n' +
+    '        }\n' +
+    '      '
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/textEditMonitorSelection.test.js:104:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '\n        ObjC.import("AppKit");\n        const apps = $.NSWorkspace.sharedWorkspace.runningApplications;\n        for (let i = 0; i < apps.count; i++) {\n          const a = apps.objectAtIndex(i);\n          if (a.processIdentifier === 424242) { a.activateWithOptions(3); break; }\n        }\n      ',
+    expected: /activateWithOptions\(2\)/,
+    operator: 'match',
+    diff: 'simple'
+  }

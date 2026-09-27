@@ -1,0 +1,3 @@
+requested: gemini-3.5-transcribe
+sent: ["gemini-3.6-flash-low"]
+returned: gemini-3.6-flash-low

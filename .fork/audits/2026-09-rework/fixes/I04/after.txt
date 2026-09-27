@@ -1,0 +1,43 @@
+(node:89431) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/dockPolicy.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the Dock icon follows the control panel (1.084959ms)
+✔ hiding the dictation panel cannot resurrect the Dock icon (0.106708ms)
+✔ there is no Dock to act on outside macOS (0.092959ms)
+✔ a programmatic activation never shows the control panel (0.512583ms)
+✔ a real Dock click with no visible windows recreates them (0.146917ms)
+✔ a real Dock click with windows already open shows the control panel (0.098583ms)
+✔ concurrent captures share one frontmost lookup (1.230292ms)
+✔ a just-completed capture is reused instead of respawning osascript (0.084958ms)
+✔ a failed capture is retried, not reused (0.079375ms)
+✔ captures refresh once the reuse window has passed (0.076625ms)
+✔ a capture never stores our own pid as the paste target (0.082292ms)
+✔ a late lookup resolving to our own pid cannot overwrite the target (0.061125ms)
+✔ activateTargetPid resolves false when no target PID was captured (0.48ms)
+✔ activateTargetPid resolves false for an unmapped PID (639.312375ms)
+✔ activatePid never activates our own pid (0.509333ms)
+✔ the activation script uses IgnoringOtherApps only, never AllWindows (0.39925ms)
+✔ getSelectedText fails closed for a missing target (0.446958ms)
+✔ getSelectedText returns unavailable for an inaccessible target (1564.269584ms)
+✔ startMonitoring stops immediately without a target PID (1.242666ms)
+✔ startMonitoring self-terminates when the target has no accessible focused element (1811.183709ms)
+✔ getSelectedText caches a -25212 native failure per PID (9.970417ms)
+✔ getSelectedText skips the native binary for a cached PID (4.078542ms)
+✔ getSelectedText identifies an empty writable field (4.271209ms)
+✔ isFocusedEditable maps the native verdicts, including the dormant-tree UNKNOWN (10.767834ms)
+✔ isFocusedEditable answers from a stale binary's first monitor line (3.857583ms)
+✔ getSelectedText surfaces the native UNKNOWN verdict (4.014084ms)
+✔ a non--25212 native failure is not cached (3.461916ms)
+✔ a run where the AX tree woke mid-retry is not cached (3.538083ms)
+✔ a monitor run ending in NO_ELEMENT with uniform -25212 teaches the cache (604.342666ms)
+✔ a timeout-killed selection read is not cached (402.346125ms)
+✔ startMonitoring skips the native monitor for a cached PID (0.131458ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5124.830708

@@ -1,0 +1,3 @@
+threw: true
+code: AGY_LIVE_REQUIRES_PREVIEW
+message: Antigravity live transcription must use the live preview stream during recording.

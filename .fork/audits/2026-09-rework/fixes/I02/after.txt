@@ -1,0 +1,22 @@
+✔ buildInitialContents attaches a screenshot to the first user turn (7.212625ms)
+✔ buildInitialContents adds a leading user turn for a screenshot when there is no prior user turn (0.17225ms)
+✔ buildInitialContents maps assistant history to the model role (0.114125ms)
+✔ validateToolArguments flags a missing required field (0.179125ms)
+✔ validateToolArguments flags a type mismatch (0.123167ms)
+✔ validateToolArguments accepts a valid call and a schema-less tool (0.087583ms)
+✔ dedupeKeyForCall prefers the call id, else hashes name+args independent of key order (0.154209ms)
+✔ runAntigravityChatStream attaches the screenshot as inlineData bytes on a turn with tools, never a placeholder sentence (0.683833ms)
+✔ runAntigravityChatStream executes each distinct valid call once, returns the cached result for a duplicate id, and finishes on text (0.365875ms)
+✔ runAntigravityChatStream never executes a tool call whose gateway turn resolved after the signal was aborted (0.2195ms)
+✔ runAntigravityChatStream stops executing remaining calls in a turn once cancelled mid-turn (0.152666ms)
+✔ runAntigravityChatStream returns the cached result for a call id repeated on a later turn, without re-executing (0.153709ms)
+✔ runAntigravityChatStream wires the abortSignal to cancel the specific in-flight main-process request (0.148583ms)
+✔ runAntigravityChatStream throws once it exceeds the max tool-loop iterations (0.333666ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.485792

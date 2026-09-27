@@ -1,0 +1,31 @@
+✔ extractResponseText reads candidate parts and skips thought parts (0.421041ms)
+✔ resolveBackendModel pins empty/synthetic transcribe ids to the known-good default (0.066958ms)
+✔ transcribeAudioViaGateway puts the caller's resolved model in the request body (27.080541ms)
+✔ isModelRetirementNotice is anchored to short whole-text notices only (0.133041ms)
+✔ classifyRateLimitScope treats quota-exhaustion wording as account-scoped (0.126875ms)
+✔ extractRetryAfterMs parses RetryInfo retryDelay string and object forms (0.1045ms)
+✔ streamGenerateContent (via transcribeAudioViaGateway) parses SSE chunks split mid-line and skips thought parts (10.3825ms)
+✔ streamGenerateContent tolerates a malformed SSE line without crashing (1.959541ms)
+✔ streamGenerateContent detects an anchored retirement notice (1.739083ms)
+✔ streamGenerateContent maps finishReason MAX_TOKENS to AGY_TRUNCATED (1.21325ms)
+✔ streamGenerateContent with premature EOF and no finishReason throws AGY_TRUNCATED (1.094333ms)
+✔ streamGenerateContent surfaces an error-shaped SSE data event as a typed error (1.668875ms)
+✔ streamGenerateContent surfaces a non-429 error-shaped SSE data event as AGY_HTTP (1.096959ms)
+✔ streamGenerateContent with a stream of only malformed lines throws AGY_EMPTY_OUTPUT, not AGY_TRUNCATED (1.176166ms)
+✔ streamGenerateContent with an empty stream throws AGY_EMPTY_OUTPUT (0.92575ms)
+✔ a stalled server resolves as AGY_TIMEOUT within the operation budget instead of hanging (152.655875ms)
+✔ generateContent surfaces a 429 as AGY_RATE_LIMITED with status, retryAfterMs, and scope (2.793417ms)
+✔ generateContent surfaces a 404 as AGY_MODEL_UNAVAILABLE with the real status (1.389083ms)
+✔ generateContent surfaces a 500 as AGY_HTTP carrying the real status (1.17925ms)
+✔ generateTextViaGateway only ever calls the daily base, never prod (4.383875ms)
+✔ getAntigravityProjectId resolution order: memory, then persisted, then agy hint (validated), then loadCodeAssist (1.415708ms)
+✔ getAntigravityProjectId validates the agy CLI hint with one real call before trusting it (2.664417ms)
+✔ generateContent respects an explicitly passed daily base and never falls back to prod (2.434333ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 272.895084

@@ -1,0 +1,57 @@
+✔ streamChatTurn sends tools/toolConfig/contents and parses a recorded-shape SSE with two functionCall parts plus a thought part (26.755208ms)
+✔ streamChatTurn returns text-only when the model answers without calling a tool (4.550042ms)
+✔ streamChatTurn does not throw AGY_EMPTY_OUTPUT for a functionCall-only response with no text (2.076459ms)
+✔ runAntigravityChatTurn fails over to the next candidate model on a 500 and succeeds (3.665709ms)
+✔ runAntigravityChatTurn routes to the agy CLI subprocess leg when the gateway is network-unreachable, never a gateway model id (0.767958ms)
+✔ runAntigravityChatTurn surfaces AGY_RATE_LIMITED with a reset time when every chat candidate (including the pinned fallback) is cooling, never calling the gateway (0.225167ms)
+✔ runAntigravityChatTurn surfaces a 404 as AGY_MODEL_UNAVAILABLE with status 404 once every candidate model has been tried, never a rate-limit error (11.03125ms)
+[INFO][antigravity] Antigravity model catalog refreshed { reason: 'model-unavailable', models: 27 }
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 939.538541
+✔ extractResponseText reads candidate parts and skips thought parts (0.361917ms)
+✔ resolveBackendModel pins empty/synthetic transcribe ids to the known-good default (0.057917ms)
+✔ isModelRetirementNotice is anchored to short whole-text notices only (0.116958ms)
+✔ classifyRateLimitScope treats quota-exhaustion wording as account-scoped (0.148459ms)
+✔ extractRetryAfterMs parses RetryInfo retryDelay string and object forms (0.106333ms)
+✔ streamGenerateContent (via transcribeAudioViaGateway) parses SSE chunks split mid-line and skips thought parts (33.836042ms)
+✔ streamGenerateContent tolerates a malformed SSE line without crashing (5.37975ms)
+✔ streamGenerateContent detects an anchored retirement notice (1.99775ms)
+✔ streamGenerateContent maps finishReason MAX_TOKENS to AGY_TRUNCATED (1.484458ms)
+✔ streamGenerateContent with premature EOF and no finishReason throws AGY_TRUNCATED (1.328959ms)
+✔ streamGenerateContent surfaces an error-shaped SSE data event as a typed error (1.494083ms)
+✔ streamGenerateContent surfaces a non-429 error-shaped SSE data event as AGY_HTTP (1.70125ms)
+✔ streamGenerateContent with a stream of only malformed lines throws AGY_EMPTY_OUTPUT, not AGY_TRUNCATED (1.376209ms)
+✔ streamGenerateContent with an empty stream throws AGY_EMPTY_OUTPUT (1.497583ms)
+✔ a stalled server resolves as AGY_TIMEOUT within the operation budget instead of hanging (152.435833ms)
+✔ generateContent surfaces a 429 as AGY_RATE_LIMITED with status, retryAfterMs, and scope (1.722084ms)
+✔ generateContent surfaces a 404 as AGY_MODEL_UNAVAILABLE with the real status (0.900833ms)
+✔ generateContent surfaces a 500 as AGY_HTTP carrying the real status (0.785875ms)
+✔ generateTextViaGateway only ever calls the daily base, never prod (2.8975ms)
+✔ getAntigravityProjectId resolution order: memory, then persisted, then agy hint (validated), then loadCodeAssist (1.026667ms)
+✔ getAntigravityProjectId validates the agy CLI hint with one real call before trusting it (2.020458ms)
+✔ generateContent respects an explicitly passed daily base and never falls back to prod (1.096583ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 269.61225
+✔ AGY_MODEL_UNAVAILABLE (404, model not found) maps to the not-found strings, never the rate-limit ones (0.374292ms)
+✔ AGY_MODEL_UNAVAILABLE still resolves to the not-found strings even if a stray rate-limit messageKey is attached (0.051458ms)
+✔ AGY_RATE_LIMITED still maps to the rate-limit strings (control case) (0.048958ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.969541
