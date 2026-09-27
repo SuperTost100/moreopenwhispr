@@ -10,7 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { getAllowedControlPanelNavItems, type ControlPanelView } from "./controlPanelNavModel";
+import {
+  CONTROL_PANEL_NAV_ITEMS,
+  getAllowedControlPanelNavItems,
+  getControlPanelNavLabelKey,
+  type ControlPanelView,
+} from "./controlPanelNavModel";
 import { isMowBuild, MOW_PROFILE } from "../../config/mowProfile";
 
 interface ControlPanelCompactNavProps {
@@ -38,8 +43,14 @@ export default function ControlPanelCompactNav({
 }: ControlPanelCompactNavProps) {
   const { t } = useTranslation();
   const navItems = getAllowedControlPanelNavItems({ agentAllowed, policyActionsAllowed });
-  const activeItem = navItems.find((item) => item.id === activeView) ?? navItems[0];
-  const ActiveIcon = activeItem?.icon;
+  // The active view (e.g. "settings") isn't always one of the filtered
+  // navItems, so the label always comes from the view id itself rather than
+  // an index into that list (which mislabeled Settings as the first tab).
+  const activeLabelKey = getControlPanelNavLabelKey(activeView);
+  const ActiveIcon =
+    activeView === "settings"
+      ? Settings
+      : CONTROL_PANEL_NAV_ITEMS.find((item) => item.id === activeView)?.icon;
   const showReferrals = Boolean(isSignedIn && onOpenReferrals && !isMowBuild());
 
   const iconButtonClass =
@@ -63,7 +74,7 @@ export default function ControlPanelCompactNav({
               aria-label={t("controlPanel.compactNav.viewsMenu")}
             >
               {ActiveIcon ? <ActiveIcon size={16} className="shrink-0" aria-hidden="true" /> : null}
-              <span className="truncate">{t(activeItem.labelKey)}</span>
+              <span className="truncate">{t(activeLabelKey)}</span>
               <ChevronDown size={14} className="ml-auto shrink-0 opacity-60" aria-hidden="true" />
             </button>
           </DropdownMenuTrigger>
