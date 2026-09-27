@@ -20,6 +20,17 @@ function resolveAgyCliModel(model) {
   return RETIRED_AGY_CLI_MODELS[trimmed] || trimmed;
 }
 
+// "auto" is our own sentinel for "resolve against the live catalog" (see
+// resolveAntigravityModels in antigravityModelCatalog.js) — it is not a
+// model id agy itself understands. resolveAgyCliModel deliberately leaves
+// it untouched (settings/onboarding store "auto" and must keep reading it
+// back as "auto", not a pinned default), so callers that are about to build
+// an actual `agy --model <id>` invocation must check this first and treat
+// "auto" the same as no model requested at all.
+function isAutoAntigravityModel(model) {
+  return String(model || "").trim().toLowerCase() === "auto";
+}
+
 function withoutEffortArgs(extraArgs = []) {
   const out = [];
   for (let i = 0; i < extraArgs.length; i += 1) {
@@ -36,5 +47,6 @@ module.exports = {
   DEFAULT_ANTIGRAVITY_MODEL,
   RETIRED_AGY_CLI_MODELS,
   resolveAgyCliModel,
+  isAutoAntigravityModel,
   withoutEffortArgs,
 };

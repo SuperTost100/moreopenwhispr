@@ -230,6 +230,25 @@ test("runAgyTurn omits --model entirely when no model is requested", async () =>
   assert.equal(result.model, null);
 });
 
+// Regression: "auto" is our own settings sentinel for "resolve against the
+// live catalog" (see resolveAntigravityModels), not a real agy model id. If
+// it ever reached the CLI as `--model auto`, agy would reject it or treat
+// it as a literal (nonexistent) model name instead of applying its own
+// current default.
+test("runAgyTurn treats the auto sentinel like no model requested", async () => {
+  const result = await runAgyTurn({
+    prompt: "hello",
+    model: "auto",
+    command: process.execPath,
+    spawnImpl: (_command, args, options) => {
+      assert.equal(args.includes("--model"), false);
+      assert.equal(options.env.ANTIGRAVITY_MODEL, undefined);
+      return makeChild({ stdout: "ok\n" });
+    },
+  });
+  assert.equal(result.model, null);
+});
+
 // Regression: waitForClose's own timeout handler kills the child with
 // SIGTERM, which is the exact same signal a caller-initiated cancel sends.
 // Classifying purely off `result.signal === "SIGTERM"` (the old behavior)
