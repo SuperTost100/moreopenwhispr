@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MoreOpenWhisperer rework errors</title>
+<style>
+body { margin: 0 auto; max-width: 920px; padding: 32px 20px 80px; font: 16px/1.5 ui-sans-serif, system-ui, sans-serif; color: #1c1c1c; background: #fafafa; }
+h1 { font-size: 28px; margin-bottom: 8px; }
+h2 { margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; }
+h3 { margin-bottom: 4px; }
+article { margin: 28px 0 40px; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; background: white; }
+.path { color: #555; font-size: 14px; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 0.92em; }
+</style>
+</head>
+<body>
+<h1>MoreOpenWhisperer rework errors</h1>
+<p>Branch moreopenwhispr-ui-refresh, commit 266f0703. 15 findings. Open a folder for the write-up and the proof image. Nothing here is a fix.</p>
+<section><h2>Important</h2>
+<article>
+<h3>Assistant with tools never receives the screenshot</h3>
+<p class="path"><a href="important/01-assistant-drops-screenshot-when-tools-are-on/explanation.md">important/01-assistant-drops-screenshot-when-tools-are-on</a></p>
+<img src="important/01-assistant-drops-screenshot-when-tools-are-on/proof.png" alt="Proof for Assistant with tools never receives the screenshot">
+<p>Importance: Important</p>
+<p>Share screen context is on, and the voice assistant still answers as if it cannot see the display, whenever the turn is allowed to use tools. Notes, calendar, and the rest of the assistant tools take that path. The screenshot is kept only for a turn that has no tools at all.</p>
+<p><code>runAntigravityChatStream</code> in <code>src/services/ai/antigravityChat.ts</code> forwards <code>screenContext</code> to <code>processAntigravityReasoning</code> when <code>tools</code> is empty. When <code>tools</code> has entries, the image is not included in <code>processAntigravityToolTurn</code>. The user message gains this line instead:</p>
+<p><code>[Screen context was attached to this request. Use it if the question refers to what is on screen.]</code></p>
+<p>The bytes of the JPEG are not in that request.</p>
+<h3>What the run showed</h3>
+<p>A turn with no tools sent the image. <code>hasImage</code> was true and <code>imageBytes</code> was 8.</p>
+<p>A turn with a <code>create_note</code> tool sent no <code>screenContext</code> field. The payload did not contain the image bytes <code>QUJDRA</code>. It did contain the placeholder sentence above.</p>
+</article>
+<article>
+<h3>Stopping the assistant still runs the tool</h3>
+<p class="path"><a href="important/02-cancel-still-runs-assistant-tools/explanation.md">important/02-cancel-still-runs-assistant-tools</a></p>
+<img src="important/02-cancel-still-runs-assistant-tools/proof.png" alt="Proof for Stopping the assistant still runs the tool">
+<p>Importance: Important</p>
+<p>Esc or Stop aborts the Antigravity chat signal, but the turn that is already in flight still comes back and still runs its tool. A cancelled request can create or change a note after the user has stopped it.</p>
+<p><code>cancelActiveStream</code> in <code>src/services/ReasoningService.ts</code> calls <code>abort()</code> on the controller. <code>runAntigravityChatStream</code> in <code>src/services/ai/antigravityChat.ts</code> checks that signal only at the top of the loop, before <code>processAntigravityToolTurn</code>. The IPC payload has no abort signal. When the response arrives, the function does not look at the signal again. A <code>tool_call</code> result goes straight to <code>executeToolCall</code>.</p>
+<h3>What the run showed</h3>
+<p>The signal was aborted while the tool turn was still waiting. After the response was released, <code>executeToolCall</code> ran <code>create_note</code>. <code>toolRanAfterAbort</code> was true, and the first chunk type was <code>tool_calls</code>.</p>
+</article>
+<article>
+<h3>Live transcription rejects the recording itself</h3>
+<p class="path"><a href="important/03-live-transcription-refuses-the-recording/explanation.md">important/03-live-transcription-refuses-the-recording</a></p>
+<img src="important/03-live-transcription-refuses-the-recording/proof.png" alt="Proof for Live transcription rejects the recording itself">
+<p>Importance: Important</p>
+<p>Gemini 3.5 Transcribe Live is a selectable Antigravity model. If the live preview stream does not hand back a committed transcript, the recording is not transcribed. The batch path throws and stops.</p>
+<p><code>transcribeWithAntigravity</code> in <code>src/helpers/antigravityTranscription.js</code> hits this before it converts audio or calls the gateway, when the model is <code>gemini-3.5-transcribe-live</code>:</p>
+<p><code>Antigravity live transcription must use the live preview stream during recording.</code></p>
+<p>The error code is <code>AGY_LIVE_REQUIRES_PREVIEW</code>. That throw sits outside the gateway fallback, so the older <code>agy</code> write-file path does not run either. <code>processWithOpenAIAPI</code> in <code>src/helpers/audioManager.js</code> only skips the batch call when the preview stop already returned non-empty streamed text with <code>streamed: true</code>. An empty or truncated live flush falls through to this throw.</p>
+<h3>What the run showed</h3>
+<p><code>transcribeWithAntigravity</code> was called with model <code>gemini-3.5-transcribe-live</code> and a wav buffer. It threw <code>AGY_LIVE_REQUIRES_PREVIEW</code> and the message above. The access-token function was never called.</p>
+</article>
+<article>
+<h3>Paste focuses the app and switches Spaces</h3>
+<p class="path"><a href="important/04-paste-focuses-the-app-and-switches-spaces/explanation.md">important/04-paste-focuses-the-app-and-switches-spaces</a></p>
+<img src="important/04-paste-focuses-the-app-and-switches-spaces/proof.png" alt="Proof for Paste focuses the app and switches Spaces">
+<p>Importance: Important</p>
+<p>Dictation paste on macOS activates a process and brings every window of that process forward. When the stored process is this app, that set includes the control panel. The control panel is a normal window, and it does not appear on every Space. macOS switches to the virtual desktop where that window sits. The paste keystroke is then delivered to the app that activation just brought forward.</p>
+<p><code>paste-text</code> in <code>src/helpers/ipcHandlers.js</code> calls <code>textEditMonitor.activateTargetPid()</code> before it pastes. <code>activatePid</code> in <code>src/helpers/textEditMonitor.js</code> calls <code>_activateApp</code>. The script there runs <code>activateWithOptions(3)</code>. That value is all windows combined with ignoring other apps. The function does not skip this app's own pid.</p>
+<p>The pid is whatever <code>captureTargetPid</code> stored. That method clears <code>lastTargetPid</code> and starts an osascript lookup. Hotkey handling calls <code>showDictationPanel</code> without waiting for the lookup. <code>_sendDictationToggle</code> in <code>src/helpers/windowManager.js</code> does this, and the macOS hotkey handlers in <code>main.js</code> do the same. The value written later is the app that is frontmost when the lookup finishes. Paste then activates that pid.</p>
+<p>The dictation pill is a panel, not focusable, and visible on all workspaces. The control panel is not. <code>CONTROL_PANEL_CONFIG</code> sets <code>type</code> to <code>normal</code> and <code>visibleOnAllWorkspaces</code> to false.</p>
+<p><code>app.on("activate")</code> in <code>main.js</code> is a second path to the same window. When any window already exists, the handler calls <code>controlPanelWindow.show()</code> and <code>controlPanelWindow.focus()</code>. It does not check that the Dock was clicked. Showing and focusing that normal window moves the user to its Space.</p>
+<h3>What the run showed</h3>
+<p>The paste target was pid 5150. Another app, pid 2200, was frontmost. <code>activateTargetPid</code> still ran the activation script once. The script matched <code>processIdentifier === 5150</code> and called <code>activateWithOptions(3)</code>. The activate function does not mention <code>process.pid</code> or <code>getOwnProcessPids</code>.</p>
+<p>A capture was started, and the show-panel step ran while <code>lastTargetPid</code> was null. The lookup then stored 5150.</p>
+<p>The loaded window config reported the control panel as type <code>normal</code> with <code>visibleOnAllWorkspaces</code> false, and the dictation window as type <code>panel</code>, <code>focusable</code> false, <code>visibleOnAllWorkspaces</code> true.</p>
+<p>The activate handler source contains both <code>controlPanelWindow.show()</code> and <code>controlPanelWindow.focus()</code>, and it does not read an event or a reason.</p>
+</article>
+</section><section><h2>Medium importance</h2>
+<article>
+<h3>A missing model is reported as a rate limit</h3>
+<p class="path"><a href="medium/01-missing-model-reported-as-rate-limit/explanation.md">medium/01-missing-model-reported-as-rate-limit</a></p>
+<img src="medium/01-missing-model-reported-as-rate-limit/proof.png" alt="Proof for A missing model is reported as a rate limit">
+<p>Importance: Medium importance</p>
+<p>When both Cloud Code hosts answer 404 for a model, <code>generateContent</code> in <code>src/helpers/antigravityGateway.js</code> still throws with HTTP status 429. The UI then uses the rate-limit string, <code>hooks.audioRecording.errorDescriptions.providerRateLimited</code>, even though the body says the model was not found.</p>
+<p>After a 404 or a 429, the inner retry loop breaks and the next host is tried. When the hosts are exhausted, the function calls <code>throwGatewayFailure(429, lastBody)</code> regardless of the status that was actually returned.</p>
+<h3>What the run showed</h3>
+<p>Both hosts were asked for <code>gemini-3.7-flash-low</code> and both returned 404 with <code>models/gemini-3.7-flash-low is not found</code>. The thrown error had <code>status</code> 429, <code>code</code> <code>AGY_ERROR</code>, and <code>messageKey</code> <code>hooks.audioRecording.errorDescriptions.providerRateLimited</code>. The message text was still the not-found string.</p>
+</article>
+<article>
+<h3>The transcription model in the picker is not the model that is sent</h3>
+<p class="path"><a href="medium/02-selected-transcription-model-is-not-sent/explanation.md">medium/02-selected-transcription-model-is-not-sent</a></p>
+<img src="medium/02-selected-transcription-model-is-not-sent/proof.png" alt="Proof for The transcription model in the picker is not the model that is sent">
+<p>Importance: Medium importance</p>
+<p>The Antigravity speech model in the registry is <code>gemini-3.5-transcribe</code>, named Gemini 3.5 Transcribe. <code>transcribeAudioViaGateway</code> in <code>src/helpers/antigravityGateway.js</code> accepts that <code>model</code> argument and does not send it. The request loop always uses <code>GATEWAY_STT_MODELS</code>, which starts at <code>gemini-3.6-flash-low</code>, then <code>gemini-3-flash</code>, then <code>gemini-2.5-flash</code>.</p>
+<h3>What the run showed</h3>
+<p>The call requested <code>gemini-3.5-transcribe</code>. The gateway body contained <code>gemini-3.6-flash-low</code>. The returned model was <code>gemini-3.6-flash-low</code>.</p>
+</article>
+<article>
+<h3>Retired Gemini 3.5 Flash rows are still choices</h3>
+<p class="path"><a href="medium/03-retired-flash-models-still-in-the-picker/explanation.md">medium/03-retired-flash-models-still-in-the-picker</a></p>
+<img src="medium/03-retired-flash-models-still-in-the-picker/proof.png" alt="Proof for Retired Gemini 3.5 Flash rows are still choices">
+<p>Importance: Medium importance</p>
+<p>Settings still lists three Antigravity cleanup models that the CLI mapping immediately replaces:</p>
+<ul>
+<li>`gemini-3.5-flash-low` is sent as `gemini-3.7-flash-low`</li>
+<li>`gemini-3.5-flash-medium` is sent as `gemini-3.7-flash-medium`</li>
+<li>`gemini-3.5-flash-high` is sent as `gemini-3.7-flash-high`</li>
+</ul>
+<p>The rows live in <code>src/models/modelRegistryData.json</code> under the <code>antigravity</code> cloud provider. <code>resolveAgyCliModel</code> in <code>src/helpers/antigravityModels.ts</code> performs the replacement. The 3.7 rows are listed as well, so the 3.5 rows are a second set of labels for the same three models.</p>
+<h3>What the run showed</h3>
+<p>Each listed 3.5 id was passed through <code>resolveAgyCliModel</code>. Each one came back as the matching 3.7 id.</p>
+</article>
+<article>
+<h3>Antigravity audio conversion has no deadline</h3>
+<p class="path"><a href="medium/04-antigravity-audio-convert-can-hang/explanation.md">medium/04-antigravity-audio-convert-can-hang</a></p>
+<img src="medium/04-antigravity-audio-convert-can-hang/proof.png" alt="Proof for Antigravity audio conversion has no deadline">
+<p>Importance: Medium importance</p>
+<p>Dictation that needs a wav conversion calls <code>convertToWav</code> in <code>src/helpers/antigravityTranscription.js</code>. That function uses <code>spawnSync</code> and does not pass a <code>timeout</code>. The dictation request stays on that call until ffmpeg exits. A stuck ffmpeg holds the transcription for as long as the process lives.</p>
+<p><code>prepareAudioBuffer</code> is the exported caller. It runs the conversion whenever <code>ffmpegPath</code> is set and the input is not already wav.</p>
+<h3>What the run showed</h3>
+<p><code>prepareAudioBuffer</code> was pointed at a stand-in binary that only runs <code>sleep 30</code>. The call did not return until that sleep finished. <code>settledAfterMs</code> was 31669.</p>
+</article>
+<article>
+<h3>A narrow window says Dictation while Settings is open</h3>
+<p class="path"><a href="medium/05-narrow-settings-labeled-as-dictation/explanation.md">medium/05-narrow-settings-labeled-as-dictation</a></p>
+<img src="medium/05-narrow-settings-labeled-as-dictation/proof.png" alt="Proof for A narrow window says Dictation while Settings is open">
+<p>Importance: Medium importance</p>
+<p>Below 800px the sidebar is replaced by the compact nav in <code>ControlPanel.tsx</code>. Settings is a real view, but it is not one of <code>CONTROL_PANEL_NAV_ITEMS</code> in <code>src/components/control-panel/controlPanelNavModel.ts</code>. <code>ControlPanelCompactNav</code> looks up the active view in that list and, on a miss, uses the first item. The first item is Dictation.</p>
+<p>The page underneath is Settings. The menu trigger still reads Dictation.</p>
+<h3>What the screenshot shows</h3>
+<p>The window content size was 720 by 800. Settings was opened from the gear button. The trigger label was <code>Dictation</code>. The body of the page was the Settings view, on Preferences.</p>
+</article>
+<article>
+<h3>A refresh writes the Antigravity token file back after it is gone</h3>
+<p class="path"><a href="medium/06-sign-out-undone-by-token-refresh/explanation.md">medium/06-sign-out-undone-by-token-refresh</a></p>
+<img src="medium/06-sign-out-undone-by-token-refresh/proof.png" alt="Proof for A refresh writes the Antigravity token file back after it is gone">
+<p>Importance: Medium importance</p>
+<p><code>getAntigravityAccessToken</code> in <code>src/helpers/antigravityAuth.js</code> reads <code>~/.gemini/antigravity-cli/antigravity-oauth-token</code>, refreshes it, then writes that same object back with <code>writeTokenFile</code>. It does not read the file again after the network call. If the file is removed while the refresh is in flight, the write creates it again and the session is back.</p>
+<h3>What the run showed</h3>
+<p>The token file was deleted inside the refresh request, before the new access token was returned. After <code>getAntigravityAccessToken</code> resolved, the file existed again and its access token was <code>new</code>.</p>
+</article>
+<article>
+<h3>The fork line says the app is a fork of itself</h3>
+<p class="path"><a href="medium/07-fork-line-names-the-fork/explanation.md">medium/07-fork-line-names-the-fork</a></p>
+<img src="medium/07-fork-line-names-the-fork/proof.png" alt="Proof for The fork line says the app is a fork of itself">
+<p>Importance: Medium importance</p>
+<p>The control panel footer is supposed to name the upstream project. The English string is <code>Unofficial {{upstreamName}} fork.</code> and <code>upstreamName</code> is <code>OpenWhispr</code>.</p>
+<p><code>src/i18n.ts</code> runs <code>rewriteUpstreamBrand</code> on every translated string when this is a MoreOpenWhisperer build. That function replaces every <code>OpenWhispr</code> with <code>MoreOpenWhisperer</code>. The interpolated upstream name is replaced too. The line that shows up is <code>Unofficial MoreOpenWhisperer fork.</code></p>
+<p>The same three lines sit in the sidebar and in the compact nav. <code>ControlPanelSidebar.tsx</code> renders <code>controlPanel.shell.forkDisclosureUnofficial</code>.</p>
+<h3>What the screenshot shows</h3>
+<p>Under the compact nav, the disclosure reads: No account required. Unofficial MoreOpenWhisperer fork. Not affiliated with Google.</p>
+</article>
+<article>
+<h3>The first-run title wraps to three lines and the dev hint is cut off</h3>
+<p class="path"><a href="medium/08-first-run-title-and-clipped-hint/explanation.md">medium/08-first-run-title-and-clipped-hint</a></p>
+<img src="medium/08-first-run-title-and-clipped-hint/proof.png" alt="Proof for The first-run title wraps to three lines and the dev hint is cut off">
+<p>Importance: Medium importance</p>
+<p>The permissions step is the first screen of a MoreOpenWhisperer install. The English source string is <code>Set up OpenWhispr in 3 minutes</code>. The brand rewriter turns that into <code>Set up MoreOpenWhisperer in 3 minutes</code>. The heading is capped at <code>max-w-72</code> in <code>CompactPermissionsStep.tsx</code>, and the comment above it still describes a two-line break, <code>Set up OpenWhispr</code> and <code>in 3 minutes</code>.</p>
+<p>On a 480 by 624 content window, the heading is three lines. The h1 box runs from y 176 to y 284, which is 108px, three times the 36px line height.</p>
+<p>The development-only hint, <code>onboarding.permissions.electronDevHint</code>, starts at y 619 and ends at y 667. The window is 624px tall, so 43px of that paragraph is past the bottom edge. <code>onboarding-shell-scroll</code> hides the scrollbar. The hint is shown only when <code>import.meta.env.DEV</code> is set, so a packaged build does not render that paragraph. The three-line title is what a packaged build still shows.</p>
+<h3>What the screenshot shows</h3>
+<p><code>clipped.png</code> is that 480 by 624 window. The title is three lines. The grey development hint is sliced along the bottom edge.</p>
+</article>
+<article>
+<h3>Gemini 3.7 is still the default</h3>
+<p class="path"><a href="medium/09-gemini-3-7-is-still-the-default/explanation.md">medium/09-gemini-3-7-is-still-the-default</a></p>
+<img src="medium/09-gemini-3-7-is-still-the-default/proof.png" alt="Proof for Gemini 3.7 is still the default">
+<p>Importance: Medium importance</p>
+<p>The current Antigravity catalog lists Gemini 3.8 Flash first. A fresh setup still starts on Gemini 3.7, and the picker has no 3.8 row.</p>
+<p><code>DEFAULT_ANTIGRAVITY_MODEL</code> in <code>src/helpers/antigravityModels.ts</code> and <code>src/helpers/antigravityModels.cjs</code> is <code>gemini-3.7-flash-low</code>. <code>resolveAgyCliModel</code> returns that id when the model string is empty. Onboarding in <code>src/components/onboarding/antigravitySetup.ts</code> writes <code>gemini-3.7-flash-low</code> for cleanup and <code>gemini-3.7-flash-medium</code> for chat. With no saved choice, <code>src/stores/settingsStore.ts</code> falls back to <code>gemini-3.7-flash-medium</code> for the chat agent and the dictation agent, and to <code>gemini-3.7-flash-high</code> for the vision model.</p>
+<p>The Antigravity models in <code>src/models/modelRegistryData.json</code> stop at 3.7. There is no <code>gemini-3.8</code> id. The 3.7 high row is described as <code>Latest Flash via Antigravity</code>.</p>
+<h3>What the run showed</h3>
+<p><code>agy models</code> printed <code>gemini-3.8-flash-high</code> as the first row, then <code>gemini-3.8-flash-medium</code> and <code>gemini-3.8-flash-low</code>. <code>DEFAULT_ANTIGRAVITY_MODEL</code> was <code>gemini-3.7-flash-low</code>. An empty model resolved to <code>gemini-3.7-flash-low</code>. <code>registryHas38</code> was false. The 3.7 high description was <code>Latest Flash via Antigravity</code>.</p>
+</article>
+</section><section><h2>Low importance</h2>
+<article>
+<h3>Antigravity model blurbs stay in English</h3>
+<p class="path"><a href="low/01-antigravity-descriptions-left-in-english/explanation.md">low/01-antigravity-descriptions-left-in-english</a></p>
+<img src="low/01-antigravity-descriptions-left-in-english/proof.png" alt="Proof for Antigravity model blurbs stay in English">
+<p>Importance: Low importance</p>
+<p>The Antigravity rows in Settings use description keys under <code>models.descriptions</code>. In German, Spanish, French, Italian, Japanese, Portuguese, Russian, Simplified Chinese, and Traditional Chinese, these values are the same English sentences as in <code>src/locales/en/translation.json</code>:</p>
+<ul>
+<li>`models.descriptions.transcription.antigravity_gemini_3_5_transcribe`</li>
+<li>`models.descriptions.transcription.antigravity_gemini_3_5_transcribe_live`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_5_flash_low`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_5_flash_medium`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_5_flash_high`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_7_flash_low`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_7_flash_medium`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_7_flash_high`</li>
+<li>`models.descriptions.cloud.antigravity_gemini_3_1_pro_high`</li>
+<li>`models.descriptions.cloud.antigravity_claude_sonnet_4_6`</li>
+<li>`models.descriptions.cloud.antigravity_claude_opus_4_6`</li>
+</ul>
+<p>Someone who uses the app in one of those languages still reads "Fast cleanup via Antigravity subscription" and the other English blurbs. The keys exist, so the i18n check does not report them. The strings sit on the model picker, not on the main dictation screen.</p>
+</article>
+<article>
+<h3>Stale duplicate docs still name MoreOpenWhispr.app</h3>
+<p class="path"><a href="low/02-stale-duplicate-docs/explanation.md">low/02-stale-duplicate-docs</a></p>
+<img src="low/02-stale-duplicate-docs/proof.png" alt="Proof for Stale duplicate docs still name MoreOpenWhispr.app">
+<p>Importance: Low importance</p>
+<p>The working tree has untracked copies with <code> 2</code> before the extension. They still describe the shipping app as MoreOpenWhispr, including install paths such as <code>MoreOpenWhispr.app</code>. The app name in <code>electron-builder.json</code> and <code>src/config/mowProfile.ts</code> is MoreOpenWhisperer. The tracked docs under <code>docs/</code> were updated. These copies were not.</p>
+<p>They are not imported by the build. They show up if someone opens the extra file by mistake.</p>
+<p>Files:</p>
+<ul>
+<li>`docs/antigravity 2.md`</li>
+<li>`docs/building 2.md`</li>
+<li>`docs/linux 2.md`</li>
+<li>`docs/macos 2.md`</li>
+<li>`docs/windows 2.md`</li>
+<li>`package 2.json`</li>
+<li>`scripts/refresh-antigravity-token 2.js`</li>
+<li>`test/helpers/urlAudioDownloader.test 2.js`</li>
+</ul>
+<p><code>docs/macos 2.md</code> says to drag MoreOpenWhispr into Applications and to delete <code>/Applications/MoreOpenWhispr.app</code>.</p>
+</article>
+</section>
+</body>
+</html>

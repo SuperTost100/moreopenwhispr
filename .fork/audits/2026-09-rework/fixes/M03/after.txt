@@ -1,0 +1,51 @@
+✔ resolveAgyCliModel maps retired 3.5 flash ids onto current agy catalog (0.443959ms)
+✔ buildAgyArgs remaps retired 3.5 flash ids and never forwards --effort (0.456625ms)
+✔ classifyAgyError detects auth, quota, and generic failures (0.487209ms)
+✔ resolveAgyBinary finds agy in ~/.local/bin when PATH is empty (1.529708ms)
+✔ resolveAgyBinary throws AGY_NOT_FOUND when the CLI is missing (0.352875ms)
+✔ recoverTranscriptFromDisk reads the latest model line from transcript.jsonl (4.612833ms)
+✔ runAgyTurn returns stdout on success (2.681542ms)
+✔ runAgyTurn prefers writeFilePath over noisy stdout (0.911959ms)
+✔ runAgyTurn falls back to writeFilePath when stdout is empty (0.757417ms)
+✔ runAgyTurn throws AUTH_REQUIRED on non-zero auth exit (0.42125ms)
+✔ runAgyTurn omits --model entirely when no model is requested (0.286125ms)
+✔ runAgyTurn classifies its own subprocess timeout as AGY_TIMEOUT, never AGY_CANCELLED (21.4415ms)
+✔ runAgyTurn kills the child when the caller's own signal aborts, and classifies it as AGY_CANCELLED (11.506ms)
+✔ fresh antigravity settings default to auto, not a pinned model generation (444.289ms)
+[INFO][antigravity] Antigravity model catalog refreshed { reason: 'test', models: 5 }
+✔ validateCatalog accepts the real response shape and rejects malformed ones (0.973458ms)
+✔ auto policy follows server tiers per slot with the pinned model last (0.268583ms)
+✔ stt never picks a model without an audio MIME type (0.113375ms)
+✔ an explicit capable pick leads its slot (0.088584ms)
+✔ deprecated explicit picks map through the chain; a cycle is kept with a notice (0.127875ms)
+✔ quota-exhausted and cooling models are skipped until they reset (0.108541ms)
+✔ a quota-exhausted or cooling pinned fallback is never retried, even as the last resort (0.078292ms)
+✔ an explicit pick that is in the catalog but quota-exhausted/cooling is dropped, not reintroduced as a last resort (0.078375ms)
+✔ an empty candidate list (every candidate quota-exhausted or cooling) reports the soonest reset time (0.137333ms)
+✔ an explicit pick missing from the catalog falls back to auto, stays last, and adds a notice (0.100375ms)
+✔ synthetic transcription-mode ids are modes, never explicit catalog picks (0.075667ms)
+✔ the static fallback catalog resolves every slot (0.050167ms)
+✔ listSelectableModels flags audio/image support and hides deprecated ids (0.123791ms)
+✔ refreshCatalog fetches, persists, and keeps the last good catalog on a malformed response (3.54625ms)
+(node:86795) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/antigravityModels.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the .ts mirror matches antigravityModels.cjs (31.901458ms)
+✔ every retired id resolves to a live one (0.072791ms)
+✔ buildReasoningPrompt combines system and user sections (0.39325ms)
+✔ parseToolLoopResponse accepts a final JSON payload (0.594667ms)
+✔ parseToolLoopResponse accepts a tool_call JSON payload (0.070833ms)
+✔ parseToolLoopResponse strips markdown fences (0.050958ms)
+✔ parseToolLoopResponse coerces final-with-tool-json into tool_call (0.055625ms)
+✔ retired gemini-3.5-flash rows are gone from the antigravity picker (0.436583ms)
+✔ a saved retired gemini-3.5-flash id still resolves to a served model (0.428041ms)
+✔ the antigravity picker has gemini-3.8-flash rows and only one claims latest (0.410792ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 549.131042

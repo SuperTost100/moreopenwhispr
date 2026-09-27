@@ -1,0 +1,100 @@
+✔ the registry still references at least the known antigravity description keys (0.711917ms)
+✖ every locale defines exactly the antigravity description keys the registry uses (4.110458ms)
+✖ no non-en locale's antigravity description is the untranslated English sentence (12.76375ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.58875
+
+✖ failing tests:
+
+test at test/locales/antigravityDescriptionTranslations.test.js:51:1
+✖ every locale defines exactly the antigravity description keys the registry uses (4.110458ms)
+  AssertionError [ERR_ASSERTION]: ar is missing models.descriptions.cloud.antigravity_gemini_3_8_flash_high
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/locales/antigravityDescriptionTranslations.test.js:61:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/locales/antigravityDescriptionTranslations.test.js:66:1
+✖ no non-en locale's antigravity description is the untranslated English sentence (12.76375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + [
+  +   'de: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'de: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'de: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'de: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'de: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'es: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'es: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'es: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'es: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'es: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'fr: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'fr: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'fr: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'fr: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'fr: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'it: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'it: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'it: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'it: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'it: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'ja: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'ja: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'ja: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'ja: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'ja: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'pt: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'pt: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'pt: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'pt: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'pt: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'ru: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'ru: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'ru: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'ru: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'ru: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'zh-CN: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'zh-CN: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'zh-CN: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'zh-CN: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'zh-CN: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")',
+  +   'zh-TW: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")',
+  +   'zh-TW: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")',
+  +   'zh-TW: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")',
+  +   'zh-TW: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")',
+  +   'zh-TW: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/locales/antigravityDescriptionTranslations.test.js:82:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'de: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'de: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'de: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'de: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'de: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'es: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'es: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'es: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'es: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'es: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'fr: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'fr: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'fr: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'fr: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'fr: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'it: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'it: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'it: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'it: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'it: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'ja: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'ja: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'ja: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'ja: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'ja: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'pt: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'pt: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'pt: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'pt: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'pt: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'ru: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'ru: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'ru: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'ru: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'ru: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'zh-CN: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'zh-CN: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'zh-CN: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'zh-CN: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'zh-CN: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")', 'zh-TW: models.descriptions.cloud.antigravity_claude_opus_4_6 === en ("Opus via Antigravity subscription")', 'zh-TW: models.descriptions.cloud.antigravity_claude_sonnet_4_6 === en ("Claude via Antigravity subscription")', 'zh-TW: models.descriptions.cloud.antigravity_gemini_3_1_pro_high === en ("Frontier Pro via Antigravity")', 'zh-TW: models.descriptions.cloud.antigravity_gemini_3_7_flash_low === en ("Fast cleanup via Antigravity subscription")', 'zh-TW: models.descriptions.cloud.antigravity_gemini_3_7_flash_medium === en ("Balanced via Antigravity")' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

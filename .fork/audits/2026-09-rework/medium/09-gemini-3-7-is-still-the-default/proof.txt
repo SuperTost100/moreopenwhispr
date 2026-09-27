@@ -1,0 +1,12 @@
+catalogFirst: gemini-3.8-flash-high
+catalog38: gemini-3.8-flash-high, gemini-3.8-flash-medium, gemini-3.8-flash-low
+defaultModel: gemini-3.7-flash-low
+emptyModelResolvesTo: gemini-3.7-flash-low
+onboardingCleanup: gemini-3.7-flash-low
+onboardingChat: gemini-3.7-flash-medium
+cleanupFallback: gemini-3.7-flash-low
+chatAgentFallback: gemini-3.7-flash-medium
+dictationAgentFallback: gemini-3.7-flash-medium
+dictationAgentVisionFallback: gemini-3.7-flash-high
+registryHas38: false
+high37Description: Latest Flash via Antigravity

@@ -1,0 +1,73 @@
+✔ resolveAgyCliModel maps retired 3.5 flash ids onto current agy catalog (0.748083ms)
+✔ buildAgyArgs remaps retired 3.5 flash ids and never forwards --effort (0.390791ms)
+✔ classifyAgyError detects auth, quota, and generic failures (0.449958ms)
+✔ resolveAgyBinary finds agy in ~/.local/bin when PATH is empty (1.64075ms)
+✔ resolveAgyBinary throws AGY_NOT_FOUND when the CLI is missing (0.25475ms)
+✔ recoverTranscriptFromDisk reads the latest model line from transcript.jsonl (3.934459ms)
+✔ runAgyTurn returns stdout on success (2.622125ms)
+✔ runAgyTurn prefers writeFilePath over noisy stdout (1.006083ms)
+✔ runAgyTurn falls back to writeFilePath when stdout is empty (0.680334ms)
+✔ runAgyTurn throws AUTH_REQUIRED on non-zero auth exit (0.3145ms)
+✔ runAgyTurn omits --model entirely when no model is requested (0.196583ms)
+✖ runAgyTurn treats the auto sentinel like no model requested (0.469916ms)
+✔ runAgyTurn classifies its own subprocess timeout as AGY_TIMEOUT, never AGY_CANCELLED (21.665875ms)
+✔ runAgyTurn kills the child when the caller's own signal aborts, and classifies it as AGY_CANCELLED (10.613291ms)
+(node:15658) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/antigravityModels.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✖ the .ts mirror matches antigravityModels.cjs (30.569292ms)
+✖ isAutoAntigravityModel only matches the auto sentinel, case- and whitespace-insensitively (0.062958ms)
+✔ resolveAgyCliModel does not rewrite the auto sentinel (0.056208ms)
+✔ every retired id resolves to a live one (0.063459ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 15
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.768667
+
+✖ failing tests:
+
+test at test/helpers/antigravityCli.test.js:238:1
+✖ runAgyTurn treats the auto sentinel like no model requested (0.469916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at spawnImpl (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityCli.test.js:244:14)
+      at runAgyTurn (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/antigravityCli.js:364:17)
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityCli.test.js:239:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/helpers/antigravityModels.test.js:10:1
+✖ the .ts mirror matches antigravityModels.cjs (30.569292ms)
+  TypeError: ts.isAutoAntigravityModel is not a function
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityModels.test.js:45:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)
+
+test at test/helpers/antigravityModels.test.js:52:1
+✖ isAutoAntigravityModel only matches the auto sentinel, case- and whitespace-insensitively (0.062958ms)
+  TypeError: isAutoAntigravityModel is not a function
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityModels.test.js:54:16)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)

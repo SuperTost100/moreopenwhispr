@@ -1,0 +1,53 @@
+✔ home uses dictation label key while keeping home id (77.611166ms)
+✔ getAllowedControlPanelNavItems applies agent and policy gates (0.493792ms)
+✖ getControlPanelNavLabelKey labels the settings view, which has no nav item (0.588667ms)
+✖ getControlPanelNavLabelKey never mislabels an unknown view as another tab (0.160291ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 2
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 157.70875
+
+✖ failing tests:
+
+test at test/components/controlPanelNavModel.test.js:65:1
+✖ getControlPanelNavLabelKey labels the settings view, which has no nav item (0.588667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sidebar.dictation'
+  - 'sidebar.settings'
+             ^
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/components/controlPanelNavModel.test.js:67:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'sidebar.dictation',
+    expected: 'sidebar.settings',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/components/controlPanelNavModel.test.js:70:1
+✖ getControlPanelNavLabelKey never mislabels an unknown view as another tab (0.160291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sidebar.dictation'
+  - 'common.unknown'
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/components/controlPanelNavModel.test.js:72:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'sidebar.dictation',
+    expected: 'common.unknown',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

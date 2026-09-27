@@ -1,0 +1,6 @@
+hosts returned 404
+message: models/gemini-3.7-flash-low is not found
+thrown status: 429
+code: AGY_ERROR
+messageKey: hooks.audioRecording.errorDescriptions.providerRateLimited
+requests: 2

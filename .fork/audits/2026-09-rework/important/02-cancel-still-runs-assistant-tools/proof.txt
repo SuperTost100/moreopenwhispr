@@ -1,0 +1,4 @@
+abortedBeforeTool: true
+toolRanAfterAbort: true
+toolsRun: ["create_note"]
+firstChunkType: "tool_calls"

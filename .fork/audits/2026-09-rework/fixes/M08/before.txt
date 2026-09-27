@@ -1,0 +1,25 @@
+✖ the first-run title has no width cap narrower than its container (263.517625ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 365.078625
+
+✖ failing tests:
+
+test at test/components/compactPermissionsStep.test.js:59:1
+✖ the first-run title has no width cap narrower than its container (263.517625ms)
+  AssertionError [ERR_ASSERTION]: title heading must not cap its width below the container: className was "onboarding-display-title mx-auto max-w-72 text-balance text-3xl!"
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/components/compactPermissionsStep.test.js:75:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'onboarding-display-title mx-auto max-w-72 text-balance text-3xl!',
+    expected: /\bmax-w-\d/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }

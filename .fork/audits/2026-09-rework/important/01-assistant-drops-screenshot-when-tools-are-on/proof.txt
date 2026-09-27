@@ -1,0 +1,9 @@
+no tools
+  hasImage: true
+  imageBytes: 8
+
+with tools, create_note
+  toolTurnHasImageField: false
+  toolTurnContainsImageBytes: false
+  toolTurnHasPlaceholder: true
+  placeholder: [Screen context was attached to this request. Use it if the question refers to what is on screen.]

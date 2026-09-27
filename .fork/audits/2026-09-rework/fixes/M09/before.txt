@@ -1,0 +1,70 @@
+✖ fresh antigravity settings default to auto, not a pinned model generation (451.4205ms)
+✖ retired gemini-3.5-flash rows are gone from the antigravity picker (0.495375ms)
+✔ a saved retired gemini-3.5-flash id still resolves to a served model (0.429958ms)
+✖ the antigravity picker has gemini-3.8-flash rows and only one claims latest (3.907667ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 1
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 549.807084
+
+✖ failing tests:
+
+test at test/helpers/antigravityDefaultModel.test.js:12:1
+✖ fresh antigravity settings default to auto, not a pinned model generation (451.4205ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'gemini-3.7-flash-medium'
+  - 'auto'
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityDefaultModel.test.js:23:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'gemini-3.7-flash-medium',
+    expected: 'auto',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/helpers/antigravityRetiredFlashModels.test.js:12:1
+✖ retired gemini-3.5-flash rows are gone from the antigravity picker (0.495375ms)
+  AssertionError [ERR_ASSERTION]: gemini-3.5-flash-low should no longer be a picker row
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityRetiredFlashModels.test.js:17:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at test/helpers/antigravityRetiredFlashModels.test.js:42:1
+✖ the antigravity picker has gemini-3.8-flash rows and only one claims latest (3.907667ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(ids.includes("gemini-3.8-flash-low"))
+  
+      at TestContext.<anonymous> (/Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/test/helpers/antigravityRetiredFlashModels.test.js:45:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

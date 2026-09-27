@@ -1,0 +1,20 @@
+# before: untracked ' 2' copies in openwhispr (branch moreopenwhispr-ui-refresh)
+?? "docs/antigravity 2.md"
+?? "docs/building 2.md"
+?? "docs/linux 2.md"
+?? "docs/macos 2.md"
+?? "docs/windows 2.md"
+?? "package 2.json"
+?? "scripts/refresh-antigravity-token 2.js"
+?? "test/helpers/urlAudioDownloader.test 2.js"
+docs/antigravity 2.md vs tracked docs/antigravity.md: 28 differing lines; MoreOpenWhispr.app mentions in copy: 0
+docs/building 2.md vs tracked docs/building.md: 22 differing lines; MoreOpenWhispr.app mentions in copy: 1
+docs/linux 2.md vs tracked docs/linux.md: 16 differing lines; MoreOpenWhispr.app mentions in copy: 0
+docs/macos 2.md vs tracked docs/macos.md: 30 differing lines; MoreOpenWhispr.app mentions in copy: 1
+docs/windows 2.md vs tracked docs/windows.md: 8 differing lines; MoreOpenWhispr.app mentions in copy: 0
+package 2.json vs tracked package.json: 2 differing lines; MoreOpenWhispr.app mentions in copy: 0
+scripts/refresh-antigravity-token 2.js vs tracked scripts/refresh-antigravity-token.js: 2 differing lines; MoreOpenWhispr.app mentions in copy: 0
+test/helpers/urlAudioDownloader.test 2.js vs tracked test/helpers/urlAudioDownloader.test.js: 5 differing lines; MoreOpenWhispr.app mentions in copy: 0
+
+sync worktree copies:
+none

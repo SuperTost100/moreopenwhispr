@@ -1,0 +1,39 @@
+✔ resolveAgyCliModel maps retired 3.5 flash ids onto current agy catalog (0.744292ms)
+✔ buildAgyArgs remaps retired 3.5 flash ids and never forwards --effort (0.345125ms)
+✔ classifyAgyError detects auth, quota, and generic failures (0.44175ms)
+✔ resolveAgyBinary finds agy in ~/.local/bin when PATH is empty (1.512584ms)
+✔ resolveAgyBinary throws AGY_NOT_FOUND when the CLI is missing (0.3265ms)
+✔ recoverTranscriptFromDisk reads the latest model line from transcript.jsonl (4.333875ms)
+✔ runAgyTurn returns stdout on success (2.803625ms)
+✔ runAgyTurn prefers writeFilePath over noisy stdout (1.053042ms)
+✔ runAgyTurn falls back to writeFilePath when stdout is empty (0.829ms)
+✔ runAgyTurn throws AUTH_REQUIRED on non-zero auth exit (0.386167ms)
+✔ runAgyTurn omits --model entirely when no model is requested (0.226875ms)
+✔ runAgyTurn treats the auto sentinel like no model requested (0.195166ms)
+✔ runAgyTurn classifies its own subprocess timeout as AGY_TIMEOUT, never AGY_CANCELLED (20.352167ms)
+✔ runAgyTurn kills the child when the caller's own signal aborts, and classifies it as AGY_CANCELLED (11.595625ms)
+✔ fresh antigravity settings default to auto, not a pinned model generation (448.415459ms)
+(node:15712) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/src/helpers/antigravityModels.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/tost1/Documents/Personal/Vibecode/openwhispr-sync/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the .ts mirror matches antigravityModels.cjs (30.796541ms)
+✔ isAutoAntigravityModel only matches the auto sentinel, case- and whitespace-insensitively (0.077333ms)
+✔ resolveAgyCliModel does not rewrite the auto sentinel (0.048916ms)
+✔ every retired id resolves to a live one (0.058541ms)
+✔ buildReasoningPrompt combines system and user sections (0.401875ms)
+✔ parseToolLoopResponse accepts a final JSON payload (0.57475ms)
+✔ parseToolLoopResponse accepts a tool_call JSON payload (0.071416ms)
+✔ parseToolLoopResponse strips markdown fences (0.052208ms)
+✔ parseToolLoopResponse coerces final-with-tool-json into tool_call (0.055ms)
+✔ retired gemini-3.5-flash rows are gone from the antigravity picker (0.399209ms)
+✔ a saved retired gemini-3.5-flash id still resolves to a served model (0.396416ms)
+✔ the antigravity picker has gemini-3.8-flash rows and only one claims latest (0.379458ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 554.415875

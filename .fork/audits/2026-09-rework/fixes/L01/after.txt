@@ -1,0 +1,19 @@
+✔ the registry still references at least the known antigravity description keys (0.699ms)
+✔ every locale defines exactly the antigravity description keys the registry uses (12.745958ms)
+✔ no non-en locale's antigravity description is the untranslated English sentence (10.356417ms)
+✔ every t() key referenced in source resolves in en (81.028584ms)
+✔ every model registry descriptionKey resolves in en (1.664ms)
+✔ every en key is present in every other language (20.339584ms)
+✔ interpolation variables match en in every language (36.363584ms)
+✔ every messageKey literal resolves in en (54.124084ms)
+✔ Arabic defines every CLDR plural category for each counted message (2.213292ms)
+✔ Arabic non-count numeric templates remain number-neutral (2.012917ms)
+✔ Arabic plural counts resolve the exact CLDR form without English fallback (9.280417ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 258.509416
