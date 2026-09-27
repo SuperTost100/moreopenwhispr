@@ -62,7 +62,12 @@ test("getAllowedControlPanelNavItems applies agent and policy gates", async () =
   ]);
 });
 
-test("getControlPanelNavLabelKey falls back to dictation for unknown views", async () => {
+test("getControlPanelNavLabelKey labels the settings view, which has no nav item", async () => {
   const { getControlPanelNavLabelKey } = await load();
-  assert.equal(getControlPanelNavLabelKey("missing"), "sidebar.dictation");
+  assert.equal(getControlPanelNavLabelKey("settings"), "sidebar.settings");
+});
+
+test("getControlPanelNavLabelKey never mislabels an unknown view as another tab", async () => {
+  const { getControlPanelNavLabelKey } = await load();
+  assert.equal(getControlPanelNavLabelKey("missing"), "common.unknown");
 });

@@ -38,5 +38,11 @@ export function getAllowedControlPanelNavItems(
 }
 
 export function getControlPanelNavLabelKey(view: ControlPanelView): string {
-  return CONTROL_PANEL_NAV_ITEMS.find((item) => item.id === view)?.labelKey ?? "sidebar.dictation";
+  // "settings" has no CONTROL_PANEL_NAV_ITEMS entry (see the comment above the
+  // type) but it is a real view, so it needs its own label instead of falling
+  // through to the "not found" case below.
+  if (view === "settings") return "sidebar.settings";
+  // A view id that matches nothing (should be unreachable for a valid
+  // ControlPanelView) must never be silently mislabeled as another tab.
+  return CONTROL_PANEL_NAV_ITEMS.find((item) => item.id === view)?.labelKey ?? "common.unknown";
 }
