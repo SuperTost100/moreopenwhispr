@@ -29,6 +29,22 @@ const GEMINI_MIME_TYPES = {
   "audio/mp4": "audio/aac",
 };
 
+// Bound for the ffmpeg conversion stage when there is an operation to derive
+// a stage signal from. Also the fallback deadline (see
+// ffmpegConversionSignal below) for callers that don't pass one — without a
+// signal at all, a stuck ffmpeg process (e.g. a hung codec probe) held the
+// request open indefinitely.
+const FFMPEG_CONVERT_STAGE_BUDGET_MS = 120_000;
+const DEFAULT_FFMPEG_CONVERT_TIMEOUT_MS = 20_000;
+
+// Every ffmpeg conversion must get an abort signal, whether or not the
+// caller threads through a budgeted `op`.
+function ffmpegConversionSignal(op, timeoutMs = DEFAULT_FFMPEG_CONVERT_TIMEOUT_MS) {
+  return op?.stageSignal
+    ? op.stageSignal(FFMPEG_CONVERT_STAGE_BUDGET_MS)
+    : AbortSignal.timeout(timeoutMs);
+}
+
 const TRANSCRIPTION_JSON_SCHEMA = {
   type: "object",
   properties: {
@@ -122,15 +138,33 @@ function resolveSpawnableFfmpegPath(ffmpegPath) {
 function convertToWavAsync({ inputPath, outputPath, ffmpegPath, signal }) {
   const bin = resolveSpawnableFfmpegPath(ffmpegPath);
   return new Promise((resolve, reject) => {
+    // Detached so ffmpeg gets its own process group on Unix: killing just
+    // the direct child pid leaves any process ffmpeg itself forked (or, for
+    // a shell wrapper, its own child) running as an orphan that keeps our
+    // stdio pipes open, which kept a stuck-ffmpeg cancellation from actually
+    // freeing the request.
     const child = spawn(bin, ["-y", "-i", inputPath, "-ar", "16000", "-ac", "1", outputPath], {
       stdio: ["ignore", "pipe", "pipe"],
+      detached: process.platform !== "win32",
     });
     let stderr = "";
     child.stderr?.on("data", (chunk) => {
       stderr += chunk.toString();
     });
-    const onAbort = () => {
+    const killChild = () => {
+      if (process.platform !== "win32" && Number.isInteger(child.pid)) {
+        try {
+          process.kill(-child.pid, "SIGKILL");
+          return;
+        } catch {
+          // Group kill failed (e.g. child already gone, or it isn't its own
+          // group leader for some reason) -- fall back to the direct pid.
+        }
+      }
       child.kill("SIGKILL");
+    };
+    const onAbort = () => {
+      killChild();
       reject(createAntigravityError("AGY_CANCELLED", "Antigravity ffmpeg conversion cancelled"));
     };
     if (signal?.aborted) {
@@ -164,6 +198,7 @@ async function prepareAudioBuffer({
   ffmpegPath,
   tmpRoot = os.tmpdir(),
   op,
+  ffmpegTimeoutMs,
 }) {
   const tmpDir = fs.mkdtempSync(path.join(tmpRoot, "openwhispr-antigravity-stt-"));
   const extension = extensionForContentType(contentType);
@@ -179,7 +214,7 @@ async function prepareAudioBuffer({
   let readPath = inputPath;
   let mimeType = mimeTypeForGateway(contentType, extension);
   if (ffmpegPath && extension !== ".wav") {
-    const ffmpegSignal = op?.stageSignal ? op.stageSignal(120_000) : undefined;
+    const ffmpegSignal = ffmpegConversionSignal(op, ffmpegTimeoutMs);
     await convertToWavAsync({ inputPath, outputPath: wavPath, ffmpegPath, signal: ffmpegSignal });
     readPath = wavPath;
     mimeType = "audio/wav";
@@ -213,6 +248,7 @@ async function transcribeWithAntigravityLegacyAgent({
   tmpRoot = os.tmpdir(),
   runTurn = runAgyTurn,
   op,
+  ffmpegTimeoutMs,
 }) {
   const tmpDir = fs.mkdtempSync(path.join(tmpRoot, "openwhispr-antigravity-stt-legacy-"));
   const extension = extensionForContentType(contentType);
@@ -229,7 +265,7 @@ async function transcribeWithAntigravityLegacyAgent({
 
     let audioPath = path.basename(inputPath);
     if (ffmpegPath && extension !== ".wav") {
-      const ffmpegSignal = op?.stageSignal ? op.stageSignal(120_000) : undefined;
+      const ffmpegSignal = ffmpegConversionSignal(op, ffmpegTimeoutMs);
       await convertToWavAsync({ inputPath, outputPath: wavPath, ffmpegPath, signal: ffmpegSignal });
       audioPath = path.basename(wavPath);
     }
@@ -368,12 +404,17 @@ async function transcribeWithAntigravity({
     return result;
   }
 
-  if (resolvedModel === "gemini-3.5-transcribe-live") {
-    const error = new Error(
-      "Antigravity live transcription must use the live preview stream during recording."
-    );
-    error.code = "AGY_LIVE_REQUIRES_PREVIEW";
-    throw error;
+  // This path is only reached for the live model when the live preview
+  // stream failed to commit a clean transcript (empty or truncated flush) —
+  // the caller only skips straight to processTranscription when the preview
+  // already returned non-empty streamed text. Never lose the recording:
+  // fall back to the same batch STT gateway path used for the non-live
+  // model, and log that the fallback happened.
+  const fellBackFromLive = resolvedModel === "gemini-3.5-transcribe-live";
+  if (fellBackFromLive) {
+    logStage("live-fallback-to-batch", {
+      reason: "live preview stream did not commit a transcript",
+    });
   }
 
   const prefs = buildAntigravitySttPrefs(model, antigravityPrefs);
@@ -426,7 +467,12 @@ async function transcribeWithAntigravity({
         transport: "daily-stream-multimodal",
         backendModel: gatewayResult.model,
       });
-      return { text: gatewayResult.text, model: gatewayResult.model || resolvedModel, notices };
+      return {
+        text: gatewayResult.text,
+        model: gatewayResult.model || resolvedModel,
+        notices,
+        ...(fellBackFromLive ? { fellBackFromLive: true } : {}),
+      };
     } catch (error) {
       lastError = error;
       const decision = decideAntigravityFailover(error, {
@@ -456,7 +502,7 @@ async function transcribeWithAntigravity({
         logStage("agy-subprocess-fallback", { code: error?.code });
         const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
         logStage("agy-legacy-done", { transport: "agy-write-file" });
-        return { ...result, notices };
+        return { ...result, notices, ...(fellBackFromLive ? { fellBackFromLive: true } : {}) };
       }
 
       throw error;
@@ -466,7 +512,7 @@ async function transcribeWithAntigravity({
   if (lastError && isNetworkUnreachableError(lastError) && (op?.remainingMs?.() ?? 0) > 8_000) {
     logStage("agy-subprocess-fallback-exhausted", { code: lastError?.code });
     const result = await transcribeWithAntigravityLegacyAgent(legacyArgs);
-    return { ...result, notices };
+    return { ...result, notices, ...(fellBackFromLive ? { fellBackFromLive: true } : {}) };
   }
 
   throw lastError || createAntigravityError("AGY_HTTP", "Antigravity transcription failed");

@@ -25,6 +25,7 @@ const {
   buildTranscriptionPrompt,
   transcribeWithAntigravity,
   parseTranscriptText,
+  prepareAudioBuffer,
 } = require("../../src/helpers/antigravityTranscription");
 
 test("buildTranscriptionPrompt includes the audio path, only-transcript rule, and write path", () => {
@@ -116,6 +117,63 @@ test("prepareAudioBuffer reports spawn errors instead of a blank ffmpeg conversi
   );
 });
 
+test("prepareAudioBuffer kills a stuck ffmpeg and rejects within the timeout instead of hanging", async () => {
+  const binDir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-fake-ffmpeg-"));
+  const pidFile = path.join(binDir, "ffmpeg.pid");
+  const fakeFfmpeg = path.join(binDir, "ffmpeg-stub.sh");
+  // Stands in for a stuck ffmpeg (e.g. a hung codec probe): writes its own
+  // pid so the test can confirm it was actually killed, then sleeps far
+  // longer than the injected timeout.
+  fs.writeFileSync(fakeFfmpeg, `#!/bin/sh\necho $$ > "${pidFile}"\nsleep 30\n`);
+  fs.chmodSync(fakeFfmpeg, 0o755);
+
+  const isAlive = (pid) => {
+    try {
+      process.kill(pid, 0);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  // Give the fake ffmpeg's "echo $$ > pidfile" a generous head start over the
+  // conversion timeout so a busy CI/test-runner host (many suites' worth of
+  // processes competing for scheduling) can't make the shell get killed
+  // before it even writes its own pid.
+  const ffmpegTimeoutMs = 1_500;
+
+  try {
+    const started = Date.now();
+    await assert.rejects(
+      () =>
+        prepareAudioBuffer({
+          audioBuffer: Buffer.from("not-really-audio"),
+          contentType: "audio/webm",
+          ffmpegPath: fakeFfmpeg,
+          ffmpegTimeoutMs,
+        }),
+      (err) => {
+        assert.equal(err.code, "AGY_CANCELLED");
+        return true;
+      }
+    );
+    const elapsedMs = Date.now() - started;
+    assert.ok(
+      elapsedMs < ffmpegTimeoutMs + 5_000,
+      `expected a bounded rejection, took ${elapsedMs}ms`
+    );
+
+    // Give the killed process a beat to actually exit, then confirm no
+    // orphaned ffmpeg is left running.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const pid = Number(fs.readFileSync(pidFile, "utf8").trim());
+    assert.ok(Number.isInteger(pid) && pid > 0, "the fake ffmpeg should have recorded its pid");
+    assert.equal(isAlive(pid), false, "the stuck ffmpeg process must be killed, not orphaned");
+  } finally {
+    fs.rmSync(binDir, { recursive: true, force: true });
+  }
+});
+
 test("transcribeWithAntigravity creates a default bounded operation when the caller passes none", async () => {
   // Regression for an unbounded ffmpeg wait: callers that don't manage their
   // own request budget (e.g. one-shot file-upload transcription) used to
@@ -195,4 +253,45 @@ test("transcribeWithAntigravity falls back to agy only on network unreachable", 
   assert.equal(result.text, "fallback words");
   assert.ok(fetchCalls >= 1);
   assert.equal(runOptions?.model, undefined);
+});
+
+test("transcribeWithAntigravity falls back to the batch gateway for the live model instead of throwing", async () => {
+  // Regression: this function used to throw AGY_LIVE_REQUIRES_PREVIEW as
+  // soon as it saw the live model id, before even touching the gateway.
+  // It's only reached with that model id when the live preview stream
+  // failed to commit a transcript (empty/truncated flush) -- the caller
+  // already skips this whole function when the preview succeeded. Losing
+  // the recording in that case is the bug; it must transcribe through the
+  // normal batch STT path instead.
+  let tokenCalls = 0;
+  const calls = [];
+  const result = await transcribeWithAntigravity({
+    audioBuffer: Buffer.from("fake-audio"),
+    model: "gemini-3.5-transcribe-live",
+    contentType: "audio/wav",
+    language: "auto",
+    getAccessToken: async () => {
+      tokenCalls += 1;
+      return fakeAuth();
+    },
+    fetchImpl: async (url) => {
+      calls.push(url);
+      if (String(url).includes("loadCodeAssist")) {
+        return {
+          ok: true,
+          json: async () => ({ cloudaicompanionProject: "daily-proj" }),
+        };
+      }
+      return {
+        ok: true,
+        text: async () =>
+          'data: {"response":{"candidates":[{"content":{"parts":[{"text":"spoken words"}]},"finishReason":"STOP"}]}}\n',
+      };
+    },
+  });
+
+  assert.equal(result.text, "spoken words");
+  assert.equal(result.fellBackFromLive, true);
+  assert.ok(tokenCalls >= 1, "the gateway path must run, not bail out before auth");
+  assert.ok(calls.some((url) => String(url).includes("streamGenerateContent")));
 });
