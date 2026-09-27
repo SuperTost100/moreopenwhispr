@@ -6,6 +6,7 @@ const { spawn } = require("child_process");
 const {
   DEFAULT_ANTIGRAVITY_MODEL,
   resolveAgyCliModel,
+  isAutoAntigravityModel,
   withoutEffortArgs,
 } = require("./antigravityModels.cjs");
 const { createAntigravityError } = require("./antigravityOperation");
@@ -87,7 +88,7 @@ function buildAgyArgs({
   extraArgs = [],
 }) {
   const args = ["--print", prompt, "--dangerously-skip-permissions", "--disable-slash-commands"];
-  const cliModel = model ? resolveAgyCliModel(model) : "";
+  const cliModel = model && !isAutoAntigravityModel(model) ? resolveAgyCliModel(model) : "";
   if (cliModel) {
     args.push("--model", cliModel);
   }
@@ -341,9 +342,10 @@ async function runAgyTurn({
 }) {
   const binary = resolveAgyBinary(command);
   // Only resolve/remap when a model was actually requested — an omitted
-  // model must reach the CLI with no --model flag at all so agy applies its
-  // own current default instead of us freezing one in.
-  const cliModel = model ? resolveAgyCliModel(model) : "";
+  // model, or our own "auto" sentinel (settings/onboarding default; not a
+  // real agy model id), must reach the CLI with no --model flag at all so
+  // agy applies its own current default instead of us freezing one in.
+  const cliModel = model && !isAutoAntigravityModel(model) ? resolveAgyCliModel(model) : "";
   const args = buildAgyArgs({
     prompt,
     model: cliModel,
