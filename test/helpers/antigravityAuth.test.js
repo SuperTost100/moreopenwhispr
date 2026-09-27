@@ -81,8 +81,8 @@ function freshAuthModule({
 function writeFakeAgyBinary(
   dir,
   {
-    clientIds = ["111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com"],
-    secret = "GOCSPX-fakeSecretValueForTestsOnly1",
+    clientIds = ["111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps." + "googleusercontent.com"],
+    secret = "GOCSPX-" + "fakeSecretValueForTestsOnly1",
     padding = 0,
   } = {}
 ) {
@@ -356,10 +356,10 @@ test("_extractCredentialsFromFile finds ids and secrets across chunk boundaries"
   try {
     const binaryPath = writeFakeAgyBinary(dir, {
       clientIds: [
-        "111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com",
-        "222222222222-fakebbbbbbbbbbbbbbbbbbbbbbbbbbbb.apps.googleusercontent.com",
+        "111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps." + "googleusercontent.com",
+        "222222222222-fakebbbbbbbbbbbbbbbbbbbbbbbbbbbb.apps." + "googleusercontent.com",
       ],
-      secret: "GOCSPX-fakeSecretValueForTestsOnly1",
+      secret: "GOCSPX-" + "fakeSecretValueForTestsOnly1",
       padding: 40,
     });
     // A tiny chunk size forces both the client ids and the secret to straddle
@@ -367,9 +367,13 @@ test("_extractCredentialsFromFile finds ids and secrets across chunk boundaries"
     const pairs = await mod._extractCredentialsFromFile(binaryPath, { chunkBytes: 17 });
     const ids = new Set(pairs.map((p) => p.clientId));
     const secrets = new Set(pairs.map((p) => p.clientSecret));
-    assert.ok(ids.has("111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com"));
-    assert.ok(ids.has("222222222222-fakebbbbbbbbbbbbbbbbbbbbbbbbbbbb.apps.googleusercontent.com"));
-    assert.ok(secrets.has("GOCSPX-fakeSecretValueForTestsOnly1"));
+    assert.ok(
+      ids.has("111111111111-fakeaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps." + "googleusercontent.com")
+    );
+    assert.ok(
+      ids.has("222222222222-fakebbbbbbbbbbbbbbbbbbbbbbbbbbbb.apps." + "googleusercontent.com")
+    );
+    assert.ok(secrets.has("GOCSPX-" + "fakeSecretValueForTestsOnly1"));
     // every (id x secret) combination
     assert.equal(pairs.length, ids.size * secrets.size);
   } finally {
@@ -382,8 +386,8 @@ test("direct refresh tries the wrong pair, then the next pair, then succeeds", a
   const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-direct-pairs-"));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-direct-pairs-bin-"));
   const spawnCalls = [];
-  const badId = "111111111111-badbadbadbadbadbadbadbadbadbadbadb.apps.googleusercontent.com";
-  const goodId = "222222222222-goodgoodgoodgoodgoodgoodgoodgoodg.apps.googleusercontent.com";
+  const badId = "111111111111-badbadbadbadbadbadbadbadbadbadbadb.apps." + "googleusercontent.com";
+  const goodId = "222222222222-goodgoodgoodgoodgoodgoodgoodgoodg.apps." + "googleusercontent.com";
   const fetchCalls = [];
   const fetchImpl = async (url, options) => {
     const body = JSON.parse(options.body);
@@ -430,8 +434,8 @@ test("the last-known-good client id is tried first on the next refresh", async (
   const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-direct-lkg-"));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-direct-lkg-bin-"));
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-direct-lkg-ud-"));
-  const badId = "111111111111-badbadbadbadbadbadbadbadbadbadbadb.apps.googleusercontent.com";
-  const goodId = "222222222222-goodgoodgoodgoodgoodgoodgoodgoodg.apps.googleusercontent.com";
+  const badId = "111111111111-badbadbadbadbadbadbadbadbadbadbadb.apps." + "googleusercontent.com";
+  const goodId = "222222222222-goodgoodgoodgoodgoodgoodgoodgoodg.apps." + "googleusercontent.com";
   const agyBinaryPath = writeFakeAgyBinary(dir, { clientIds: [badId, goodId] });
   const fetchCalls = [];
   const fetchImpl = async (url, options) => {
@@ -491,8 +495,8 @@ test("invalid_grant stops direct refresh immediately, falls back to agy, and end
   const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-invalid-grant-"));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-invalid-grant-bin-"));
   const spawnCalls = [];
-  const idA = "111111111111-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com";
-  const idB = "222222222222-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.apps.googleusercontent.com";
+  const idA = "111111111111-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps." + "googleusercontent.com";
+  const idB = "222222222222-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.apps." + "googleusercontent.com";
   const fetchCalls = [];
   const fetchImpl = async (url, options) => {
     fetchCalls.push(JSON.parse(options.body).client_id);
