@@ -58,6 +58,42 @@ test("resolveBackendModel pins empty/synthetic transcribe ids to the known-good 
   assert.equal(resolveBackendModel("gemini-3.8-flash-tiered"), "gemini-3.8-flash-tiered");
 });
 
+test("transcribeAudioViaGateway puts the caller's resolved model in the request body", async () => {
+  // The Antigravity backend-model picker (AntigravitySettingsPanel) offers
+  // real catalog ids, not the synthetic "gemini-3.5-transcribe*" mode ids.
+  // Once a real catalog id has been resolved for a call, it must reach the
+  // wire unchanged -- resolveBackendModel only rewrites empty/synthetic ids.
+  await withServer(
+    (req, res) => {
+      let raw = "";
+      req.on("data", (chunk) => (raw += chunk));
+      req.on("end", () => {
+        if (req.url.includes("loadCodeAssist")) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ cloudaicompanionProject: "proj-1" }));
+          return;
+        }
+        const body = JSON.parse(raw);
+        res.writeHead(200, { "Content-Type": "text/event-stream" });
+        res.end(sseBody([candidateChunk([{ text: body.model }], "STOP")]));
+      });
+    },
+    async (base) => {
+      const result = await transcribeAudioViaGateway({
+        accessToken: "tok",
+        audioBase64: "abc",
+        mimeType: "audio/wav",
+        model: "gemini-3.8-flash-tiered",
+        fetchImpl: fetch,
+        gatewayBase: base,
+      });
+      // The echoed text is the model the server actually received.
+      assert.equal(result.text, "gemini-3.8-flash-tiered");
+      assert.equal(result.model, "gemini-3.8-flash-tiered");
+    }
+  );
+});
+
 test("isModelRetirementNotice is anchored to short whole-text notices only", () => {
   assert.equal(
     isModelRetirementNotice(
