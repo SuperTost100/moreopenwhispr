@@ -49,7 +49,7 @@ export function normalizeUiLanguage(language: string | null | undefined): UiLang
   return "en";
 }
 
-const resources = {
+const rawResources = {
   en: {
     translation: TRANSLATIONS_BY_LOCALE.en,
     prompts: PROMPTS_BY_LOCALE.en,
@@ -96,6 +96,33 @@ const resources = {
   },
 } as const;
 
+// Rewrites "OpenWhispr" to the fork's product name inside translation
+// resources themselves, once at load. This used to run as an i18next
+// postProcess step on the final rendered string instead, which also mangled
+// interpolated values — a call like
+// t("controlPanel.shell.forkDisclosureUnofficial", { upstreamName: "OpenWhispr" })
+// renders "Unofficial {{upstreamName}} fork." from the resource (no literal
+// "OpenWhispr" in it) and only gets "OpenWhispr" substituted in at
+// interpolation time, so rewriting the resource strings up front leaves that
+// interpolated value untouched while still rewriting every hardcoded mention
+// of "OpenWhispr" baked into the translation/prompt JSON.
+function rewriteResourceStrings<T>(value: T): T {
+  if (typeof value === "string") return rewriteUpstreamBrand(value);
+  if (Array.isArray(value)) {
+    return value.map((item) => rewriteResourceStrings(item)) as T;
+  }
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
+      out[key] = rewriteResourceStrings(nested);
+    }
+    return out as T;
+  }
+  return value;
+}
+
+const resources = isMowBuild() ? rewriteResourceStrings(rawResources) : rawResources;
+
 const browserLanguage =
   typeof navigator !== "undefined" ? navigator.language || navigator.languages?.[0] : undefined;
 
@@ -103,14 +130,6 @@ const storageLanguage =
   typeof window !== "undefined" ? window.localStorage?.getItem("uiLanguage") : undefined;
 
 const initialLanguage = normalizeUiLanguage(storageLanguage || browserLanguage || "en");
-
-if (isMowBuild()) {
-  i18n.use({
-    type: "postProcessor",
-    name: "mowBrand",
-    process: rewriteUpstreamBrand,
-  });
-}
 
 void i18n.use(initReactI18next).init({
   resources,
@@ -123,7 +142,6 @@ void i18n.use(initReactI18next).init({
   },
   returnEmptyString: true,
   returnNull: false,
-  postProcess: isMowBuild() ? ["mowBrand"] : undefined,
 });
 
 export default i18n;
