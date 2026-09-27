@@ -155,11 +155,10 @@ export default function CompactPermissionsStep({
   return (
     <CompactOnboardingFrame showLegalNotice={false}>
       <div className="onboarding-shell-scroll relative flex h-full flex-col overflow-y-auto px-5 pb-6 pt-45 text-center">
-        {/* text-balance evens the two lines out ("Set up OpenWhispr" / "in 3
-            minutes") instead of leaving one word stranded. Preferred over a
-            hardcoded <br> because the break point stays correct in all 9
-            locales, where the string length differs. */}
-        <h1 className="onboarding-display-title mx-auto max-w-72 text-balance text-3xl!">
+        {/* text-balance evens the lines out instead of leaving one word
+            stranded. Preferred over a hardcoded <br> because the break point
+            stays correct across locales, where the string length differs. */}
+        <h1 className="onboarding-display-title text-balance text-3xl!">
           {t("onboarding.rehaul.permissions.title")}
         </h1>
         <p className="mt-2 text-sm text-[var(--onboarding-text-secondary)]">
