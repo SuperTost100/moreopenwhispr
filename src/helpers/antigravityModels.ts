@@ -31,7 +31,11 @@ export function resolveAgyCliModel(model: string): string {
 // an actual `agy --model <id>` invocation must check this first and treat
 // "auto" the same as no model requested at all.
 export function isAutoAntigravityModel(model: string): boolean {
-  return String(model || "").trim().toLowerCase() === "auto";
+  return (
+    String(model || "")
+      .trim()
+      .toLowerCase() === "auto"
+  );
 }
 
 export function withoutEffortArgs(extraArgs: string[] = []): string[] {
