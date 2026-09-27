@@ -61,7 +61,9 @@ const meetingRoute = (mod, state) => {
   });
 };
 
-test("Note Recording modes survive the follow-flag migration", async (t) => {
+// Every case re-evaluates the whole store through Vite (~1 s each on a CI
+// runner), so the suite as a whole outlives the 30 s per-test default.
+test("Note Recording modes survive the follow-flag migration", { timeout: 180_000 }, async (t) => {
   const { storage } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
     cachePrefix: "openwhispr-meeting-follow-flags-test-",
@@ -476,7 +478,11 @@ test("Note Recording modes survive the follow-flag migration", async (t) => {
         cloudTranscriptionMode: "openwhispr",
       });
       assert.equal(state.meetingTranscriptionMode, "local");
-      assert.equal(state.transcriptionMode, "providers", "coerced on read, still untouched by the heal");
+      assert.equal(
+        state.transcriptionMode,
+        "providers",
+        "coerced on read, still untouched by the heal"
+      );
     }
   );
 

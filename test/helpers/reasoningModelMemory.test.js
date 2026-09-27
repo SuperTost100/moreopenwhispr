@@ -159,3 +159,27 @@ test("retired cloud model selections are repointed to the provider default", asy
   assert.equal(state.chatAgentModel, "gpt-5.2", "shipping models stay untouched");
   assert.equal(state.noteFormattingModel, "my-endpoint-model", "custom ids are free-form");
 });
+
+test("antigravity selections are left to the live catalog", async (t) => {
+  installBrowserGlobals(t, {
+    initialStorage: {
+      _llmScopeKeysMigrated: "1",
+      cleanupProvider: "antigravity",
+      cleanupModel: "auto",
+      chatAgentProvider: "antigravity",
+      chatAgentModel: "gemini-3.8-flash-tiered",
+    },
+  });
+  const vite = await createRendererServer(t, {
+    cachePrefix: "openwhispr-antigravity-model-reconcile-test-",
+  });
+  const { useSettingsStore, reconcileRetiredCloudModelSelections } = await vite.ssrLoadModule(
+    "/stores/settingsStore.ts"
+  );
+
+  reconcileRetiredCloudModelSelections();
+
+  const state = useSettingsStore.getState();
+  assert.equal(state.cleanupModel, "auto", "the Automatic default is not a retired id");
+  assert.equal(state.chatAgentModel, "gemini-3.8-flash-tiered", "catalog-only picks stay");
+});

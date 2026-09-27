@@ -3243,16 +3243,17 @@ export async function reconcileLocalModelSelections(): Promise<void> {
 /**
  * Repoints any scope still selecting a cloud model the registry no longer ships
  * (e.g. a retired Groq id) at that provider's current default — otherwise every
- * request 404s with an error the user can't act on. Custom, OpenRouter and
- * Tinfoil ids are skipped: they're free-form or reconciled from the live
- * catalog in tinfoilModels.ts.
+ * request 404s with an error the user can't act on. Custom, OpenRouter,
+ * Tinfoil and Antigravity ids are skipped: they're free-form or reconciled from
+ * a live catalog (tinfoilModels.ts, antigravityModelCatalog.js). Antigravity's
+ * default "auto" and its catalog-only picks are never in the registry.
  */
 export function reconcileRetiredCloudModelSelections(): void {
   const state = useSettingsStore.getState() as unknown as Record<string, unknown>;
   for (const scope of Object.values(INFERENCE_SCOPES)) {
     const provider = state[scope.storeKeys.provider] as string;
     const model = state[scope.storeKeys.model] as string;
-    if (!provider || !model || provider === "tinfoil") continue;
+    if (!provider || !model || provider === "tinfoil" || provider === "antigravity") continue;
     const providerDef = modelRegistryData.cloudProviders.find((p) => p.id === provider);
     if (!providerDef || reasoningModelBelongsToProvider(provider, model)) continue;
     const replacement = pickDefaultModelId(providerDef);
