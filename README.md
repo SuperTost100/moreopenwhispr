@@ -5,7 +5,7 @@
 <h1 align="center">MoreOpenWhisperer</h1>
 
 <p align="center">
-  <a href="https://github.com/SuperTost100/moreopenwhispr/blob/antigravity-fork/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/moreopenwhispr?style=flat" alt="License" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhispr/blob/main/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/moreopenwhispr?style=flat" alt="License" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat" alt="Platform" />
   <a href="https://github.com/SuperTost100/moreopenwhispr/releases/latest"><img src="https://img.shields.io/github/v/release/SuperTost100/moreopenwhispr?style=flat&sort=semver" alt="GitHub release" /></a>
   <a href="https://github.com/SuperTost100/moreopenwhispr/releases"><img src="https://img.shields.io/github/downloads/SuperTost100/moreopenwhispr/total?style=flat&color=blue" alt="Downloads" /></a>
@@ -121,11 +121,11 @@ React 19, TypeScript, Tailwind CSS v4, Electron 41, better-sqlite3, whisper.cpp,
 
 ## Contributing
 
-This is the shipping branch (`antigravity-fork`). A separate UI redesign lives elsewhere and is not what you should PR against yet.
+`main` is the shipping branch.
 
-1. Branch off `antigravity-fork`.
+1. Branch off `main`.
 2. `nvm use && npm ci && npm run lint && npm test`
-3. Open a PR against [SuperTost100/moreopenwhispr](https://github.com/SuperTost100/moreopenwhispr) `antigravity-fork`.
+3. Open a PR against `main` on [SuperTost100/moreopenwhispr](https://github.com/SuperTost100/moreopenwhispr).
 
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md), not a public issue.
 

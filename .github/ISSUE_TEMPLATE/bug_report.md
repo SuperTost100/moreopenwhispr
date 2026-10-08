@@ -28,4 +28,4 @@ What happened, in one short paragraph.
 See [DEBUG.md](../../DEBUG.md). Redact API keys and `agy` tokens.
 
 **Additional context**
-This is the unofficial fork (`antigravity-fork`), not official OpenWhispr. If the bug also exists upstream, say so.
+This is the unofficial MoreOpenWhisperer fork, not official OpenWhispr. If the bug also exists upstream, say so.

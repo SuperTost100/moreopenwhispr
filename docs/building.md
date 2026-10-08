@@ -4,8 +4,7 @@ Node.js **24** only (`.nvmrc`). CI uses 24. Do not regenerate `package-lock.json
 
 ```bash
 git clone https://github.com/SuperTost100/moreopenwhispr.git
-cd openwhispr
-git checkout antigravity-fork
+cd moreopenwhispr
 nvm use
 npm ci
 ```
