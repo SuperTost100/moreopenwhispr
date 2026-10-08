@@ -73,6 +73,8 @@ export default function InferenceConfigEditor({
     })
   );
   const isSignedIn = useSettingsStore((s) => s.isSignedIn);
+  const keepLocalModelLoaded = useSettingsStore((s) => s.keepLocalModelLoaded);
+  const setKeepLocalModelLoaded = useSettingsStore((s) => s.setKeepLocalModelLoaded);
   const enterpriseSetupMode = useSettingsStore((s) => s.enterpriseSetupMode);
   const setEnterpriseSetupMode = useSettingsStore((s) => s.setEnterpriseSetupMode);
   const managed = useManagedScopeResolution(scope, enterpriseSetupMode);
@@ -89,7 +91,7 @@ export default function InferenceConfigEditor({
             description: t(`${prefix}.openwhisprDesc`),
             icon: <Cloud className="w-4 h-4" />,
             disabled: !isSignedIn,
-            badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
+            signInRequired: !isSignedIn,
           },
           {
             id: "providers",
@@ -307,6 +309,18 @@ export default function InferenceConfigEditor({
             <p className="text-xs text-muted-foreground">{t("reasoning.disableThinking.help")}</p>
           </div>
           <Toggle checked={config.disableThinking} onChange={setField("disableThinking")} />
+        </div>
+      )}
+
+      {effectiveMode === "local" && (
+        <div className="flex items-start justify-between gap-3 pt-1">
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-medium text-foreground">
+              {t("reasoning.keepModelLoaded.label")}
+            </h4>
+            <p className="text-xs text-muted-foreground">{t("reasoning.keepModelLoaded.help")}</p>
+          </div>
+          <Toggle checked={keepLocalModelLoaded} onChange={setKeepLocalModelLoaded} />
         </div>
       )}
 

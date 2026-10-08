@@ -71,6 +71,9 @@ export default function ControlPanelSidebar({
   const [upgradeDismissed, setUpgradeDismissed] = useState(
     () => localStorage.getItem("upgradeProDismissed") === "true"
   );
+  // A blocked or expired avatar URL falls back to the icon instead of the
+  // broken-image glyph, like AccountAvatar and MemberAvatar.
+  const [failedImage, setFailedImage] = useState<string | null>(null);
 
   const showLimitBanner =
     !isMowBuild() && upsell === "show" && Boolean(isSignedIn) && Boolean(isOverLimit);
@@ -299,10 +302,11 @@ export default function ControlPanelSidebar({
           <>
             <div className="cp-shell-footer-divider mx-1 my-1.5 h-px" />
             <div className="flex items-center gap-2.5 rounded-md px-3 py-1.5">
-              {userImage ? (
+              {userImage && userImage !== failedImage ? (
                 <img
                   src={userImage}
                   alt=""
+                  onError={() => setFailedImage(userImage)}
                   className="h-6 w-6 shrink-0 rounded-full object-cover"
                   width={24}
                   height={24}

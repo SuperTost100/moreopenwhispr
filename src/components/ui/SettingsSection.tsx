@@ -91,28 +91,45 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
 export function SettingsPanel({
   children,
   className = "",
+  as: Element = "div",
 }: {
   children: React.ReactNode;
   className?: string;
+  /** "ol" for a panel of numbered steps, whose rows are then "li". */
+  as?: "div" | "ol";
 }) {
   return (
-    <div className={`rounded-lg border border-border bg-card divide-y divide-border ${className}`}>
+    <Element
+      className={`rounded-lg border border-border bg-card divide-y divide-border ${className}`}
+    >
       {children}
-    </div>
+    </Element>
   );
 }
 
 export function SettingsPanelRow({
   children,
   className = "",
+  as: Element = "div",
 }: {
   children: React.ReactNode;
   className?: string;
+  as?: "div" | "li";
 }) {
   const { isCompact } = useSettingsLayout();
 
   return (
-    <div className={`${isCompact ? "px-3 py-2.5" : "px-4 py-3"} ${className}`}>{children}</div>
+    <Element className={`${isCompact ? "px-3 py-2.5" : "px-4 py-3"} ${className}`}>
+      {children}
+    </Element>
+  );
+}
+
+export function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70 mb-2 ps-1">
+      {children}
+    </div>
   );
 }
 
@@ -131,6 +148,8 @@ export interface InferenceModeOption {
   id: InferenceMode;
   disabled?: boolean;
   badge?: string;
+  /** Clicking the tile asks the user to sign in, so it reads as an action, not as disabled. */
+  signInRequired?: boolean;
   label: string;
   description: string;
   icon: React.ReactNode;
@@ -152,15 +171,16 @@ export function InferenceModeSelector({
       {modes.map((mode) => {
         const isActive = activeMode === mode.id;
         const isDisabled = !!mode.disabled;
+        const isDimmed = isDisabled && !mode.signInRequired;
         return (
           <SettingsPanelRow
             key={mode.id}
-            className={`transition-colors ${isDisabled ? "" : "hover:bg-hover"}`}
+            className={`transition-colors ${isDimmed ? "" : "hover:bg-hover"}`}
           >
             <button
               onClick={() => onSelect(mode.id)}
               className={`w-full flex items-center gap-3 text-start cursor-pointer group ${
-                isDisabled ? "opacity-60" : ""
+                isDimmed ? "opacity-60" : ""
               }`}
             >
               <div
@@ -182,6 +202,11 @@ export function InferenceModeSelector({
                   {isActive && !isDisabled && (
                     <span className="text-xs font-medium text-primary bg-primary/10 dark:bg-primary/15 px-1.5 py-px rounded-sm">
                       {t("common.active")}
+                    </span>
+                  )}
+                  {mode.signInRequired && (
+                    <span className="text-xs font-medium text-primary bg-primary/10 dark:bg-primary/15 px-1.5 py-px rounded-sm group-hover:underline">
+                      {t("common.signInRequired")}
                     </span>
                   )}
                   {isDisabled && mode.badge && (

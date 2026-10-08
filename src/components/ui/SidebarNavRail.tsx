@@ -10,6 +10,8 @@ interface SidebarNavRailProps<T extends string> {
   version?: string;
   /** Rendered above the nav (hidden in compact mode), e.g. account identity. */
   header?: React.ReactNode;
+  /** Account-level notice (e.g. an organization-managed policy) shown under the header. */
+  notice?: { icon: React.ReactNode; label: string; description: string };
   /**
    * "modal" (default) keeps the rail's own tinted chrome background, as used
    * inside SidebarModal. "view" matches the rail's background to the content
@@ -34,6 +36,7 @@ export default function SidebarNavRail<T extends string>({
   sidebarWidth = "w-52",
   version,
   header,
+  notice,
   variant = "modal",
 }: SidebarNavRailProps<T>) {
   // Group items by their group property
@@ -58,12 +61,12 @@ export default function SidebarNavRail<T extends string>({
     if (!item.badge && item.badgeVariant !== "dot") return null;
 
     if (item.badgeVariant === "dot") {
-      return <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shrink-0" />;
+      return <span className="ms-auto h-1.5 w-1.5 rounded-full bg-primary shrink-0" />;
     }
 
     return (
       <span
-        className={`ml-auto text-xs font-semibold uppercase tracking-wider px-1.5 py-px rounded-sm shrink-0 ${
+        className={`ms-auto text-xs font-semibold uppercase tracking-wider px-1.5 py-px rounded-sm shrink-0 ${
           item.badgeVariant === "new"
             ? "bg-primary/10 text-primary dark:bg-primary/15"
             : item.badgeVariant === "update"
@@ -82,10 +85,23 @@ export default function SidebarNavRail<T extends string>({
 
   return (
     <div
-      className={`${actualSidebarWidth} shrink-0 border-r border-border/40 dark:border-border-subtle flex flex-col ${railBg} transition-[width] duration-200 ease-out`}
+      className={`${actualSidebarWidth} shrink-0 border-e border-border/40 dark:border-border-subtle flex flex-col ${railBg} transition-[width] duration-200 ease-out`}
     >
       {/* Identity / custom header */}
       {header && !isCompact && <div className="px-4 pt-5 pb-1">{header}</div>}
+      {notice && !isCompact && (
+        <div className="flex justify-center px-4 pb-1">
+          <span
+            aria-hidden="true"
+            title={notice.description}
+            className="inline-flex items-center gap-1.5 text-center text-[11px] text-primary"
+          >
+            {notice.icon}
+            {notice.label}
+          </span>
+          <span className="sr-only">{notice.description}</span>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav
@@ -115,7 +131,7 @@ export default function SidebarNavRail<T extends string>({
                     // at full label width, so the tooltip is the only way to
                     // read them in full. No visual effect either way.
                     title={item.label}
-                    className={`group relative w-full flex items-center text-left text-xs rounded-md transition-colors duration-100 outline-none ${
+                    className={`group relative w-full flex items-center text-start text-xs rounded-md transition-colors duration-100 outline-none ${
                       isCompact ? "justify-center px-0 py-2" : "gap-2 px-2 py-1.5"
                     } ${
                       isActive
@@ -139,14 +155,17 @@ export default function SidebarNavRail<T extends string>({
                         </span>
                         {renderBadge(item)}
                         {item.shortcut && !item.badge && (
-                          <kbd className="ml-auto text-xs text-muted-foreground/25 font-mono shrink-0">
+                          <kbd
+                            dir="ltr"
+                            className="ms-auto text-xs text-muted-foreground/70 font-mono shrink-0"
+                          >
                             {item.shortcut}
                           </kbd>
                         )}
                       </>
                     )}
                     {isCompact && item.badgeVariant === "dot" && (
-                      <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
+                      <span className="absolute top-1.5 end-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
                     )}
                   </button>
                 );
