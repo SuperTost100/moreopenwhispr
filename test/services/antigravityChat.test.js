@@ -16,7 +16,7 @@ function withWindow(t, electronAPI) {
 
 // --- buildInitialContents ---------------------------------------------------
 
-test("buildInitialContents attaches a screenshot to the first user turn", async () => {
+test("buildInitialContents attaches a screenshot to the only user turn", async () => {
   const { buildInitialContents } = await loadModule();
   const contents = buildInitialContents([{ role: "user", content: "what's on my screen?" }], {
     data: "abc123",
@@ -25,6 +25,20 @@ test("buildInitialContents attaches a screenshot to the first user turn", async 
   assert.equal(contents.length, 1);
   assert.equal(contents[0].role, "user");
   assert.deepEqual(contents[0].parts[1], { inlineData: { mimeType: "image/png", data: "abc123" } });
+});
+
+test("buildInitialContents attaches a screenshot to the latest user turn, not the first", async () => {
+  const { buildInitialContents } = await loadModule();
+  const contents = buildInitialContents(
+    [
+      { role: "user", content: "summarize my notes" },
+      { role: "assistant", content: "Here is the summary." },
+      { role: "user", content: "and what's on my screen now?" },
+    ],
+    { data: "img", mediaType: "image/png" }
+  );
+  assert.equal(contents[0].parts.length, 1, "the opening turn keeps only its text");
+  assert.deepEqual(contents[2].parts[1], { inlineData: { mimeType: "image/png", data: "img" } });
 });
 
 test("buildInitialContents adds a leading user turn for a screenshot when there is no prior user turn", async () => {
@@ -383,4 +397,43 @@ test("runAntigravityChatStream throws once it exceeds the max tool-loop iteratio
       // drain
     }
   }, /maximum turns/);
+});
+
+test("runAntigravityChatStream without tools still sends the whole conversation", async (t) => {
+  const payloads = [];
+  withWindow(t, {
+    processAntigravityChatTurn: async (payload) => {
+      payloads.push(payload);
+      return { success: true, textParts: [{ text: "Ecco la traduzione." }], functionCalls: [] };
+    },
+    processAntigravityReasoning: async () => {
+      throw new Error("the single-prompt reasoning call drops the conversation");
+    },
+  });
+
+  const { runAntigravityChatStream } = await loadModule();
+  const chunks = [];
+  for await (const chunk of runAntigravityChatStream({
+    systemPrompt: "sys",
+    messages: [
+      { role: "user", content: "Write a haiku about rain." },
+      { role: "assistant", content: "Soft rain on the roof" },
+      { role: "user", content: "Translate that into Italian." },
+    ],
+    tools: [],
+    model: "gemini-3-flash",
+  })) {
+    chunks.push(chunk);
+  }
+
+  assert.equal(payloads.length, 1);
+  assert.deepEqual(
+    payloads[0].contents.map((turn) => [turn.role, turn.parts[0].text]),
+    [
+      ["user", "Write a haiku about rain."],
+      ["model", "Soft rain on the roof"],
+      ["user", "Translate that into Italian."],
+    ]
+  );
+  assert.equal(chunks.find((c) => c.type === "content")?.text, "Ecco la traduzione.");
 });

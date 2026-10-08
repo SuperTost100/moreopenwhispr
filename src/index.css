@@ -425,13 +425,12 @@ body.dark:has(.onboarding-canvas) {
    tokens rather than literals, so the .dark block above is the only place the
    theme is described twice. */
 .onboarding-canvas {
-  --color-background: var(--onboarding-surface);
-  --color-foreground: var(--onboarding-text-primary);
-  --color-card: var(--onboarding-surface);
-  --color-card-foreground: var(--onboarding-text-primary);
-  --color-muted: var(--onboarding-surface-secondary);
-  --color-muted-foreground: var(--onboarding-text-secondary);
-  --color-border: var(--onboarding-control-border);
+  /* Only the ring is remapped. The surface, text, muted and border tokens
+     above are aliases OF the foundation --color-* tokens, so pointing those
+     back at the --onboarding-* tokens here made each pair a custom-property
+     cycle: both resolved to nothing, the canvas lost its background and
+     inherited the body's dark text (unreadable on Windows/Linux, see-through
+     on macOS). */
   --color-ring: var(--onboarding-accent);
   /* Flat surface fill — no radial wash (light) or vignette (dark) artwork. */
   background-color: var(--onboarding-surface);

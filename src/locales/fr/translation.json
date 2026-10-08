@@ -402,7 +402,7 @@
           "features": {
             "subscription": "Uses the Antigravity plan you already have",
             "noKey": "No Gemini or OpenAI API key",
-            "localCli": "Talks to agy on this Mac",
+            "localCli": "Communique avec agy sur cet ordinateur",
             "features": "Dictation, cleanup, and assistant on the same subscription"
           }
         }
@@ -997,9 +997,12 @@
       "euOnly": "Les modèles Corti ne sont disponibles que dans la région UE."
     },
     "antigravity": {
-      "checking": "Checking Antigravity CLI…",
-      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
-      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
+      "checking": "Vérification de votre connexion à Antigravity…",
+      "missing": "CLI Antigravity (agy) introuvable. Installez-la, puis exécutez agy auth login dans un terminal.",
+      "signedIn": "Connecté à Antigravity via agy. Aucune clé API nécessaire.",
+      "signedOut": "Non connecté à Antigravity. Exécutez agy auth login dans un terminal, puis vérifiez à nouveau.",
+      "unknown": "Impossible de confirmer votre connexion à Antigravity pour le moment. La dictée essaiera quand même.",
+      "checkAgain": "Vérifier à nouveau"
     }
   },
   "transcription": {
@@ -1036,7 +1039,7 @@
       "docsLink": "Voir la documentation"
     },
     "antigravity": {
-      "transportNote": "Utilise votre abonnement Google Antigravity via la connexion agy sur ce Mac. Aucune clé API. Si ça ne fonctionne plus, reconnectez-vous à agy."
+      "transportNote": "Utilise votre abonnement Google Antigravity via la connexion agy sur cet ordinateur. Aucune clé API."
     }
   },
   "hooks": {
@@ -2823,7 +2826,10 @@
           "chatLabel": "Assistant model",
           "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
           "automatic": "Automatic (latest)",
-          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}.",
+          "refresh": "Actualiser les modèles",
+          "refreshing": "Actualisation…",
+          "refreshFailed": "Impossible d'actualiser la liste des modèles. La dernière est affichée."
         }
       }
     },
@@ -4386,7 +4392,8 @@
     "connectors": {
       "description": "Laissez l'assistant utiliser vos outils. Vous approuvez chaque e-mail, message et ticket avant son envoi."
     },
-    "description": "Connectez des services pour booster votre productivité"
+    "description": "Connectez des services pour booster votre productivité",
+    "calendarsUnavailable": "La connexion aux agendas Google et Microsoft n'est pas configurée dans cette version."
   },
   "connectors": {
     "approval": {

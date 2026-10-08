@@ -2080,6 +2080,10 @@ declare global {
       /** Aborts the in-flight antigravity request (STT/cleanup/chat-turn) with this requestId. */
       cancelAntigravityRequest?: (requestId: string) => void;
       checkAntigravityAvailable?: () => Promise<{ available: boolean; error?: string }>;
+      antigravityStatus?: () => Promise<{
+        state: "missing" | "signedOut" | "signedIn" | "unknown";
+        code?: string;
+      }>;
       antigravityListModels?: (options?: { refresh?: boolean }) => Promise<{
         success: boolean;
         models: Array<{
@@ -3093,6 +3097,7 @@ declare global {
       >;
 
       // Google Calendar
+      getCalendarProvidersConfigured?: () => Promise<{ google: boolean; microsoft: boolean }>;
       gcalStartOAuth?: () => Promise<{ success: boolean; email?: string; error?: string }>;
       gcalDisconnect?: (email?: string) => Promise<{ success: boolean; error?: string }>;
       gcalGetConnectionStatus?: () => Promise<{

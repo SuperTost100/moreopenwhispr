@@ -11,6 +11,7 @@ import { formatHotkeyLabel, parseHotkeyList } from "../utils/hotkeys";
 import { formatDateGroup } from "../utils/dateFormatting";
 import { useUpcomingEvents } from "../hooks/useUpcomingEvents";
 import UpcomingMeetings from "./UpcomingMeetings";
+import { useCalendarProvidersConfigured } from "../hooks/useCalendarProvidersConfigured";
 import ConfiguredProcessingRoute from "./control-panel/ConfiguredProcessingRoute";
 import { useSettingsStore } from "../stores/settingsStore";
 import { effectiveLocalHistoryEnabled } from "../stores/policyRules";
@@ -62,6 +63,13 @@ export default function HistoryView({
     effectiveLocalHistoryEnabled(policyState, personalDataRetentionEnabled)
   );
   const { events, isLoading: eventsLoading, isConnected } = useUpcomingEvents();
+  const calendarProviders = useCalendarProvidersConfigured();
+  // Without a calendar this build can connect, "Connect your calendar" would
+  // lead to an empty Integrations page, so the column stays hidden.
+  const canConnectCalendar =
+    calendarProviders.google ||
+    calendarProviders.microsoft ||
+    window.electronAPI?.getPlatform?.() === "darwin";
 
   const groupedHistory = useMemo(() => {
     if (history.length === 0) return [];
@@ -243,22 +251,24 @@ export default function HistoryView({
             )}
           </section>
 
-          <aside className="cp-history__meetings" aria-labelledby="cp-history-upcoming-title">
-            <div className="cp-history__meetings-sticky">
-              {/* Same header box as "Recent dictations", so both titles share a baseline. */}
-              <header className="cp-history__list-head">
-                <h2 id="cp-history-upcoming-title" className="cp-history__list-title">
-                  {t("upcoming.title")}
-                </h2>
-              </header>
-              <UpcomingMeetings
-                events={events}
-                isLoading={eventsLoading}
-                isConnected={isConnected}
-                onConnectCalendar={onOpenIntegrations}
-              />
-            </div>
-          </aside>
+          {(isConnected || canConnectCalendar) && (
+            <aside className="cp-history__meetings" aria-labelledby="cp-history-upcoming-title">
+              <div className="cp-history__meetings-sticky">
+                {/* Same header box as "Recent dictations", so both titles share a baseline. */}
+                <header className="cp-history__list-head">
+                  <h2 id="cp-history-upcoming-title" className="cp-history__list-title">
+                    {t("upcoming.title")}
+                  </h2>
+                </header>
+                <UpcomingMeetings
+                  events={events}
+                  isLoading={eventsLoading}
+                  isConnected={isConnected}
+                  onConnectCalendar={onOpenIntegrations}
+                />
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </section>

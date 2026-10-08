@@ -142,7 +142,7 @@ async function runAntigravityChatTurn({
     ? { parts: [{ text: systemPrompt.trim() }] }
     : undefined;
 
-  let auth = await getAccessToken({ signal: op?.signal });
+  let auth = await getAccessToken({ signal: op?.signal, op });
   let authRetried = false;
   let lastError = null;
 
@@ -186,7 +186,7 @@ async function runAntigravityChatTurn({
       });
       if (decision.action === "retry_auth") {
         authRetried = true;
-        auth = await getAccessToken({ signal: op?.signal, forceRefresh: true });
+        auth = await getAccessToken({ signal: op?.signal, op, forceRefresh: true });
         index -= 1;
         continue;
       }

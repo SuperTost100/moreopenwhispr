@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, type ReactElement } from "react";
+import { useCalendarProvidersConfigured } from "../../hooks/useCalendarProvidersConfigured";
 import { useTranslation } from "react-i18next";
 import { CalendarDays, Loader2, Mail, Plus, Unlink } from "../icons";
 import { Button } from "../ui/button";
@@ -166,6 +167,11 @@ export function CalendarsPane({ title }: CalendarsPaneProps): ReactElement {
   const { request: requestSystemAudioAccess } = systemAudio;
   const needsSystemAudioGrant = !systemAudio.granted && canManageSystemAudioInApp(systemAudio);
   const isMac = window.electronAPI?.getPlatform?.() === "darwin";
+  const configured = useCalendarProvidersConfigured();
+  // A provider this build can't sign in to is hidden, unless an account is
+  // already linked (it can still be listed and unlinked).
+  const showGoogle = configured.google || gcalAccounts.length > 0;
+  const showMicrosoft = configured.microsoft || mcalAccounts.length > 0;
 
   const startOAuth = useCallback(async () => {
     setIsConnecting(true);
@@ -331,41 +337,56 @@ export function CalendarsPane({ title }: CalendarsPaneProps): ReactElement {
   return (
     <IntegrationsPane title={title} description={t("integrations.notABot.description")}>
       <SettingsPanel>
-        <ProviderRow
-          icon={googleCalendarIcon}
-          i18nKey="integrations.googleCalendar"
-          connected={gcalAccounts.length > 0}
-          isConnecting={isConnecting}
-          onConnect={handleConnect}
-        />
-        <CalendarAccountRows
-          i18nKey="integrations.googleCalendar"
-          accounts={gcalAccounts}
-          disconnectingEmail={disconnectingEmail}
-          onUnlink={setConfirmDisconnectEmail}
-          primaryOnly={gcalPrimaryOnly}
-          onPrimaryOnlyChange={setGcalPrimaryOnly}
-          isConnecting={isConnecting}
-          onAddAnother={handleConnect}
-        />
+        {!showGoogle && !showMicrosoft && !isMac && (
+          <SettingsPanelRow>
+            <p className="text-xs text-muted-foreground">
+              {t("integrations.calendarsUnavailable")}
+            </p>
+          </SettingsPanelRow>
+        )}
+        {showGoogle && (
+          <>
+            <ProviderRow
+              icon={googleCalendarIcon}
+              i18nKey="integrations.googleCalendar"
+              connected={gcalAccounts.length > 0}
+              isConnecting={isConnecting}
+              onConnect={handleConnect}
+            />
+            <CalendarAccountRows
+              i18nKey="integrations.googleCalendar"
+              accounts={gcalAccounts}
+              disconnectingEmail={disconnectingEmail}
+              onUnlink={setConfirmDisconnectEmail}
+              primaryOnly={gcalPrimaryOnly}
+              onPrimaryOnlyChange={setGcalPrimaryOnly}
+              isConnecting={isConnecting}
+              onAddAnother={handleConnect}
+            />
+          </>
+        )}
 
-        <ProviderRow
-          icon={microsoftCalendarIcon}
-          i18nKey="integrations.microsoftCalendar"
-          connected={mcalAccounts.length > 0}
-          isConnecting={isMsConnecting}
-          onConnect={handleMicrosoftConnect}
-        />
-        <CalendarAccountRows
-          i18nKey="integrations.microsoftCalendar"
-          accounts={mcalAccounts}
-          disconnectingEmail={msDisconnectingEmail}
-          onUnlink={setConfirmMsDisconnectEmail}
-          primaryOnly={mcalPrimaryOnly}
-          onPrimaryOnlyChange={setMcalPrimaryOnly}
-          isConnecting={isMsConnecting}
-          onAddAnother={handleMicrosoftConnect}
-        />
+        {showMicrosoft && (
+          <>
+            <ProviderRow
+              icon={microsoftCalendarIcon}
+              i18nKey="integrations.microsoftCalendar"
+              connected={mcalAccounts.length > 0}
+              isConnecting={isMsConnecting}
+              onConnect={handleMicrosoftConnect}
+            />
+            <CalendarAccountRows
+              i18nKey="integrations.microsoftCalendar"
+              accounts={mcalAccounts}
+              disconnectingEmail={msDisconnectingEmail}
+              onUnlink={setConfirmMsDisconnectEmail}
+              primaryOnly={mcalPrimaryOnly}
+              onPrimaryOnlyChange={setMcalPrimaryOnly}
+              isConnecting={isMsConnecting}
+              onAddAnother={handleMicrosoftConnect}
+            />
+          </>
+        )}
 
         {isMac && (
           <ProviderRow

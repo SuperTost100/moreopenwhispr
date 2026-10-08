@@ -49,6 +49,7 @@ import { getCachedPlatform } from "../utils/platform";
 import { pickWhisperGpuBackend } from "../utils/whisperGpuPack";
 import logger from "../utils/logger";
 import type { ParakeetCheckResult } from "../types/electron";
+import { AntigravityStatus } from "./settings/AntigravityStatus";
 
 interface LocalModel {
   model: string;
@@ -1411,9 +1412,12 @@ export default function TranscriptionModelPicker({
                       </p>
                     )}
                     {displayedCloudProvider === "antigravity" && (
-                      <p className="text-xs text-muted-foreground/70">
-                        {t("transcription.antigravity.transportNote")}
-                      </p>
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground/70">
+                          {t("transcription.antigravity.transportNote")}
+                        </p>
+                        <AntigravityStatus />
+                      </div>
                     )}
                   </div>
                 </div>

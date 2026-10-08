@@ -402,7 +402,7 @@
           "features": {
             "subscription": "Uses the Antigravity plan you already have",
             "noKey": "No Gemini or OpenAI API key",
-            "localCli": "Talks to agy on this Mac",
+            "localCli": "Работает через agy на этом компьютере",
             "features": "Dictation, cleanup, and assistant on the same subscription"
           }
         }
@@ -997,9 +997,12 @@
       "euOnly": "Модели Corti доступны только в регионе ЕС."
     },
     "antigravity": {
-      "checking": "Checking Antigravity CLI…",
-      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
-      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
+      "checking": "Проверка входа в Antigravity…",
+      "missing": "Antigravity CLI (agy) не найден. Установите его и запустите agy auth login в терминале.",
+      "signedIn": "Вход в Antigravity выполнен через agy. API-ключ не нужен.",
+      "signedOut": "Вход в Antigravity не выполнен. Запустите agy auth login в терминале и проверьте снова.",
+      "unknown": "Сейчас не удаётся подтвердить вход в Antigravity. Диктовка всё равно попробует.",
+      "checkAgain": "Проверить снова"
     }
   },
   "transcription": {
@@ -1036,7 +1039,7 @@
       "docsLink": "Открыть документацию"
     },
     "antigravity": {
-      "transportNote": "Использует подписку Google Antigravity через вход в agy на этом Mac. Без API-ключа. Если перестанет работать, войдите в agy снова."
+      "transportNote": "Использует подписку Google Antigravity через вход в agy на этом компьютере. Без API-ключа."
     }
   },
   "hooks": {
@@ -2531,7 +2534,10 @@
           "chatLabel": "Assistant model",
           "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
           "automatic": "Automatic (latest)",
-          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}.",
+          "refresh": "Обновить модели",
+          "refreshing": "Обновление…",
+          "refreshFailed": "Не удалось обновить список моделей. Показан последний."
         }
       }
     },
@@ -4258,7 +4264,8 @@
     "connectors": {
       "description": "Позвольте ассистенту пользоваться вашими инструментами. Вы одобряете каждое письмо, сообщение и задачу перед отправкой."
     },
-    "description": "Подключите сервисы для улучшения рабочего процесса"
+    "description": "Подключите сервисы для улучшения рабочего процесса",
+    "calendarsUnavailable": "Вход в календари Google и Microsoft в этой сборке не настроен."
   },
   "connectors": {
     "approval": {
