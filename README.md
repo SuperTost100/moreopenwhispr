@@ -88,8 +88,7 @@ Needs [Node.js 24](https://nodejs.org/) (see `.nvmrc`).
 
 ```bash
 git clone https://github.com/SuperTost100/moreopenwhispr.git
-cd openwhispr
-git checkout antigravity-fork
+cd moreopenwhispr
 nvm use
 npm ci
 npm run dev
