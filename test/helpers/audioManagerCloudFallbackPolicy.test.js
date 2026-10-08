@@ -143,6 +143,25 @@ test("cloud->local fallback under org policy", async (t) => {
     assert.equal(localWhisperCalls, 1);
   });
 
+  await t.test("a cancelled Antigravity request is not transcribed locally", async () => {
+    setManagedPolicy(["providers", "local"]);
+    localWhisperCalls = 0;
+    const cancelled = Object.assign(new Error("Antigravity request cancelled"), {
+      code: "AGY_CANCELLED",
+    });
+    const manager = createManager({
+      getAPIKey: async () => {
+        throw cancelled;
+      },
+    });
+
+    await assert.rejects(manager.processWithOpenAIAPI(audioBlob, {}), (error) => {
+      assert.equal(error.code, "AGY_CANCELLED");
+      return true;
+    });
+    assert.equal(localWhisperCalls, 0);
+  });
+
   await t.test("a failed fallback keeps the cloud failure's classified fields", async () => {
     setManagedPolicy(["providers", "local"]);
     captureFetch(t, () => {

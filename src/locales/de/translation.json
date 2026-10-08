@@ -2831,6 +2831,13 @@
           "refreshing": "Wird aktualisiert…",
           "refreshFailed": "Die Modellliste konnte nicht aktualisiert werden. Die letzte wird angezeigt."
         }
+      },
+      "localFallback": {
+        "label": "Lokaler Ersatz",
+        "description": "Wenn der Cloud-Anbieter ausfällt, etwa wenn dein Antigravity-Kontingent aufgebraucht ist, wird die Aufnahme stattdessen mit einem heruntergeladenen Whisper-Modell transkribiert.",
+        "noModels": "Lade unter „Lokal“ ein Whisper-Modell herunter, um bei Cloud-Ausfällen lokal weiterzuarbeiten.",
+        "model": "Ersatzmodell",
+        "modelDescription": "Läuft auf diesem Computer. Nur heruntergeladene Modelle werden angezeigt."
       }
     },
     "intelligence": {

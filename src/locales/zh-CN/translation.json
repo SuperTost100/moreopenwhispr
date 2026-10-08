@@ -2533,6 +2533,13 @@
           "refreshing": "正在刷新…",
           "refreshFailed": "无法刷新模型列表。正在显示上一次的列表。"
         }
+      },
+      "localFallback": {
+        "label": "本地备用",
+        "description": "当云端服务失败时（例如 Antigravity 配额用完），改用已下载的 Whisper 模型转写录音。",
+        "noModels": "请先在“本地”中下载一个 Whisper 模型，才能在云端服务失败时使用本地备用。",
+        "model": "备用模型",
+        "modelDescription": "在这台电脑上运行，只列出已下载的模型。"
       }
     },
     "intelligence": {

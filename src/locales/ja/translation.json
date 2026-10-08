@@ -2533,6 +2533,13 @@
           "refreshing": "更新中…",
           "refreshFailed": "モデル一覧を更新できませんでした。前回の一覧を表示しています。"
         }
+      },
+      "localFallback": {
+        "label": "ローカル代替",
+        "description": "Antigravity のクォータ切れなどでクラウドプロバイダーが失敗したとき、ダウンロード済みの Whisper モデルで録音を文字起こしします。",
+        "noModels": "クラウドプロバイダーの失敗時にローカルで代替するには、「ローカル」で Whisper モデルをダウンロードしてください。",
+        "model": "代替モデル",
+        "modelDescription": "このコンピューターで実行します。ダウンロード済みのモデルだけが表示されます。"
       }
     },
     "intelligence": {

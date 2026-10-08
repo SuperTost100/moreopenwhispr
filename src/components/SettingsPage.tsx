@@ -96,6 +96,7 @@ import DictationTranslationSettings from "./settings/DictationTranslationSetting
 import InferenceConfigEditor from "./settings/InferenceConfigEditor";
 import { MeetingTranscriptionPanel } from "./settings/MeetingSettings";
 import { AntigravitySettingsPanel } from "./settings/AntigravitySettingsPanel";
+import { LocalFallbackSetting } from "./settings/LocalFallbackSetting";
 import { withoutAccountModes, isMowBuild } from "../config/mowProfile";
 import { UploadTranscriptionPanel } from "./settings/UploadSettings";
 import LanguageSelector from "./ui/LanguageSelector";
@@ -813,6 +814,7 @@ function TranscriptionSection({
                 setChatModel={setAntigravityChatModel}
               />
             )}
+          {effectiveTranscriptionMode === "providers" && <LocalFallbackSetting />}
           {effectiveTranscriptionMode === "local" && renderTranscriptionPicker("local")}
           {previewAvailable && renderPreviewToggle()}
 

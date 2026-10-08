@@ -2831,6 +2831,13 @@
           "refreshing": "Refreshing…",
           "refreshFailed": "Couldn't refresh the model list. Showing the last one."
         }
+      },
+      "localFallback": {
+        "label": "Local fallback",
+        "description": "If the cloud provider fails, for example when your Antigravity quota runs out, transcribe the recording with a downloaded Whisper model instead.",
+        "noModels": "Download a Whisper model under Local to use a local fallback when the cloud provider fails.",
+        "model": "Fallback model",
+        "modelDescription": "Runs on this computer. Only downloaded models are listed."
       }
     },
     "intelligence": {

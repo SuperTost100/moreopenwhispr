@@ -2586,6 +2586,13 @@
           "refreshing": "Actualizando…",
           "refreshFailed": "No se pudo actualizar la lista de modelos. Se muestra la última."
         }
+      },
+      "localFallback": {
+        "label": "Alternativa local",
+        "description": "Si el proveedor en la nube falla, por ejemplo cuando se agota tu cuota de Antigravity, la grabación se transcribe con un modelo Whisper descargado.",
+        "noModels": "Descarga un modelo Whisper en Local para usar una alternativa local cuando falle el proveedor en la nube.",
+        "model": "Modelo alternativo",
+        "modelDescription": "Se ejecuta en este equipo. Solo aparecen los modelos descargados."
       }
     },
     "intelligence": {
