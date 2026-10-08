@@ -153,7 +153,10 @@ test("prepareAudioBuffer kills a stuck ffmpeg and rejects within the timeout ins
           ffmpegTimeoutMs,
         }),
       (err) => {
-        assert.equal(err.code, "AGY_CANCELLED");
+        // A conversion that runs out of time is a timeout. Reporting it as
+        // AGY_CANCELLED made the pipeline treat it as a user cancel and drop
+        // the recording without an error.
+        assert.equal(err.code, "AGY_TIMEOUT");
         return true;
       }
     );
@@ -294,4 +297,36 @@ test("transcribeWithAntigravity falls back to the batch gateway for the live mod
   assert.equal(result.fellBackFromLive, true);
   assert.ok(tokenCalls >= 1, "the gateway path must run, not bail out before auth");
   assert.ok(calls.some((url) => String(url).includes("streamGenerateContent")));
+});
+
+test("prepareAudioBuffer reports the caller's cancel as AGY_CANCELLED and removes the copied recording", async () => {
+  const { createAntigravityOperation } = require("../../src/helpers/antigravityOperation");
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), "agy-stt-root-"));
+  const binDir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-fake-ffmpeg-"));
+  const fakeFfmpeg = path.join(binDir, "ffmpeg-stub.sh");
+  fs.writeFileSync(fakeFfmpeg, "#!/bin/sh\nsleep 30\n");
+  fs.chmodSync(fakeFfmpeg, 0o755);
+  const controller = new AbortController();
+  const op = createAntigravityOperation({ budgetMs: 20_000, signal: controller.signal });
+  setTimeout(() => controller.abort(), 200);
+  try {
+    await assert.rejects(
+      () =>
+        prepareAudioBuffer({
+          audioBuffer: Buffer.from("not-really-audio"),
+          contentType: "audio/webm",
+          ffmpegPath: fakeFfmpeg,
+          tmpRoot,
+          op,
+        }),
+      (err) => {
+        assert.equal(err.code, "AGY_CANCELLED");
+        return true;
+      }
+    );
+    assert.deepEqual(fs.readdirSync(tmpRoot), [], "the temp copy of the recording is removed");
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+    fs.rmSync(binDir, { recursive: true, force: true });
+  }
 });

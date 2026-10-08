@@ -172,7 +172,7 @@ async function reasonWithAntigravityGateway({
   if (candidates.length === 0) {
     throw emptyCandidatesError(resolved, "cleanup");
   }
-  let auth = await getAccessToken({ signal: op?.signal });
+  let auth = await getAccessToken({ signal: op?.signal, op });
   let authRetried = false;
   let lastError = null;
 
@@ -210,7 +210,7 @@ async function reasonWithAntigravityGateway({
       });
       if (decision.action === "retry_auth") {
         authRetried = true;
-        auth = await getAccessToken({ signal: op?.signal, forceRefresh: true });
+        auth = await getAccessToken({ signal: op?.signal, op, forceRefresh: true });
         index -= 1;
         continue;
       }
@@ -286,7 +286,11 @@ async function reasonWithAntigravity({
         cwd: tmpDir,
         command,
         printTimeout: "120s",
-        timeoutMs: 180_000,
+        // Bound by the request: a cancel or an exhausted budget has to stop
+        // the agy child too, not leave it running for up to three minutes.
+        // The 1ms floor matters because 0 means "no timeout" to runAgyTurn.
+        timeoutMs: Math.max(1, Math.min(180_000, op?.remainingMs?.() ?? 180_000)),
+        ...(op?.signal ? { signal: op.signal } : {}),
         extraArgs: ["--sandbox"],
       });
       return turn.text.trim();

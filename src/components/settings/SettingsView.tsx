@@ -41,6 +41,13 @@ export default function SettingsView({ initialSection }: SettingsViewProps) {
     setInitialSubTab(undefined);
   };
 
+  // One scroller serves every section, so a new section would otherwise open
+  // at the previous one's offset, with its heading scrolled out of view.
+  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+  React.useLayoutEffect(() => {
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+  }, [activeSection]);
+
   const [isCompact, setIsCompact] = React.useState(false);
   const observerRef = React.useRef<ResizeObserver | null>(null);
   const containerRef = React.useCallback((el: HTMLDivElement | null) => {
@@ -101,7 +108,7 @@ export default function SettingsView({ initialSection }: SettingsViewProps) {
             ) : undefined
           }
         />
-        <div className="flex-1 overflow-y-auto bg-background dark:bg-surface-1">
+        <div ref={scrollerRef} className="flex-1 overflow-y-auto bg-background dark:bg-surface-1">
           <SettingsLayoutProvider value={{ isCompact }}>
             <div className={isCompact ? "p-4" : "p-6"}>
               {policyManaged && (

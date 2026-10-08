@@ -124,14 +124,19 @@ export default function SidebarNavRail<T extends string>({
                 return (
                   <button
                     key={item.id}
+                    type="button"
                     data-section-id={item.id}
                     onClick={() => onSectionChange(item.id)}
+                    // Compact mode shows only the icon, and `title` alone isn't
+                    // a reliable accessible name.
+                    aria-label={isCompact ? item.label : undefined}
+                    aria-current={isActive ? "page" : undefined}
                     // Always set, not just in compact mode: a handful of long
                     // translations (e.g. Russian "privacyData") truncate even
                     // at full label width, so the tooltip is the only way to
                     // read them in full. No visual effect either way.
                     title={item.label}
-                    className={`group relative w-full flex items-center text-start text-xs rounded-md transition-colors duration-100 outline-none ${
+                    className={`group relative w-full flex items-center text-start text-xs rounded-md transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                       isCompact ? "justify-center px-0 py-2" : "gap-2 px-2 py-1.5"
                     } ${
                       isActive
@@ -140,6 +145,7 @@ export default function SidebarNavRail<T extends string>({
                     }`}
                   >
                     <Icon
+                      aria-hidden="true"
                       className={`h-4 w-4 shrink-0 transition-colors duration-100 ${
                         isActive
                           ? "text-primary"
