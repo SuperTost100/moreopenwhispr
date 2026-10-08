@@ -893,7 +893,7 @@
       "enterEndpoint": "Введите URL конечной точки выше для загрузки моделей.",
       "fetchingModels": "Получение списка моделей с конечной точки...",
       "noModels": "Модели не найдены. Проверьте URL конечной точки.",
-      "providerName": "Пользовательский",
+      "providerName": "Свой",
       "ownerLabel": "Автор: {{owner}}",
       "unableToLoadModels": "Не удалось загрузить модели с конечной точки.",
       "searchPlaceholder": "Поиск моделей…",
@@ -1021,7 +1021,7 @@
     "getKey": "Получить ключ ->",
     "endpointUrl": "URL конечной точки",
     "azureHint": "Azure AI Foundry: укажите endpoint вашего ресурса (например, https://your-resource.cognitiveservices.azure.com) и задайте в поле «Model» точное имя вашего развёртывания.",
-    "customProvider": "Пользовательский",
+    "customProvider": "Свой",
     "fallback": {
       "whisperModelDescription": "Модель",
       "parakeetModelDescription": "Модель NVIDIA Parakeet"

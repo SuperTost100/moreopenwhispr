@@ -39,15 +39,18 @@ function TwoOptionSelector<T extends string>({
   onChange: (value: T) => void;
   label: string;
 }) {
+  // Same track, indicator and padding as ActivationModeSelector (Tap / Hold):
+  // two equal grid columns, so the indicator covers exactly one option and
+  // one full-width translate (mirrored in RTL) moves it to the other.
   return (
     <div
       role="group"
       aria-label={label}
-      className="relative flex rounded-md border p-0.5 bg-surface-1 border-border-subtle"
+      className="relative grid grid-cols-2 rounded-md border p-0.5 bg-surface-1 border-border-subtle"
     >
       <div
-        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded bg-surface-raised border border-border-subtle transition-transform duration-200 ease-out ${
-          value === options[1].id ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
+        className={`absolute inset-y-0.5 start-0.5 w-[calc(50%-2px)] rounded border bg-surface-raised border-border-subtle transition-transform duration-200 ease-out ${
+          value === options[1].id ? "translate-x-full rtl:-translate-x-full" : "translate-x-0"
         }`}
       />
       {options.map(({ id, label }) => (
@@ -56,7 +59,7 @@ function TwoOptionSelector<T extends string>({
           type="button"
           aria-pressed={value === id}
           onClick={() => onChange(id)}
-          className={`relative z-10 flex-1 rounded px-2.5 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer ${
+          className={`relative z-10 flex items-center justify-center whitespace-nowrap rounded px-3.5 py-1.5 text-xs font-medium transition-colors duration-150 cursor-pointer ${
             value === id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
         >
