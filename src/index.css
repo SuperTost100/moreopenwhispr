@@ -119,6 +119,16 @@
   /* Model picker premium effects (light mode) */
   --shadow-metallic-light: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-card-hover-subtle: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
+
+  /* Upstream's "liquid glass" tokens, flattened: components merged from
+     OpenWhispr still reference them, so they resolve to the fork's flat
+     surfaces (one soft lift, solid brand fill) instead of rims and gradients. */
+  --shadow-glass: none;
+  --shadow-chat-card: var(--shadow-elevated);
+  --shadow-brand-glass: none;
+  --gradient-brand-glass: linear-gradient(var(--color-primary), var(--color-primary));
+  --gradient-calendar-today: linear-gradient(var(--color-primary), var(--color-primary));
+  --shadow-brand-tile: none;
 }
 
 .dark {
@@ -242,7 +252,9 @@
      is cleared here rather than filled. The compact frame owns the complete
      480x576 surface, including its rounded corners. */
   body:has(.onboarding-canvas.compact),
-  body:has(.onboarding-canvas.compact) #root {
+  body:has(.onboarding-canvas.compact) #root,
+  body:has(.permission-settings-overlay),
+  body:has(.permission-settings-overlay) #root {
     background: transparent;
   }
 
@@ -769,6 +781,35 @@ body:has(.onboarding-canvas) kbd {
     0 12px 20px color-mix(in oklch, var(--onboarding-keycap-shadow) 8%, transparent);
 }
 
+/* Today's day-card header: a mosaic of faint tiles over --gradient-calendar-today,
+   fading in toward the right, as in the Home design. The tiles are a white wash cut by
+   a mask of vertical and horizontal stripes; it sits behind the header's text. */
+.calendar-today-header {
+  position: relative;
+  isolation: isolate;
+}
+
+.calendar-today-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgb(255 255 255 / 0.13);
+  mask-image:
+    linear-gradient(to right, transparent 22%, #000 70%),
+    linear-gradient(90deg, #000 5px, transparent 5px), linear-gradient(#000 5px, transparent 5px);
+  mask-size:
+    100% 100%,
+    7px 100%,
+    100% 7px;
+  mask-position:
+    0 0,
+    1px 0,
+    0 1.5px;
+  mask-composite: intersect;
+}
+
 /* OpenWhispr Brand Typography */
 .brand-heading {
   font-family: var(--font-family-display);
@@ -1151,15 +1192,6 @@ a:hover {
   }
 }
 
-@keyframes shimmer-slide {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -1168,6 +1200,15 @@ a:hover {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Holds a clip only while it runs, so what overflows during an unfold stays hidden
+   and nothing is clipped at rest. */
+@keyframes clip-while-unfolding {
+  from,
+  to {
+    clip-path: inset(0 round 1.5rem);
   }
 }
 
@@ -1757,11 +1798,6 @@ a:hover {
   height: 0;
 }
 
-/* The empty-line format toolbar sits where the placeholder would show. */
-.rich-text-editor-content:has(~ .rich-text-editor-line-menu) p.is-editor-empty:first-child::before {
-  content: none;
-}
-
 /* Dark mode adjustments */
 .dark .rich-text-editor-content li::marker {
   color: oklch(0.7 0 0 / 0.4);
@@ -2317,6 +2353,8 @@ a:hover {
   justify-content: space-between;
   gap: var(--cp-history-space-2);
   margin-bottom: var(--cp-history-space-2);
+  /* Tall enough for the history toolbar, so a head without one lines up with it. */
+  min-height: 2.25rem;
 }
 
 .cp-history__list-title {
