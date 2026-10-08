@@ -402,7 +402,7 @@
           "features": {
             "subscription": "Uses the Antigravity plan you already have",
             "noKey": "No Gemini or OpenAI API key",
-            "localCli": "Talks to agy on this Mac",
+            "localCli": "このコンピューターの agy と通信します",
             "features": "Dictation, cleanup, and assistant on the same subscription"
           }
         }
@@ -997,9 +997,12 @@
       "euOnly": "Corti のモデルは EU リージョンでのみ利用できます。"
     },
     "antigravity": {
-      "checking": "Checking Antigravity CLI…",
-      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
-      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
+      "checking": "Antigravity のサインインを確認しています…",
+      "missing": "Antigravity CLI (agy) が見つかりません。インストールしてから、ターミナルで agy auth login を実行してください。",
+      "signedIn": "agy 経由で Antigravity にサインインしています。API キーは不要です。",
+      "signedOut": "Antigravity にサインインしていません。ターミナルで agy auth login を実行してから、もう一度確認してください。",
+      "unknown": "現在 Antigravity のサインインを確認できません。音声入力はそのまま試行します。",
+      "checkAgain": "もう一度確認"
     }
   },
   "transcription": {
@@ -1036,7 +1039,7 @@
       "docsLink": "ドキュメントを見る"
     },
     "antigravity": {
-      "transportNote": "この Mac の agy サインイン経由で Google Antigravity サブスクリプションを使用します。API キーは不要です。動作しなくなった場合は、agy に再度サインインしてください。"
+      "transportNote": "このコンピューターの agy サインイン経由で Google Antigravity サブスクリプションを使用します。API キーは不要です。"
     }
   },
   "hooks": {
@@ -2525,7 +2528,10 @@
           "chatLabel": "Assistant model",
           "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
           "automatic": "Automatic (latest)",
-          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}.",
+          "refresh": "モデルを更新",
+          "refreshing": "更新中…",
+          "refreshFailed": "モデル一覧を更新できませんでした。前回の一覧を表示しています。"
         }
       }
     },
@@ -4212,7 +4218,8 @@
     "connectors": {
       "description": "アシスタントがあなたのツールを使えるようにします。メール、メッセージ、課題はすべて送信前にあなたが承認します。"
     },
-    "description": "サービスを接続してワークフローを強化"
+    "description": "サービスを接続してワークフローを強化",
+    "calendarsUnavailable": "このビルドでは Google と Microsoft のカレンダーへのサインインが設定されていません。"
   },
   "connectors": {
     "approval": {

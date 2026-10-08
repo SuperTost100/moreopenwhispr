@@ -5134,6 +5134,16 @@ class IPCHandlers {
       }
     });
 
+    ipcMain.handle("antigravity-status", async () => {
+      const { getAntigravityStatus } = require("./antigravityIpc");
+      const { resolveAgyBinary } = require("./antigravityCli");
+      const { getAntigravityAccessToken } = require("./antigravityAuth");
+      return getAntigravityStatus({
+        resolveBinary: () => resolveAgyBinary(),
+        getAccessToken: getAntigravityAccessToken,
+      });
+    });
+
     // Catalog for the model picker. `refresh: true` fetches from the gateway
     // first; on failure the last good (or static) catalog is still returned.
     ipcMain.handle("antigravity-list-models", async (_event, options) => {
@@ -12178,6 +12188,13 @@ class IPCHandlers {
     });
 
     // Google Calendar
+    // Which calendar providers this build can sign in to. Their OAuth client
+    // ids come from build secrets, so a fork or local build may have neither.
+    ipcMain.handle("get-calendar-providers-configured", () => ({
+      google: Boolean(process.env.GOOGLE_CALENDAR_CLIENT_ID),
+      microsoft: Boolean(process.env.MICROSOFT_CALENDAR_CLIENT_ID),
+    }));
+
     ipcMain.handle("gcal-start-oauth", async () => {
       try {
         return await this.googleCalendarManager.startOAuth();

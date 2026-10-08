@@ -47,6 +47,7 @@ Mode id `gemini-3.5-transcribe-live`: rolling PCM preview (~2 s) on the gateway 
 - `src/services/ai/inferenceProviders/antigravity.ts`
 - `src/services/ai/antigravityChat.ts`
 - `src/components/onboarding/antigravitySetup.ts`
+- `src/components/settings/AntigravityStatus.tsx`
 - `src/config/mowProfile.ts` / `mowProfile.cjs`
 - `test/helpers/antigravity*.test.js`
 - `test/components/antigravitySetup.test.js`
@@ -61,6 +62,8 @@ Mode id `gemini-3.5-transcribe-live`: rolling PCM preview (~2 s) on the gateway 
 - STT/cleanup emergency fallback when the gateway cannot be reached over the network
 
 ## Troubleshooting (AGY_* codes)
+
+Settings shows the sign-in state under the Antigravity provider (`antigravity-status` IPC: CLI missing, signed out, signed in, or unknown when offline).
 
 | Code                         | Meaning                         | What to do                                                              |
 | ---------------------------- | ------------------------------- | ----------------------------------------------------------------------- |

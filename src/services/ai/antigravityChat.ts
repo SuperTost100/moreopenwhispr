@@ -94,11 +94,16 @@ export function buildInitialContents(
     const imagePart: GeminiPart = {
       inlineData: { mimeType: screenContext.mediaType || "image/jpeg", data: screenContext.data },
     };
-    const firstUserIndex = contents.findIndex((c) => c.role === "user");
-    if (firstUserIndex >= 0) {
-      contents[firstUserIndex] = {
-        ...contents[firstUserIndex],
-        parts: [...contents[firstUserIndex].parts, imagePart],
+    // The screenshot is captured for the command just spoken, which is the
+    // latest user turn, not the one that opened the conversation.
+    let lastUserIndex = -1;
+    contents.forEach((c, index) => {
+      if (c.role === "user") lastUserIndex = index;
+    });
+    if (lastUserIndex >= 0) {
+      contents[lastUserIndex] = {
+        ...contents[lastUserIndex],
+        parts: [...contents[lastUserIndex].parts, imagePart],
       };
     } else {
       contents.push({ role: "user", parts: [imagePart] });
@@ -238,30 +243,10 @@ export async function* runAntigravityChatStream({
 
   const resolvedScreenContext = screenContext || screenContextFromMessages(messages);
 
-  if (!tools.length) {
-    const conversation = chatMessagesFromHistory(messages);
-    const lastUser = conversation.filter((m) => m.role === "user").pop();
-    const userText = lastUser?.content || "";
-    if (!api.processAntigravityReasoning) {
-      throw new Error("Antigravity reasoning is not available in this environment");
-    }
-    const result = await api.processAntigravityReasoning(userText, model, null, {
-      systemPrompt,
-      requestId,
-      ...(resolvedScreenContext ? { screenContext: resolvedScreenContext } : {}),
-    });
-    // Recheck immediately after the IPC returns, before touching the
-    // result: a cancel that raced the response must yield nothing further.
-    if (abortSignal?.aborted) return;
-    if (!result.success) {
-      throw new Error(result.error || "Antigravity reasoning failed");
-    }
-    const text = (result.text || "").trim();
-    if (text) yield { type: "content", text };
-    yield { type: "done", finishReason: "stop" };
-    return;
-  }
-
+  // No tools still goes through the chat turn below, with no function
+  // declarations: it carries the whole conversation and uses the chat model.
+  // (A single-prompt reasoning call here used to drop every earlier message,
+  // so "translate that" had nothing to translate.)
   let contents = buildInitialContents(messages, resolvedScreenContext);
   const schemaByName = new Map(tools.map((tool) => [tool.name, tool.parameters]));
   // Invocation-wide: a call id that already executed returns its cached

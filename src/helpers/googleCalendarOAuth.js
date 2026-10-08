@@ -20,6 +20,11 @@ class GoogleCalendarOAuth {
   }
 
   startOAuthFlow() {
+    if (!this.getClientId()) {
+      // Builds without the OAuth client (forks, local builds) would otherwise
+      // open Google's error page for client_id=undefined.
+      throw new Error("GOOGLE_CALENDAR_CLIENT_ID is not configured");
+    }
     return runOAuthLoopbackFlow({
       errorParam: "gcal_error",
       buildAuthUrl: (redirectUri, state, codeChallenge) => {

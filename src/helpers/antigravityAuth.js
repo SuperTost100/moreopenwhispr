@@ -25,7 +25,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { execFile } = require("child_process");
 const { promisify } = require("util");
-const { createAntigravityError } = require("./antigravityOperation");
+const { createAntigravityError, classifyAbortError } = require("./antigravityOperation");
 
 const execFileAsync = promisify(execFile);
 
@@ -530,14 +530,23 @@ function refreshViaAgy() {
 }
 
 // A caller's abort only stops *that caller* waiting; the shared refresh keeps
-// running for everyone else.
-function waitForRefresh(refresh, signal) {
-  const cancelled = () =>
-    createAntigravityError("AGY_CANCELLED", "Antigravity auth request cancelled");
+// running for everyone else. `abortCode` tells a deliberate cancel apart from
+// the caller's own budget running out: a timeout reported as AGY_CANCELLED is
+// swallowed as "the user cancelled" and the recording is never kept for retry.
+function waitForRefresh(refresh, signal, abortCode = () => "AGY_CANCELLED") {
+  const aborted = () => {
+    const code = abortCode();
+    return createAntigravityError(
+      code,
+      code === "AGY_CANCELLED"
+        ? "Antigravity auth request cancelled"
+        : "Antigravity auth refresh timed out"
+    );
+  };
   if (!signal) return refresh;
-  if (signal.aborted) return Promise.reject(cancelled());
+  if (signal.aborted) return Promise.reject(aborted());
   return new Promise((resolve, reject) => {
-    const onAbort = () => reject(cancelled());
+    const onAbort = () => reject(aborted());
     signal.addEventListener("abort", onAbort, { once: true });
     refresh.then(
       (value) => {
@@ -572,10 +581,15 @@ function tokenExpiresWithin(tokenObj, skewMs) {
  * expired after both, rejects with AGY_AUTH_REQUIRED.
  */
 async function getAntigravityAccessToken({
-  signal,
+  signal: plainSignal,
+  op,
   forceRefresh = false,
   refreshSkewMs = HOT_PATH_SKEW_MS,
 } = {}) {
+  // With an operation, its signal also fires when the budget runs out, so an
+  // abort is only a cancel if the caller's own signal fired.
+  const signal = op?.signal ?? plainSignal;
+  const abortCode = op ? () => classifyAbortError(null, op.callerSignal) : undefined;
   let data = readTokenFile();
   if (!data?.token && !fs.existsSync(getTokenFilePath())) {
     throw createAntigravityError(
@@ -590,7 +604,7 @@ async function getAntigravityAccessToken({
   if (needsRefresh) {
     let refreshedViaDirect = false;
     try {
-      const directResult = await waitForRefresh(directRefreshSingleFlight(), signal);
+      const directResult = await waitForRefresh(directRefreshSingleFlight(), signal, abortCode);
       if (directResult?.ok) {
         refreshedViaDirect = true;
         invalidateTokenFileCache();
@@ -600,13 +614,13 @@ async function getAntigravityAccessToken({
     } catch (error) {
       // A caller-specific cancel must surface as a cancel, not silently fall
       // through to the agy fallback (which keeps running for other callers).
-      if (error?.code === "AGY_CANCELLED") throw error;
+      if (error?.code === "AGY_CANCELLED" || error?.code === "AGY_TIMEOUT") throw error;
       // Any other failure (shouldn't normally happen — performDirectRefresh
       // catches its own errors) falls through to the agy fallback below.
     }
 
     if (!refreshedViaDirect) {
-      await waitForRefresh(refreshViaAgy(), signal);
+      await waitForRefresh(refreshViaAgy(), signal, abortCode);
       invalidateTokenFileCache();
       data = readTokenFile();
       tokenObj = data?.token;

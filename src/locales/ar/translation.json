@@ -517,9 +517,12 @@
       "euOnly": "نماذج Corti متوفرة فقط في منطقة الاتحاد الأوروبي."
     },
     "antigravity": {
-      "checking": "جارٍ التحقق من Antigravity CLI…",
-      "ready": "يستخدم Antigravity CLI (agy) المحلي. بدون مفتاح API — سجّل الدخول بـ agy إذا فشلت المطالبات.",
-      "missing": "لم يُعثر على Antigravity CLI (agy) في PATH. ثبّته وشغّل agy لتسجيل الدخول."
+      "checking": "جارٍ التحقق من تسجيل دخولك إلى Antigravity…",
+      "missing": "لم يتم العثور على Antigravity CLI ‏(agy). ثبّته، ثم شغّل agy auth login في الطرفية.",
+      "signedIn": "تم تسجيل الدخول إلى Antigravity عبر agy. لا حاجة إلى مفتاح API.",
+      "signedOut": "لم تسجّل الدخول إلى Antigravity. شغّل agy auth login في الطرفية، ثم تحقّق مرة أخرى.",
+      "unknown": "تعذّر تأكيد تسجيل دخولك إلى Antigravity الآن. سيحاول الإملاء استخدامه رغم ذلك.",
+      "checkAgain": "تحقّق مرة أخرى"
     }
   },
   "controlPanel": {
@@ -854,7 +857,8 @@
     "connectors": {
       "description": "دع المساعد يستخدم أدواتك. توافق على كل بريد ورسالة ومهمة قبل إرسالها."
     },
-    "description": "قم بتوصيل الخدمات لتعزيز سير عملك"
+    "description": "قم بتوصيل الخدمات لتعزيز سير عملك",
+    "calendarsUnavailable": "لم يتم إعداد تسجيل الدخول إلى تقويم Google وMicrosoft في هذا الإصدار."
   },
   "connectors": {
     "approval": {
@@ -2845,7 +2849,7 @@
           "features": {
             "subscription": "يستخدم خطة Antigravity التي لديك بالفعل",
             "noKey": "بدون مفتاح API لـ Gemini أو OpenAI",
-            "localCli": "يتواصل مع agy على هذا Mac",
+            "localCli": "يتواصل مع agy على هذا الكمبيوتر",
             "features": "الإملاء والتنقيح والمساعد ضمن الاشتراك نفسه"
           }
         },
@@ -4212,7 +4216,10 @@
           "chatLabel": "نموذج المساعد",
           "chatDescription": "نموذج البوابة لدردشة Antigravity ودورات الأدوات (عند عدم استخدام subprocess agy).",
           "automatic": "تلقائي (الأحدث)",
-          "resolverNotice": "النموذج الذي اخترته أُوقِف أو غير متاح؛ يُستخدم {{model}}."
+          "resolverNotice": "النموذج الذي اخترته أُوقِف أو غير متاح؛ يُستخدم {{model}}.",
+          "refresh": "تحديث النماذج",
+          "refreshing": "جارٍ التحديث…",
+          "refreshFailed": "تعذّر تحديث قائمة النماذج. يتم عرض آخر قائمة."
         }
       }
     },
@@ -4523,7 +4530,7 @@
       "docsLink": "قراءة الوثائق"
     },
     "antigravity": {
-      "transportNote": "يستخدم اشتراك Google Antigravity عبر تسجيل الدخول إلى agy على هذا Mac. لا حاجة إلى مفتاح API. إذا توقف عن العمل، سجّل الدخول إلى agy مرة أخرى."
+      "transportNote": "يستخدم اشتراكك في Google Antigravity عبر تسجيل دخول agy على هذا الكمبيوتر. لا حاجة إلى مفتاح API."
     }
   },
   "cleanupPrompt": "التنظيف",

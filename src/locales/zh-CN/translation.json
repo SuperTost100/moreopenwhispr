@@ -402,7 +402,7 @@
           "features": {
             "subscription": "Uses the Antigravity plan you already have",
             "noKey": "No Gemini or OpenAI API key",
-            "localCli": "Talks to agy on this Mac",
+            "localCli": "与此电脑上的 agy 通信",
             "features": "Dictation, cleanup, and assistant on the same subscription"
           }
         }
@@ -997,9 +997,12 @@
       "euOnly": "Corti 模型仅在欧盟地区可用。"
     },
     "antigravity": {
-      "checking": "Checking Antigravity CLI…",
-      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
-      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
+      "checking": "正在检查 Antigravity 登录状态…",
+      "missing": "未找到 Antigravity CLI (agy)。请先安装，然后在终端中运行 agy auth login。",
+      "signedIn": "已通过 agy 登录 Antigravity。无需 API 密钥。",
+      "signedOut": "尚未登录 Antigravity。请在终端中运行 agy auth login，然后重新检查。",
+      "unknown": "暂时无法确认 Antigravity 登录状态。听写仍会尝试使用它。",
+      "checkAgain": "重新检查"
     }
   },
   "transcription": {
@@ -1036,7 +1039,7 @@
       "docsLink": "查看文档"
     },
     "antigravity": {
-      "transportNote": "通过此 Mac 上的 agy 登录使用您的 Google Antigravity 订阅。无需 API 密钥。如果无法使用，请重新登录 agy。"
+      "transportNote": "通过此电脑上的 agy 登录使用您的 Google Antigravity 订阅。无需 API 密钥。"
     }
   },
   "hooks": {
@@ -2525,7 +2528,10 @@
           "chatLabel": "Assistant model",
           "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
           "automatic": "Automatic (latest)",
-          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}.",
+          "refresh": "刷新模型",
+          "refreshing": "正在刷新…",
+          "refreshFailed": "无法刷新模型列表。正在显示上一次的列表。"
         }
       }
     },
@@ -4212,7 +4218,8 @@
     "connectors": {
       "description": "让助手使用您的工具。每封邮件、每条消息和每个议题发出前都需要您批准。"
     },
-    "description": "连接服务以增强您的工作流程"
+    "description": "连接服务以增强您的工作流程",
+    "calendarsUnavailable": "此版本未配置 Google 和 Microsoft 日历登录。"
   },
   "connectors": {
     "approval": {

@@ -58,6 +58,12 @@ export default function SidebarModal<T extends string>({
   const [isCompact, setIsCompact] = React.useState(false);
   const observerRef = React.useRef<ResizeObserver | null>(null);
 
+  // Every section shares this scroller; start each one at its top.
+  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+  React.useLayoutEffect(() => {
+    if (scrollerRef.current) scrollerRef.current.scrollTop = 0;
+  }, [activeSection]);
+
   const containerRef = React.useCallback((el: HTMLDivElement | null) => {
     if (observerRef.current) {
       observerRef.current.disconnect();
@@ -125,7 +131,7 @@ export default function SidebarModal<T extends string>({
               />
 
               {/* Main Content */}
-              <div className="flex-1 overflow-y-auto bg-background">
+              <div ref={scrollerRef} className="flex-1 overflow-y-auto bg-background">
                 <SettingsLayoutProvider value={{ isCompact }}>
                   {/* The close button (and compact notice badge) float over this column's top corner
                       (top-4, 26px tall); pt-[22px] centres a text-xs heading (line-height 1.15) on that row. */}

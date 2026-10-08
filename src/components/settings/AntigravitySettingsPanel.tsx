@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SettingsPanel, SettingsPanelRow, SettingsRow } from "../ui/SettingsSection";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { RefreshCw } from "../icons";
 
 type DictationMode = "fast" | "polished";
 type TranscriptionMode = "smart" | "verbatim";
@@ -31,13 +32,19 @@ function TwoOptionSelector<T extends string>({
   value,
   options,
   onChange,
+  label,
 }: {
   value: T;
   options: { id: T; label: string }[];
   onChange: (value: T) => void;
+  label: string;
 }) {
   return (
-    <div className="relative flex rounded-md border p-0.5 bg-surface-1 border-border-subtle">
+    <div
+      role="group"
+      aria-label={label}
+      className="relative flex rounded-md border p-0.5 bg-surface-1 border-border-subtle"
+    >
       <div
         className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded bg-surface-raised border border-border-subtle transition-transform duration-200 ease-out ${
           value === options[1].id ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
@@ -47,6 +54,7 @@ function TwoOptionSelector<T extends string>({
         <button
           key={id}
           type="button"
+          aria-pressed={value === id}
           onClick={() => onChange(id)}
           className={`relative z-10 flex-1 rounded px-2.5 py-1 text-xs font-medium transition-colors duration-150 cursor-pointer ${
             value === id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -78,8 +86,14 @@ function ModelSelectRow({
 }) {
   const options = useMemo(() => {
     const list = filterAudio ? models.filter((m) => m.supportsAudio) : models;
-    return [{ id: "auto", displayName: automaticLabel, tag: null as string | null }, ...list];
-  }, [automaticLabel, filterAudio, models]);
+    const all = [{ id: "auto", displayName: automaticLabel, tag: null as string | null }, ...list];
+    // A pick that is no longer in the catalog stays listed under its own id;
+    // showing "Automatic" for it would hide which model requests really use.
+    if (value && value !== "auto" && !all.some((m) => m.id === value)) {
+      all.push({ id: value, displayName: value, tag: null });
+    }
+    return all;
+  }, [automaticLabel, filterAudio, models, value]);
 
   const selected = options.find((m) => m.id === value) || options[0];
 
@@ -122,16 +136,32 @@ export function AntigravitySettingsPanel({
   const { t } = useTranslation();
   const [catalogModels, setCatalogModels] = useState<CatalogModel[]>([]);
   const [resolverNotice, setResolverNotice] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshFailed, setRefreshFailed] = useState(false);
 
-  const loadModels = useCallback(async () => {
-    const response = await window.electronAPI?.antigravityListModels?.({ refresh: false });
+  const loadModels = useCallback(async (refresh: boolean) => {
+    const response = await window.electronAPI?.antigravityListModels?.({ refresh });
     if (response?.models) {
       setCatalogModels(response.models as CatalogModel[]);
     }
+    return response;
   }, []);
 
   useEffect(() => {
-    loadModels().catch(() => {});
+    loadModels(false).catch(() => {});
+  }, [loadModels]);
+
+  const refreshModels = useCallback(async () => {
+    setRefreshing(true);
+    setRefreshFailed(false);
+    try {
+      const response = await loadModels(true);
+      setRefreshFailed(!response || Boolean(response.refreshError));
+    } catch {
+      setRefreshFailed(true);
+    } finally {
+      setRefreshing(false);
+    }
   }, [loadModels]);
 
   useEffect(() => {
@@ -162,6 +192,7 @@ export function AntigravitySettingsPanel({
           description={t("settingsPage.transcription.antigravity.dictationStyle.description")}
         >
           <TwoOptionSelector
+            label={t("settingsPage.transcription.antigravity.dictationStyle.label")}
             value={dictationMode}
             onChange={setDictationMode}
             options={[
@@ -185,6 +216,7 @@ export function AntigravitySettingsPanel({
           )}
         >
           <TwoOptionSelector
+            label={t("settingsPage.transcription.antigravity.transcriptionFidelity.label")}
             value={transcriptionMode}
             onChange={setTranscriptionMode}
             options={[
@@ -225,9 +257,30 @@ export function AntigravitySettingsPanel({
         models={catalogModels}
         automaticLabel={automaticLabel}
       />
-      {resolverNotice ? (
-        <p className="px-3 pb-2 text-xs text-muted-foreground">{resolverNotice}</p>
-      ) : null}
+      <SettingsPanelRow>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <p className="min-w-0 flex-1 text-xs text-muted-foreground" role="status">
+            {refreshFailed
+              ? t("settingsPage.transcription.antigravity.backendModel.refreshFailed")
+              : resolverNotice}
+          </p>
+          <button
+            type="button"
+            onClick={() => void refreshModels()}
+            disabled={refreshing}
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-60"
+          >
+            <RefreshCw
+              size={12}
+              className={refreshing ? "animate-spin" : undefined}
+              aria-hidden="true"
+            />
+            {refreshing
+              ? t("settingsPage.transcription.antigravity.backendModel.refreshing")
+              : t("settingsPage.transcription.antigravity.backendModel.refresh")}
+          </button>
+        </div>
+      </SettingsPanelRow>
     </SettingsPanel>
   );
 }

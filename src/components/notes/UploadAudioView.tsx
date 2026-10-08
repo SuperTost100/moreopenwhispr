@@ -509,6 +509,9 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
       const name = t("settingsPage.transcription.modes.selfHosted");
       return remoteTranscriptionModel ? `${name} · ${remoteTranscriptionModel}` : name;
     }
+    // Antigravity's model ids are transcription modes (gemini-3.5-transcribe…),
+    // not names a person would recognize; the gateway picks the real model.
+    if (cloudTranscriptionProvider === "antigravity") return "Antigravity";
     const name =
       cloudTranscriptionProvider === "custom"
         ? t("notes.upload.custom")

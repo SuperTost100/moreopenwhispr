@@ -3,7 +3,11 @@ const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
 const debugLogger = require("./debugLogger");
-const { createAntigravityError, createAntigravityOperation } = require("./antigravityOperation");
+const {
+  createAntigravityError,
+  createAntigravityOperation,
+  classifyAbortError,
+} = require("./antigravityOperation");
 const { getAntigravityAccessToken } = require("./antigravityAuth");
 const { transcribeAudioViaGateway, getAntigravityProjectId } = require("./antigravityGateway");
 const {
@@ -135,7 +139,7 @@ function resolveSpawnableFfmpegPath(ffmpegPath) {
   return ffmpegPath;
 }
 
-function convertToWavAsync({ inputPath, outputPath, ffmpegPath, signal }) {
+function convertToWavAsync({ inputPath, outputPath, ffmpegPath, signal, callerSignal }) {
   const bin = resolveSpawnableFfmpegPath(ffmpegPath);
   return new Promise((resolve, reject) => {
     // Detached so ffmpeg gets its own process group on Unix: killing just
@@ -165,7 +169,17 @@ function convertToWavAsync({ inputPath, outputPath, ffmpegPath, signal }) {
     };
     const onAbort = () => {
       killChild();
-      reject(createAntigravityError("AGY_CANCELLED", "Antigravity ffmpeg conversion cancelled"));
+      // The stage signal also fires on the conversion's own deadline; only
+      // the caller's signal means the user cancelled.
+      const code = classifyAbortError(null, callerSignal);
+      reject(
+        createAntigravityError(
+          code,
+          code === "AGY_CANCELLED"
+            ? "Antigravity ffmpeg conversion cancelled"
+            : "Antigravity ffmpeg conversion timed out"
+        )
+      );
     };
     if (signal?.aborted) {
       onAbort();
@@ -205,24 +219,35 @@ async function prepareAudioBuffer({
   const inputPath = path.join(tmpDir, `input${extension}`);
   const wavPath = path.join(tmpDir, "input.wav");
 
-  ensureWritableDir(tmpDir);
-  fs.writeFileSync(
-    inputPath,
-    Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer)
-  );
+  // The recording is copied here, so it has to go on every exit path: a
+  // failed, cancelled or timed-out conversion used to leave it in the temp dir.
+  try {
+    ensureWritableDir(tmpDir);
+    fs.writeFileSync(
+      inputPath,
+      Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer)
+    );
 
-  let readPath = inputPath;
-  let mimeType = mimeTypeForGateway(contentType, extension);
-  if (ffmpegPath && extension !== ".wav") {
-    const ffmpegSignal = ffmpegConversionSignal(op, ffmpegTimeoutMs);
-    await convertToWavAsync({ inputPath, outputPath: wavPath, ffmpegPath, signal: ffmpegSignal });
-    readPath = wavPath;
-    mimeType = "audio/wav";
+    let readPath = inputPath;
+    let mimeType = mimeTypeForGateway(contentType, extension);
+    if (ffmpegPath && extension !== ".wav") {
+      const ffmpegSignal = ffmpegConversionSignal(op, ffmpegTimeoutMs);
+      await convertToWavAsync({
+        inputPath,
+        outputPath: wavPath,
+        ffmpegPath,
+        signal: ffmpegSignal,
+        callerSignal: op?.callerSignal,
+      });
+      readPath = wavPath;
+      mimeType = "audio/wav";
+    }
+
+    const buffer = fs.readFileSync(readPath);
+    return { buffer, mimeType };
+  } finally {
+    removeDirQuietly(tmpDir);
   }
-
-  const buffer = fs.readFileSync(readPath);
-  removeDirQuietly(tmpDir);
-  return { buffer, mimeType };
 }
 
 function buildAntigravitySttPrefs(model, antigravityPrefs = {}) {
@@ -266,7 +291,13 @@ async function transcribeWithAntigravityLegacyAgent({
     let audioPath = path.basename(inputPath);
     if (ffmpegPath && extension !== ".wav") {
       const ffmpegSignal = ffmpegConversionSignal(op, ffmpegTimeoutMs);
-      await convertToWavAsync({ inputPath, outputPath: wavPath, ffmpegPath, signal: ffmpegSignal });
+      await convertToWavAsync({
+        inputPath,
+        outputPath: wavPath,
+        ffmpegPath,
+        signal: ffmpegSignal,
+        callerSignal: op?.callerSignal,
+      });
       audioPath = path.basename(wavPath);
     }
 
@@ -438,7 +469,7 @@ async function transcribeWithAntigravity({
     op,
   });
 
-  let auth = await getAccessToken({ signal: op?.signal });
+  let auth = await getAccessToken({ signal: op?.signal, op });
   let authRetried = false;
   let lastError = null;
 
@@ -485,7 +516,7 @@ async function transcribeWithAntigravity({
 
       if (decision.action === "retry_auth") {
         authRetried = true;
-        auth = await getAccessToken({ signal: op?.signal, forceRefresh: true });
+        auth = await getAccessToken({ signal: op?.signal, op, forceRefresh: true });
         index -= 1;
         continue;
       }

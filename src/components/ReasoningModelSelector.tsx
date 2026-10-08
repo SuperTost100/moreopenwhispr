@@ -34,40 +34,7 @@ import {
   reconcileProviderSelection,
 } from "../stores/policyRules";
 import { usePolicySnapshot } from "../hooks/usePolicy";
-
-function AntigravityCliStatus() {
-  const { t } = useTranslation();
-  const [status, setStatus] = useState<"checking" | "available" | "missing">("checking");
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await window.electronAPI?.checkAntigravityAvailable?.();
-        if (!cancelled) {
-          setStatus(result?.available ? "available" : "missing");
-        }
-      } catch {
-        if (!cancelled) setStatus("missing");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (status === "checking") {
-    return <p className="text-xs text-muted-foreground">{t("reasoning.antigravity.checking")}</p>;
-  }
-  if (status === "available") {
-    return <p className="text-xs text-muted-foreground">{t("reasoning.antigravity.ready")}</p>;
-  }
-  return (
-    <p className="text-xs text-destructive" role="status">
-      {t("reasoning.antigravity.missing")}
-    </p>
-  );
-}
+import { AntigravityStatus } from "./settings/AntigravityStatus";
 
 type CloudModelOption = {
   value: string;
@@ -713,7 +680,7 @@ export default function ReasoningModelSelector({
                     </div>
                   )}
 
-                  {displayedCloudProvider === "antigravity" && <AntigravityCliStatus />}
+                  {displayedCloudProvider === "antigravity" && <AntigravityStatus />}
 
                   <div className="pt-3 space-y-2">
                     <h4 className="text-sm font-medium text-foreground">

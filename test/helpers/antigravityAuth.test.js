@@ -770,3 +770,47 @@ test("a successful direct refresh writes an atomic, 0600 file that preserves unr
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a refresh that outlasts the operation budget rejects as AGY_TIMEOUT, a caller cancel as AGY_CANCELLED", async () => {
+  const { createAntigravityOperation } = require("../../src/helpers/antigravityOperation");
+  const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-auth-budget-"));
+  let releaseSpawn;
+  const spawnGate = new Promise((resolve) => {
+    releaseSpawn = resolve;
+  });
+  const { mod, restore } = freshAuthModule({
+    homedir,
+    spawnBehavior: async () => {
+      await spawnGate;
+      return { stdout: "", stderr: "" };
+    },
+  });
+  try {
+    writeToken(homedir, {
+      access_token: "expired",
+      refresh_token: "refresh-me",
+      expiry: "2000-01-01T00:00:00.000Z",
+    });
+
+    // The budget runs out with no cancel from the caller: a timeout. Reported
+    // as a cancel, the dictation would be dropped without an error.
+    const budgetOnly = createAntigravityOperation({ budgetMs: 50 });
+    await assert.rejects(mod.getAntigravityAccessToken({ op: budgetOnly }), (error) => {
+      assert.equal(error.code, "AGY_TIMEOUT");
+      return true;
+    });
+
+    const caller = new AbortController();
+    const cancelled = createAntigravityOperation({ budgetMs: 10_000, signal: caller.signal });
+    const pending = mod.getAntigravityAccessToken({ op: cancelled });
+    setTimeout(() => caller.abort(), 10);
+    await assert.rejects(pending, (error) => {
+      assert.equal(error.code, "AGY_CANCELLED");
+      return true;
+    });
+  } finally {
+    releaseSpawn();
+    restore();
+    fs.rmSync(homedir, { recursive: true, force: true });
+  }
+});

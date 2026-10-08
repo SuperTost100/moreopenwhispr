@@ -353,7 +353,7 @@
           "features": {
             "subscription": "Uses the Antigravity plan you already have",
             "noKey": "No Gemini or OpenAI API key",
-            "localCli": "Talks to agy on this Mac",
+            "localCli": "Talks to agy on this computer",
             "features": "Dictation, cleanup, and assistant on the same subscription"
           }
         },
@@ -997,9 +997,12 @@
       "euOnly": "Corti's models are only available in the EU region."
     },
     "antigravity": {
-      "checking": "Checking Antigravity CLI…",
-      "ready": "Using local Antigravity CLI (agy). No API key — sign in with agy if prompts fail.",
-      "missing": "Antigravity CLI (agy) not found on PATH. Install it and run agy to sign in."
+      "checking": "Checking your Antigravity sign-in…",
+      "missing": "Antigravity CLI (agy) not found. Install it, then run agy auth login in a terminal.",
+      "signedIn": "Signed in to Antigravity through agy. No API key needed.",
+      "signedOut": "Not signed in to Antigravity. Run agy auth login in a terminal, then check again.",
+      "unknown": "Couldn't confirm your Antigravity sign-in right now. Dictation will still try it.",
+      "checkAgain": "Check again"
     }
   },
   "transcription": {
@@ -1036,7 +1039,7 @@
       "docsLink": "Read the docs"
     },
     "antigravity": {
-      "transportNote": "Uses your Google Antigravity subscription through the agy sign-in on this Mac. No API key. If it stops working, sign in to agy again."
+      "transportNote": "Uses your Google Antigravity subscription through the agy sign-in on this computer. No API key."
     }
   },
   "hooks": {
@@ -2823,7 +2826,10 @@
           "chatLabel": "Assistant model",
           "chatDescription": "Gateway model for Antigravity chat and tool turns (when not using the agy subprocess).",
           "automatic": "Automatic (latest)",
-          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}."
+          "resolverNotice": "Your chosen model was retired or unavailable; using {{model}}.",
+          "refresh": "Refresh models",
+          "refreshing": "Refreshing…",
+          "refreshFailed": "Couldn't refresh the model list. Showing the last one."
         }
       }
     },
@@ -4386,7 +4392,8 @@
     "connectors": {
       "description": "Let the assistant use your tools. You approve every email, message and issue before it goes out."
     },
-    "description": "Connect services to supercharge your workflow"
+    "description": "Connect services to supercharge your workflow",
+    "calendarsUnavailable": "Calendar sign-in for Google and Microsoft isn't set up in this build."
   },
   "connectors": {
     "approval": {

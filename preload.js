@@ -628,6 +628,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   cancelAntigravityRequest: (requestId) =>
     ipcRenderer.send("cancel-antigravity-request", requestId),
   checkAntigravityAvailable: () => ipcRenderer.invoke("check-antigravity-available"),
+  antigravityStatus: () => ipcRenderer.invoke("antigravity-status"),
   antigravityListModels: (options) => ipcRenderer.invoke("antigravity-list-models", options),
 
   // Corti API
@@ -1288,6 +1289,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   broadcastSnippetsUpdated: () => ipcRenderer.invoke("db-broadcast-snippets-updated"),
 
   // Google Calendar
+  getCalendarProvidersConfigured: () => ipcRenderer.invoke("get-calendar-providers-configured"),
   gcalStartOAuth: () => ipcRenderer.invoke("gcal-start-oauth"),
   gcalDisconnect: (email) => ipcRenderer.invoke("gcal-disconnect", email),
   gcalGetConnectionStatus: () => ipcRenderer.invoke("gcal-get-connection-status"),
