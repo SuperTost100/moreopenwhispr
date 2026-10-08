@@ -6,11 +6,11 @@
 
 let
   pname = "openwhispr";
-  version = "1.7.4";
+  version = "1.10.2";
 
   src = fetchurl {
-    url = "https://github.com/OpenWhispr/openwhispr/releases/download/v${version}/OpenWhispr-${version}-linux-x86_64.AppImage";
-    hash = "sha256-hp7FVUi5/K+QiQam8YAOrRsemFkC8MnupT+hhroP+6Y=";
+    url = "https://github.com/SuperTost100/moreopenwhispr/releases/download/v${version}/MoreOpenWhisperer-${version}-linux-x86_64.AppImage";
+    hash = "sha256-2ja2l6mH9xfth1VyhUjNPyqDiNVzrgQDRxdTUvxVNkI=";
   };
 
   appimageContents = appimageTools.extractType2 { inherit pname version src; };
@@ -50,9 +50,9 @@ appimageTools.wrapType2 {
   '';
 
   meta = {
-    description = "Privacy-first desktop voice dictation, meeting transcription & notes";
-    homepage = "https://openwhispr.com/";
-    changelog = "https://github.com/OpenWhispr/openwhispr/releases/tag/v${version}";
+    description = "Unofficial OpenWhispr fork: desktop dictation with Antigravity, BYOK, and local models";
+    homepage = "https://github.com/SuperTost100/moreopenwhispr";
+    changelog = "https://github.com/SuperTost100/moreopenwhispr/releases/tag/v${version}";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];

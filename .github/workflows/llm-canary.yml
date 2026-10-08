@@ -17,6 +17,8 @@ permissions:
 
 jobs:
   canary:
+    # The canaries need provider keys that only upstream has, so the fork skips them.
+    if: github.repository == 'OpenWhispr/openwhispr'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
