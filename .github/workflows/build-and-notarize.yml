@@ -2,7 +2,7 @@ name: Build and Notarize
 
 on:
   push:
-    branches: [antigravity-fork, main]
+    branches: [main]
     paths-ignore:
       - "**.md"
       - "LICENSE"

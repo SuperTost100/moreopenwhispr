@@ -1,0 +1,46 @@
+name: upstream-behind
+
+# Weekly reminder to merge OpenWhispr's main. It only reports: GitHub's
+# built-in token can't push upstream commits that touch .github/workflows,
+# so the merge itself happens locally with scripts/sync-upstream.sh.
+# A failed run is the reminder (GitHub emails it).
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: github.repository == 'SuperTost100/moreopenwhispr'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Compare with OpenWhispr main
+        run: |
+          git remote add upstream https://github.com/OpenWhispr/openwhispr.git
+          git fetch --no-tags --quiet upstream main
+          behind=$(git rev-list --count HEAD..upstream/main)
+          {
+            echo "## OpenWhispr main vs \`${GITHUB_REF_NAME}\`"
+            echo
+            if [ "$behind" -eq 0 ]; then
+              echo "Up to date with OpenWhispr \`main\`."
+            else
+              echo "**$behind** upstream commits aren't merged yet. Run \`scripts/sync-upstream.sh\` locally."
+              echo
+              echo '```text'
+              git log --oneline --no-decorate HEAD..upstream/main | head -40
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$behind" -gt 0 ]; then
+            echo "::warning::$behind OpenWhispr commits are not merged into ${GITHUB_REF_NAME}"
+            exit 1
+          fi
