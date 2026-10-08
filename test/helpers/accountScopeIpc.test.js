@@ -87,18 +87,41 @@ function anything() {
   });
 }
 
+// Each call with the binding file as it stood then: a connect must be stopped
+// only once the scope it ran under is gone.
+const connectorCalls = [];
+const connectorManager = {
+  accountChanged: () => connectorCalls.push(["accountChanged", readBinding()?.accountId ?? null]),
+  notifyStatusChanged: async () => connectorCalls.push(["notifyStatusChanged"]),
+};
+
+function readBinding() {
+  return require("../../src/helpers/accountScopeBinding").read();
+}
+
+const databaseScopes = [];
+const databaseManager = new Proxy(
+  { setActiveAccountId: (accountId) => databaseScopes.push(accountId) },
+  { get: (value, property) => (property in value ? value[property] : anything()) }
+);
+
 function buildFakeThis() {
-  const target = { sessionId: "test-session" };
+  const target = { sessionId: "test-session", connectorManager, databaseManager };
   return new Proxy(target, {
     get: (value, property) => (property in value ? value[property] : anything()),
   });
 }
 
+let fakeThis;
+let handleAuthTokenChange;
+
 test.before(() => {
   delete require.cache[handlersModulePath];
   const IPCHandlers = require(handlersModulePath);
   const Ctor = IPCHandlers.default || IPCHandlers;
-  Ctor.prototype.setupHandlers.call(buildFakeThis());
+  fakeThis = buildFakeThis();
+  Ctor.prototype.setupHandlers.call(fakeThis);
+  handleAuthTokenChange = (state) => Ctor.prototype._handleAuthTokenChange.call(fakeThis, state);
 });
 
 test.after(() => {
@@ -109,6 +132,9 @@ test.after(() => {
 const getScope = () => handlers.get("get-active-account-scope")();
 const setScope = (accountId, generation) =>
   handlers.get("set-active-account-scope")({}, accountId, generation);
+
+// MoreOpenWhisperer refuses account scopes (MOW_ACCOUNTS_DISABLED).
+const MOW_SKIP = { skip: "MoreOpenWhisperer refuses account scopes (MOW_ACCOUNTS_DISABLED)" };
 
 test("no scope is readable before a session has been validated", async () => {
   tokenState = { token: "token-a", generation: 1 };
@@ -184,4 +210,59 @@ test("MoreOpenWhisperer: set-active-account-scope always reports MOW_ACCOUNTS_DI
   });
   assert.deepEqual(broadcasts, []);
   assert.equal(await getScope(), null);
+});
+
+test("a scope change stops connects another account started, after the scope moves", MOW_SKIP, async () => {
+  tokenState = { token: "token-c", generation: 5 };
+  connectorCalls.length = 0;
+  await setScope("account-c", 5);
+  await setScope(null, 5);
+  assert.deepEqual(connectorCalls, [
+    ["accountChanged", "account-c"],
+    ["notifyStatusChanged"],
+    ["accountChanged", null],
+    ["notifyStatusChanged"],
+  ]);
+});
+
+test("a sign-out in main stops connects without waiting for the renderer", async () => {
+  tokenState = { token: "token-d", generation: 6 };
+  await setScope("account-d", 6);
+  connectorCalls.length = 0;
+
+  // A rotated token isn't another account: connects keep running.
+  handleAuthTokenChange({ generation: 7, token: "token-e" });
+  assert.deepEqual(connectorCalls, [["notifyStatusChanged"]]);
+
+  connectorCalls.length = 0;
+  databaseScopes.length = 0;
+  broadcasts.length = 0;
+  handleAuthTokenChange({ generation: 8, token: null });
+  assert.deepEqual(connectorCalls, [["accountChanged", null], ["notifyStatusChanged"]]);
+  assert.equal(readBinding(), null);
+  assert.deepEqual(databaseScopes, [null]);
+  assert.deepEqual(broadcasts, [
+    ["active-account-scope-changed", null],
+    ["auth-token-state-changed", { generation: 8, hasToken: false }],
+  ]);
+});
+
+test("meeting prompt retirement precedes scope mutation and skips a true no-op", MOW_SKIP, async () => {
+  tokenState = { token: "meeting-test-token", generation: 20 };
+  const originalManager = fakeThis.windowManager;
+  const calls = [];
+  fakeThis.windowManager = {
+    retireMeetingNotificationScope: () => calls.push(databaseManager.activeAccountId),
+  };
+  databaseManager.activeAccountId = "old-account";
+  await setScope("meeting-account", 20);
+  assert.deepEqual(calls, ["old-account"]);
+  databaseManager.activeAccountId = "meeting-account";
+  await setScope("meeting-account", 20);
+  assert.deepEqual(calls, ["old-account"]);
+  handleAuthTokenChange({ token: "rotated", generation: 21 });
+  assert.deepEqual(calls, ["old-account", "meeting-account"]);
+  handleAuthTokenChange({ token: null, generation: 22 });
+  assert.deepEqual(calls, ["old-account", "meeting-account", "meeting-account"]);
+  fakeThis.windowManager = originalManager;
 });

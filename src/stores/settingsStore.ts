@@ -12,7 +12,8 @@ import type {
   LocalServerPrefs,
   SelfHostedType,
 } from "../types/electron";
-import type { CalendarAccount } from "../types/calendar";
+import type { CalendarAccount, MicrosoftCalendarAccount } from "../types/calendar";
+import { normalizeEmailDraftTarget, type EmailDraftTargetSetting } from "../utils/emailDraftTarget";
 import { PROMPT_KIND_LIST, type PromptKind } from "../config/prompts/registry";
 import { sweepRetiredPromptOverrides } from "../config/retiredPrompts";
 import { sweepRetiredCloudModelSelections } from "../config/retiredCloudModels";
@@ -248,6 +249,9 @@ function readStringArray(key: string, fallback: string[]): string[] {
 
 type MicrophoneSelectionMode = "system" | "built-in" | "specific";
 
+// `message` is main's translated reason, when it gave one.
+export type HotkeyRegistrationResult = { success: boolean; message?: string };
+
 function migrateMicrophoneSelectionMode() {
   if (!isBrowser) return;
   const current = localStorage.getItem("microphoneSelectionMode");
@@ -287,6 +291,7 @@ const BOOLEAN_SETTINGS = new Set([
   "autoGenerateNoteTitle",
   "useCleanupModel",
   "useDictationAgent",
+  "keepLocalModelLoaded",
   "voiceAgentScreenContext",
   "useDictationAgentVisionModel",
   "useDictationTranslation",
@@ -304,6 +309,7 @@ const BOOLEAN_SETTINGS = new Set([
   "dictationSileroEnabled",
   "noteRecordingSileroEnabled",
   "meetingSileroEnabled",
+  "meetingAecEnabled",
   "isSignedIn",
   "autoPasteEnabled",
   "keepTranscriptionInClipboard",
@@ -904,7 +910,7 @@ export interface SettingsState
   gcalAccounts: CalendarAccount[];
   gcalConnected: boolean;
   gcalEmail: string;
-  mcalAccounts: CalendarAccount[];
+  mcalAccounts: MicrosoftCalendarAccount[];
   mcalConnected: boolean;
   notificationsEnabled: boolean;
   notifyMeetingDetection: boolean;
@@ -918,6 +924,7 @@ export interface SettingsState
   dictationSileroEnabled: boolean;
   noteRecordingSileroEnabled: boolean;
   meetingSileroEnabled: boolean;
+  meetingAecEnabled: boolean;
   whisperVadThreshold: number;
   whisperVadMinSpeechDurationMs: number;
   whisperVadMinSilenceDurationMs: number;
@@ -937,6 +944,7 @@ export interface SettingsState
   remoteTranscriptionModel: string;
   cleanupMode: InferenceMode;
   cleanupRemoteUrl: string;
+  keepLocalModelLoaded: boolean;
 
   meetingTranscriptionMode: InferenceMode;
   meetingUseLocalWhisper: boolean;
@@ -1010,6 +1018,7 @@ export interface SettingsState
   // Voice-agent screen context: opt-in screenshot capture, plus an optional
   // dedicated model used only when a screenshot is attached.
   voiceAgentScreenContext: boolean;
+  emailDraftTarget: EmailDraftTargetSetting;
   useDictationAgentVisionModel: boolean;
   dictationAgentVisionMode: InferenceMode;
   dictationAgentVisionProvider: string;
@@ -1036,6 +1045,7 @@ export interface SettingsState
   setDictationAgentCustomApiKey: (key: string) => void;
 
   setVoiceAgentScreenContext: (value: boolean) => void;
+  setEmailDraftTarget: (value: EmailDraftTargetSetting) => void;
   setUseDictationAgentVisionModel: (value: boolean) => void;
   setDictationAgentVisionProvider: (value: string) => void;
   setDictationAgentVisionModel: (value: string) => void;
@@ -1050,6 +1060,7 @@ export interface SettingsState
   setRemoteTranscriptionModel: (model: string) => void;
   setCleanupMode: (mode: InferenceMode) => void;
   setCleanupRemoteUrl: (url: string) => void;
+  setKeepLocalModelLoaded: (value: boolean) => void;
 
   setMeetingTranscriptionMode: (mode: InferenceMode) => void;
   setMeetingUseLocalWhisper: (value: boolean) => void;
@@ -1204,9 +1215,9 @@ export interface SettingsState
 
   setDictationKey: (key: string) => void;
   setMeetingKey: (key: string) => void;
-  setVoiceAgentKey: (key: string) => Promise<boolean>;
+  setVoiceAgentKey: (key: string) => Promise<HotkeyRegistrationResult>;
   translationKey: string;
-  setTranslationKey: (key: string) => Promise<boolean>;
+  setTranslationKey: (key: string) => Promise<HotkeyRegistrationResult>;
   setMeetingHotkeyLayoutMode: (mode: "side-panel" | "full-width") => void;
   setOnboardingUseCases: (useCases: string[]) => void;
   setOnboardingUseCaseNote: (note: string) => void;
@@ -1231,7 +1242,7 @@ export interface SettingsState
   setFloatingIconAutoHide: (enabled: boolean) => void;
   setStartMinimized: (enabled: boolean) => void;
   setGcalAccounts: (accounts: CalendarAccount[]) => void;
-  setMcalAccounts: (accounts: CalendarAccount[]) => void;
+  setMcalAccounts: (accounts: MicrosoftCalendarAccount[]) => void;
   setNotificationsEnabled: (value: boolean) => void;
   setNotifyMeetingDetection: (value: boolean) => void;
   setNotifyCalendarReminders: (value: boolean) => void;
@@ -1244,6 +1255,7 @@ export interface SettingsState
   setDictationSileroEnabled: (value: boolean) => void;
   setNoteRecordingSileroEnabled: (value: boolean) => void;
   setMeetingSileroEnabled: (value: boolean) => void;
+  setMeetingAecEnabled: (value: boolean) => void;
   setWhisperVadThreshold: (value: number) => void;
   setWhisperVadMinSpeechDurationMs: (value: number) => void;
   setWhisperVadMinSilenceDurationMs: (value: number) => void;
@@ -1329,14 +1341,13 @@ function createNumberSetter(key: string) {
 function createRegisteredHotkeySetter(
   key: "voiceAgentKey" | "translationKey",
   label: string,
-  getRegisterFn: () =>
-    ((hotkey: string) => Promise<{ success: boolean; message: string }>) | undefined,
+  getRegisterFn: () => ((hotkey: string) => Promise<HotkeyRegistrationResult>) | undefined,
   fallbackSave?: (hotkey: string) => void
 ) {
-  return async (hotkey: string): Promise<boolean> => {
+  return async (hotkey: string): Promise<HotkeyRegistrationResult> => {
     if (!isBrowser) {
       useSettingsStore.setState({ [key]: hotkey });
-      return true;
+      return { success: true };
     }
 
     const registerFn = getRegisterFn();
@@ -1344,7 +1355,7 @@ function createRegisteredHotkeySetter(
       localStorage.setItem(key, hotkey);
       useSettingsStore.setState({ [key]: hotkey });
       fallbackSave?.(hotkey);
-      return true;
+      return { success: true };
     }
 
     const previousKey = useSettingsStore.getState()[key];
@@ -1355,19 +1366,19 @@ function createRegisteredHotkeySetter(
         localStorage.setItem(key, previousKey);
         useSettingsStore.setState({ [key]: previousKey });
         logger.warn(`Failed to update ${label}`, { hotkey, message: result?.message }, "settings");
-        return false;
+        return { success: false, message: result?.message };
       }
 
       localStorage.setItem(key, hotkey);
       useSettingsStore.setState({ [key]: hotkey });
-      return true;
+      return { success: true };
     } catch (error) {
       logger.warn(
         `Failed to update ${label}`,
         { hotkey, error: error instanceof Error ? error.message : String(error) },
         "settings"
       );
-      return false;
+      return { success: false };
     }
   };
 }
@@ -1420,6 +1431,7 @@ type SecretProvider = keyof typeof SECRET_IPC_SAVERS;
 const secretSaveTimers: Partial<Record<SecretProvider, ReturnType<typeof setTimeout>>> = {};
 function debouncedSaveSecret(provider: SecretProvider, key: string) {
   if (!isBrowser) return;
+  debouncedPersistToEnv();
   const timer = secretSaveTimers[provider];
   if (timer) clearTimeout(timer);
   secretSaveTimers[provider] = setTimeout(() => {
@@ -1477,25 +1489,21 @@ function invalidateApiKeyCaches(
     | "openrouter"
     | "corti"
 ) {
-  if (provider) {
-    if (_ReasoningService) {
-      _ReasoningService.clearApiKeyCache(provider);
-    } else {
-      import("../services/ReasoningService")
-        .then((mod) => {
-          _ReasoningService = mod.default;
-          _ReasoningService.clearApiKeyCache(provider);
-        })
-        .catch(() => {});
-    }
+  if (_ReasoningService) {
+    _ReasoningService.clearApiKeyCache(provider);
+  } else {
+    import("../services/ReasoningService")
+      .then((mod) => {
+        _ReasoningService = mod.default;
+        _ReasoningService.clearApiKeyCache(provider);
+      })
+      .catch(() => {});
   }
   if (isBrowser) window.dispatchEvent(new Event("api-key-changed"));
-  debouncedPersistToEnv();
 }
 
 // Uniform BYOK key setter: persist to the secure store (debounced) and clear
-// the provider's cached key. cacheProvider is omitted where there is no scoped
-// cache to clear (xai), preserving prior behavior.
+// the provider's cached key, or all caches when no scoped provider is given.
 function createSecretSetter(
   storeKey: string,
   saver: SecretProvider,
@@ -1684,7 +1692,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     };
   })(),
   ...(() => {
-    let accounts: CalendarAccount[] = [];
+    let accounts: MicrosoftCalendarAccount[] = [];
     try {
       const parsed = JSON.parse(readString("mcalAccounts", "[]"));
       if (Array.isArray(parsed)) accounts = parsed;
@@ -1706,6 +1714,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   dictationSileroEnabled: readBoolean("dictationSileroEnabled", false),
   noteRecordingSileroEnabled: readBoolean("noteRecordingSileroEnabled", true),
   meetingSileroEnabled: readBoolean("meetingSileroEnabled", true),
+  // Acoustic echo cancellation for meetings is opt-in: on headsets there's no
+  // echo to cancel and it can suppress the mic entirely. See ipcHandlers AEC gate.
+  meetingAecEnabled: readBoolean("meetingAecEnabled", false),
   whisperVadThreshold: clampVadValue("threshold", readString("whisperVadThreshold", "0.5")),
   whisperVadMinSpeechDurationMs: clampVadValue(
     "minSpeechDurationMs",
@@ -1756,6 +1767,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     "enterprise",
   ]),
   cleanupRemoteUrl: readString("cleanupRemoteUrl", ""),
+  keepLocalModelLoaded: readBoolean("keepLocalModelLoaded", false),
 
   meetingTranscriptionMode: readInferenceMode("meetingTranscriptionMode", "providers", [
     "openwhispr",
@@ -1843,6 +1855,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setRemoteTranscriptionModel: createStringSetter("remoteTranscriptionModel"),
   setCleanupMode: createStringSetter("cleanupMode") as (mode: InferenceMode) => void,
   setCleanupRemoteUrl: createStringSetter("cleanupRemoteUrl"),
+  setKeepLocalModelLoaded: createBooleanSetter("keepLocalModelLoaded"),
 
   setMeetingTranscriptionMode: createStringSetter("meetingTranscriptionMode") as (
     mode: InferenceMode
@@ -1946,6 +1959,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   dictationAgentCustomApiKey: readString("dictationAgentCustomApiKey", ""),
 
   voiceAgentScreenContext: readBoolean("voiceAgentScreenContext", false),
+  emailDraftTarget: normalizeEmailDraftTarget(readString("emailDraftTarget", "auto")),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
   dictationAgentVisionMode: readInferenceMode("dictationAgentVisionMode", "providers", [
     "openwhispr",
@@ -1997,6 +2011,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   ),
 
   setVoiceAgentScreenContext: createBooleanSetter("voiceAgentScreenContext"),
+  setEmailDraftTarget: createStringSetter("emailDraftTarget"),
   setUseDictationAgentVisionModel: createBooleanSetter("useDictationAgentVisionModel"),
   setDictationAgentVisionProvider: createStringSetter("dictationAgentVisionProvider"),
   setDictationAgentVisionModel: createStringSetter("dictationAgentVisionModel"),
@@ -2270,17 +2285,14 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setBedrockAccessKeyId: (key: string) => {
     set({ bedrockAccessKeyId: key });
     debouncedSaveSecret("bedrockAccessKeyId", key);
-    debouncedPersistToEnv();
   },
   setBedrockSecretAccessKey: (key: string) => {
     set({ bedrockSecretAccessKey: key });
     debouncedSaveSecret("bedrockSecretAccessKey", key);
-    debouncedPersistToEnv();
   },
   setBedrockSessionToken: (key: string) => {
     set({ bedrockSessionToken: key });
     debouncedSaveSecret("bedrockSessionToken", key);
-    debouncedPersistToEnv();
   },
   setAzureEndpoint: (value: string) => {
     if (isBrowser) localStorage.setItem("azureEndpoint", value);
@@ -2291,7 +2303,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setAzureApiKey: (key: string) => {
     set({ azureApiKey: key });
     debouncedSaveSecret("azureApiKey", key);
-    debouncedPersistToEnv();
   },
   setAzureDeploymentName: (value: string) => {
     if (isBrowser) localStorage.setItem("azureDeploymentName", value);
@@ -2324,7 +2335,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setVertexApiKey: (key: string) => {
     set({ vertexApiKey: key });
     debouncedSaveSecret("vertexApiKey", key);
-    debouncedPersistToEnv();
   },
 
   setDictationKey: (key: string) => {
@@ -2457,7 +2467,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       gcalEmail: accounts[0]?.email ?? "",
     });
   },
-  setMcalAccounts: (accounts: CalendarAccount[]) => {
+  setMcalAccounts: (accounts: MicrosoftCalendarAccount[]) => {
     if (isBrowser) localStorage.setItem("mcalAccounts", JSON.stringify(accounts));
     useSettingsStore.setState({
       mcalAccounts: accounts,
@@ -2512,6 +2522,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       window.electronAPI?.setWhisperVadConfig?.({ meetingSileroEnabled: value });
     }
   },
+  setMeetingAecEnabled: createBooleanSetter("meetingAecEnabled"),
   setWhisperVadThreshold: (value: number) => {
     const next = clampVadValue("threshold", value);
     if (isBrowser) localStorage.setItem("whisperVadThreshold", String(next));
@@ -3328,6 +3339,34 @@ export async function initializeSettings(): Promise<void> {
   }
 
   const state = useSettingsStore.getState();
+  let hydratingSecrets = true;
+  const pendingSecretUpdates = new Set<string>();
+
+  // Queue updates until hydration can no longer overwrite them.
+  const refreshApiKey = async (storeKey: string) => {
+    if (!STALE_SECRET_LOCALSTORAGE_KEYS.some((key) => key === storeKey)) return;
+    if (hydratingSecrets) {
+      pendingSecretUpdates.add(storeKey);
+      return;
+    }
+    const saver =
+      SECRET_IPC_SAVERS[storeKey as SecretProvider] ||
+      SECRET_IPC_SAVERS[storeKey.replace(/ApiKey$/, "") as SecretProvider];
+    if (!saver) return;
+    const getter = window.electronAPI?.[
+      saver.replace(/^save/, "get") as keyof typeof window.electronAPI
+    ] as (() => Promise<string | null>) | undefined;
+    if (!getter) return;
+    try {
+      const key = await getter();
+      if (key !== null && typeof key !== "string") return;
+      useSettingsStore.setState({ [storeKey]: key || "" });
+      invalidateApiKeyCaches();
+    } catch {
+      logger.warn("Failed to refresh API key", { storeKey }, "settings");
+    }
+  };
+  window.electronAPI?.onApiKeyUpdated?.(refreshApiKey);
 
   if (window.electronAPI) {
     // Preferences are already in localStorage; do not wait for secret or provider hydration.
@@ -3487,6 +3526,10 @@ export async function initializeSettings(): Promise<void> {
         { error: (err as Error).message },
         "settings"
       );
+    } finally {
+      hydratingSecrets = false;
+      await Promise.all([...pendingSecretUpdates].map(refreshApiKey));
+      pendingSecretUpdates.clear();
     }
 
     // Sync dictation key from main process.
@@ -3663,6 +3706,21 @@ export async function initializeSettings(): Promise<void> {
       );
     }
 
+    // Picks up tenant ids stored after the accounts were first saved here; an
+    // empty answer (including a failed read) leaves the saved list alone.
+    try {
+      const status = await window.electronAPI.mcalGetConnectionStatus?.();
+      if (status?.accounts.length) {
+        useSettingsStore.getState().setMcalAccounts(status.accounts);
+      }
+    } catch (err) {
+      logger.warn(
+        "Failed to hydrate Microsoft Calendar accounts",
+        { error: (err as Error).message },
+        "settings"
+      );
+    }
+
     try {
       const currentState = useSettingsStore.getState();
       await window.electronAPI.gcalSetPrimaryOnly?.(currentState.gcalPrimaryOnly);
@@ -3781,6 +3839,8 @@ export async function initializeSettings(): Promise<void> {
       } else {
         value = parsed;
       }
+    } else if (key === "emailDraftTarget") {
+      value = normalizeEmailDraftTarget(newValue);
     } else {
       value = newValue;
     }

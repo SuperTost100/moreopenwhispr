@@ -34,6 +34,8 @@ interface HistoryViewProps {
   onRetryTranscription: (id: number, options?: { isRecover?: boolean }) => Promise<void>;
   showDiscarded: boolean;
   onToggleDiscarded: () => void;
+  /** Passed by upstream's ControlPanel for its account greeting; unused without accounts. */
+  userName?: string | null;
 }
 
 export default function HistoryView({
@@ -241,8 +243,14 @@ export default function HistoryView({
             )}
           </section>
 
-          <aside className="cp-history__meetings" aria-label={t("upcoming.title")}>
+          <aside className="cp-history__meetings" aria-labelledby="cp-history-upcoming-title">
             <div className="cp-history__meetings-sticky">
+              {/* Same header box as "Recent dictations", so both titles share a baseline. */}
+              <header className="cp-history__list-head">
+                <h2 id="cp-history-upcoming-title" className="cp-history__list-title">
+                  {t("upcoming.title")}
+                </h2>
+              </header>
               <UpcomingMeetings
                 events={events}
                 isLoading={eventsLoading}
