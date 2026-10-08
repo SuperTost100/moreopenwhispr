@@ -1,6 +1,6 @@
 # Contributing to MoreOpenWhisperer
 
-Unofficial fork of [OpenWhispr](https://github.com/OpenWhispr/openwhispr). Shipping branch is `antigravity-fork`.
+Unofficial fork of [OpenWhispr](https://github.com/OpenWhispr/openwhispr). `main` is the shipping branch.
 
 Upstream's contributing guide still applies for how the Electron app is structured: [docs.openwhispr.com/contributing](https://docs.openwhispr.com/contributing). File MoreOpenWhisperer PRs here, not there, unless the fix belongs upstream.
 
@@ -18,10 +18,10 @@ Do not send Antigravity OAuth tokens, API keys, or `.env` contents.
 
 ## Contributing code
 
-1. Branch off `antigravity-fork` (not stale `main` unless it already matches).
+1. Branch off `main`.
 2. Keep the diff focused.
 3. `nvm use` (Node 24), then `npm ci`, `npm run lint`, `npm test`.
-4. Open a pull request against `SuperTost100/moreopenwhispr` `antigravity-fork`.
+4. Open a pull request against `main` on `SuperTost100/moreopenwhispr`.
 
 ### Local setup
 
@@ -77,6 +77,21 @@ including explicit review of workflow and dependency changes, and enable approva
 for workflows from outside contributors. Ruleset settings are managed on GitHub;
 adding these workflow files does not configure them automatically.
 
+## Keeping up with upstream
+
+`main` is OpenWhispr's history plus the fork's commits, so upstream changes come in as an ordinary merge:
+
+```bash
+scripts/sync-upstream.sh
+```
+
+The script adds an `upstream` remote that skips tags, fetches OpenWhispr's `main`, and merges it on a new `sync/upstream-<date>` branch. Resolve any conflicts, run the checks, then open a PR against `main`.
+
+- **Merge sync PRs with a merge commit, never squash or rebase.** The merge commit is what records OpenWhispr's `main` as an ancestor. Squashed, the next sync would re-conflict on everything already brought in.
+- Tags are skipped because the fork's release tags (`v1.10.2`) reuse upstream's version numbers for different commits.
+- A weekly [upstream-behind](workflows/upstream-behind.yml) run fails when `main` is behind OpenWhispr, so GitHub emails a reminder. GitHub's built-in token can't push upstream commits that change workflow files, so the job only reports.
+- Fork-only code is listed in [.fork/ANTIGRAVITY.md](../.fork/ANTIGRAVITY.md#owned-files-safe-to-keep-on-rebase). Upstream tests for account-only features are skipped in fork builds with a reason, not deleted, which keeps merges clean.
+
 ## Thanks
 
-Issues, logs, and small diffs are useful. A second UI redesign is happening on another branch; this one is the stable beta people should actually run.
+Issues, logs, and small diffs are useful.

@@ -1,6 +1,6 @@
 # MoreOpenWhispr (fork) + OpenWhispr technical reference
 
-This tree is **MoreOpenWhispr**: unofficial fork of OpenWhispr on branch `antigravity-fork`. No OpenWhispr Cloud accounts. Default cloud path is Antigravity (`agy`). Public docs: [README.md](README.md), [docs/](docs/). Fork internals: [.fork/ANTIGRAVITY.md](.fork/ANTIGRAVITY.md), [src/config/mowProfile.ts](src/config/mowProfile.ts).
+This tree is **MoreOpenWhispr**: unofficial fork of OpenWhispr; `main` is the shipping branch, and upstream merges in as merge commits (see [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md#keeping-up-with-upstream)). No OpenWhispr Cloud accounts. Default cloud path is Antigravity (`agy`). Public docs: [README.md](README.md), [docs/](docs/). Fork internals: [.fork/ANTIGRAVITY.md](.fork/ANTIGRAVITY.md), [src/config/mowProfile.ts](src/config/mowProfile.ts).
 
 The rest of this file is the upstream architecture map. Read it as OpenWhispr's internals, then overlay the fork notes above.
 

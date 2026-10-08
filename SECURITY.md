@@ -4,7 +4,7 @@
 
 | Version | Supported |
 | --- | --- |
-| MoreOpenWhisperer on `antigravity-fork` (currently 1.9.3) | yes |
+| MoreOpenWhisperer, latest release from `main` | yes |
 | Official OpenWhispr releases | Report to [OpenWhispr/openwhispr](https://github.com/OpenWhispr/openwhispr/security/advisories/new) |
 
 ## Reporting a vulnerability
@@ -46,4 +46,4 @@ Out of scope:
 
 ## Disclosure
 
-Coordinated disclosure. Fixes land on `antigravity-fork`. Credit in the changelog if you want it.
+Coordinated disclosure. Fixes land on `main`. Credit in the changelog if you want it.
