@@ -17,6 +17,7 @@ const {
   emptyCandidatesError,
 } = require("./antigravityModelCatalog");
 const {
+  attemptStageMs,
   decideAntigravityFailover,
   applyFailoverSideEffects,
   isNetworkUnreachableError,
@@ -348,6 +349,7 @@ async function transcribeGatewaySttOnce({
   fetchImpl,
   op,
   getProjectId,
+  stageMs,
 }) {
   const projectId = await getProjectId({
     accessToken: auth.accessToken,
@@ -367,6 +369,7 @@ async function transcribeGatewaySttOnce({
     mode,
     fetchImpl,
     op,
+    stageMs,
   });
 }
 
@@ -493,6 +496,7 @@ async function transcribeWithAntigravity({
         fetchImpl,
         op,
         getProjectId,
+        stageMs: attemptStageMs(op?.remainingMs?.(), sttCandidates.length - index),
       });
       logStage("gateway-done", {
         transport: "daily-stream-multimodal",

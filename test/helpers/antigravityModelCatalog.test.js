@@ -12,9 +12,21 @@ const {
   refreshCatalog,
   resolveAntigravityModels,
   listSelectableModels,
+  markModelCooldown,
   _resetCatalogForTests,
+  _setAccountKeyResolverForTests,
 } = require("../../src/helpers/antigravityModelCatalog");
 const { _setUserDataDirForTests } = require("../../src/helpers/antigravityGateway");
+
+// Never read the real agy token file on a dev machine.
+let testAccountKey = null;
+let accountChanges = 0;
+_setAccountKeyResolverForTests(
+  () => testAccountKey,
+  () => {
+    accountChanges += 1;
+  }
+);
 
 const NOW = Date.parse("2026-09-24T12:00:00Z");
 const AUDIO = { "audio/wav": true, "audio/mp3": true };
@@ -310,4 +322,53 @@ test("refreshCatalog fetches, persists, and keeps the last good catalog on a mal
   _resetCatalogForTests();
   assert.equal(getCatalog().source, "persisted");
   assert.deepEqual(getCatalog().tieredModelIds.flash, ["gemini-3.8-flash-tiered"]);
+});
+
+test("a catalog fetched for another agy account is dropped, and so are cooldowns", async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-catalog-account-"));
+  _setUserDataDirForTests(dir);
+  _resetCatalogForTests();
+  t.after(() => {
+    testAccountKey = null;
+    _setUserDataDirForTests(null);
+    _resetCatalogForTests();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  testAccountKey = "acct-a";
+  await refreshCatalog({
+    reason: "test",
+    getAccessToken: async () => ({ accessToken: "fake-access", accountKey: "acct-a" }),
+    getProjectId: async () => "proj-1",
+    fetchImpl: async () => ({ ok: true, status: 200, text: async () => JSON.stringify(fixture()) }),
+  });
+  assert.equal(getCatalog().source, "remote");
+  markModelCooldown("gemini-3.8-flash-tiered", Date.now() + 60_000);
+
+  // Same account in a new process: the persisted copy still applies.
+  _resetCatalogForTests();
+  assert.equal(getCatalog().source, "persisted");
+
+  // `agy auth login` with another account: back to the static catalog until
+  // a refresh for the new account lands, and no inherited cooldowns.
+  markModelCooldown("gemini-3.8-flash-tiered", Date.now() + 60_000);
+  testAccountKey = "acct-b";
+  const changesBefore = accountChanges;
+  assert.equal(getCatalog().source, "static");
+  assert.equal(accountChanges, changesBefore + 1, "a refresh for the new account is queued");
+  const resolved = resolveAntigravityModels(validateCatalog(fixture()), { stt: "auto" });
+  assert.ok(resolved.candidates.stt.includes("gemini-3.8-flash-tiered"), "cooldown cleared");
+});
+
+test("a cooling pinned fallback is skipped even when the catalog doesn't list it", () => {
+  const catalog = validateCatalog(fixture());
+  delete catalog.models[PINNED_FALLBACK_MODEL];
+  catalog.tieredModelIds = { flash: [], flashLite: [] };
+  const cooldowns = new Map([[PINNED_FALLBACK_MODEL, NOW + 60_000]]);
+  const resolved = resolveAntigravityModels(catalog, { stt: "auto" }, NOW, cooldowns);
+  assert.deepEqual(resolved.candidates.stt, []);
+  assert.equal(resolved.emptyResetMs.stt, NOW + 60_000);
+
+  const later = resolveAntigravityModels(catalog, { stt: "auto" }, NOW + 120_000, cooldowns);
+  assert.deepEqual(later.candidates.stt, [PINNED_FALLBACK_MODEL]);
 });

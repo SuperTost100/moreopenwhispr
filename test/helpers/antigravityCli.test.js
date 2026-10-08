@@ -11,6 +11,7 @@ const {
   recoverTranscriptFromDisk,
   resolveAgyBinary,
   runAgyTurn,
+  terminateChild,
 } = require("../../src/helpers/antigravityCli");
 const { resolveAgyCliModel } = require("../../src/helpers/antigravityModels.cjs");
 
@@ -300,4 +301,65 @@ test("runAgyTurn kills the child when the caller's own signal aborts, and classi
     return true;
   });
   assert.equal(killedWith, "SIGTERM");
+});
+
+test("recoverTranscriptFromDisk ignores a transcript older than the turn", (t) => {
+  const homedir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-home-"));
+  const cwd = path.join(homedir, "project");
+  fs.mkdirSync(cwd, { recursive: true });
+  const agyRoot = path.join(homedir, ".gemini", "antigravity-cli");
+  fs.mkdirSync(path.join(agyRoot, "cache"), { recursive: true });
+  fs.writeFileSync(
+    path.join(agyRoot, "cache", "last_conversations.json"),
+    JSON.stringify({ [cwd]: "conv-old" })
+  );
+  const transcriptDir = path.join(agyRoot, "brain", "conv-old", ".system_generated", "logs");
+  fs.mkdirSync(transcriptDir, { recursive: true });
+  const transcriptPath = path.join(transcriptDir, "transcript.jsonl");
+  fs.writeFileSync(
+    transcriptPath,
+    JSON.stringify({ source: "MODEL", type: "FINAL", content: "an earlier answer" })
+  );
+  const written = fs.statSync(transcriptPath).mtimeMs;
+  t.after(() => fs.rmSync(homedir, { recursive: true, force: true }));
+
+  assert.equal(recoverTranscriptFromDisk({ cwd, homedir, notBeforeMs: written + 1_000 }), null);
+  assert.equal(
+    recoverTranscriptFromDisk({ cwd, homedir, notBeforeMs: written }).text,
+    "an earlier answer"
+  );
+});
+
+test("terminateChild escalates to SIGKILL when SIGTERM is ignored", async () => {
+  const child = new EventEmitter();
+  child.exitCode = null;
+  child.signalCode = null;
+  const signals = [];
+  child.kill = (signal) => {
+    signals.push(signal);
+    if (signal === "SIGKILL") {
+      child.signalCode = "SIGKILL";
+      child.emit("close", null, "SIGKILL");
+    }
+    return true;
+  };
+  terminateChild(child, 10);
+  await new Promise((resolve) => child.once("close", resolve));
+  assert.deepEqual(signals, ["SIGTERM", "SIGKILL"]);
+});
+
+test("terminateChild leaves a child that exits on SIGTERM alone", async () => {
+  const child = new EventEmitter();
+  child.exitCode = null;
+  child.signalCode = null;
+  const signals = [];
+  child.kill = (signal) => {
+    signals.push(signal);
+    child.signalCode = signal;
+    setImmediate(() => child.emit("close", null, signal));
+    return true;
+  };
+  terminateChild(child, 10);
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.deepEqual(signals, ["SIGTERM"]);
 });

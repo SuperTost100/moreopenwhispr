@@ -134,14 +134,18 @@ function classifyAgyError(stderrOrText) {
   return { code: "AGY_ERROR", message: firstLine };
 }
 
-let activeAgyChild = null;
+const KILL_GRACE_MS = 3_000;
 
-function killActiveAgyTurn() {
-  if (!activeAgyChild || activeAgyChild.killed) {
-    return false;
-  }
-  activeAgyChild.kill("SIGTERM");
-  return true;
+// SIGTERM first so agy can clean up; SIGKILL if it hasn't exited after a
+// short grace period, so a wedged child can't outlive the request.
+function terminateChild(child, graceMs = KILL_GRACE_MS) {
+  if (child.exitCode != null || child.signalCode != null) return;
+  child.kill("SIGTERM");
+  const escalate = setTimeout(() => {
+    if (child.exitCode == null && child.signalCode == null) child.kill("SIGKILL");
+  }, graceMs);
+  escalate.unref?.();
+  child.once?.("close", () => clearTimeout(escalate));
 }
 
 function ensureWritableDir(dir) {
@@ -173,9 +177,14 @@ function resolveConversationIdForCwd(agyRoot, cwd) {
   return null;
 }
 
-function extractLastModelTextFromTranscript(transcriptPath) {
+function extractLastModelTextFromTranscript(transcriptPath, notBeforeMs) {
   let raw;
   try {
+    // A transcript older than this turn belongs to an earlier conversation
+    // in the same cwd; its last answer is not this turn's output.
+    if (Number.isFinite(notBeforeMs) && fs.statSync(transcriptPath).mtimeMs < notBeforeMs) {
+      return null;
+    }
     raw = fs.readFileSync(transcriptPath, "utf8");
   } catch {
     return null;
@@ -204,7 +213,7 @@ function extractLastModelTextFromTranscript(transcriptPath) {
 
 // ponytail: best-effort scrape of agy's on-disk transcript cache when --print stdout is empty (#76).
 // Ceiling: only knows last_conversations.json → brain/<id>/transcript.jsonl; schema drift returns null.
-function recoverTranscriptFromDisk({ cwd, homedir = os.homedir() }) {
+function recoverTranscriptFromDisk({ cwd, homedir = os.homedir(), notBeforeMs }) {
   if (!cwd) {
     return null;
   }
@@ -221,7 +230,7 @@ function recoverTranscriptFromDisk({ cwd, homedir = os.homedir() }) {
     "logs",
     "transcript.jsonl"
   );
-  const text = extractLastModelTextFromTranscript(transcriptPath);
+  const text = extractLastModelTextFromTranscript(transcriptPath, notBeforeMs);
   return text ? { text, conversationId, transcriptPath } : null;
 }
 
@@ -254,7 +263,7 @@ function waitForClose(child, timeoutMs, signal) {
     const timer =
       timeoutMs > 0
         ? setTimeout(() => {
-            child.kill("SIGTERM");
+            terminateChild(child);
             finish({
               timedOut: true,
               exitCode: child.exitCode,
@@ -270,7 +279,7 @@ function waitForClose(child, timeoutMs, signal) {
     // the caller has already given up on the result.
     const onAbort = () => {
       cancelled = true;
-      child.kill("SIGTERM");
+      terminateChild(child);
     };
     if (signal) {
       if (signal.aborted) {
@@ -363,16 +372,11 @@ async function runAgyTurn({
     env.PATH = path.dirname(binary) + pathSep + (env.PATH || "");
   }
 
+  const startedAtMs = Date.now();
   const child = spawnImpl(binary, args, {
     cwd,
     env,
     stdio: ["ignore", "pipe", "pipe"],
-  });
-  activeAgyChild = child;
-  child.on("close", () => {
-    if (activeAgyChild === child) {
-      activeAgyChild = null;
-    }
   });
   let result;
   try {
@@ -434,7 +438,7 @@ async function runAgyTurn({
     return { text: stdoutText, model: cliModel || null, recoveredFrom: null };
   }
 
-  const recovered = recoverTranscriptFromDisk({ cwd });
+  const recovered = recoverTranscriptFromDisk({ cwd, notBeforeMs: startedAtMs });
   if (recovered?.text) {
     return { text: recovered.text, model: cliModel || null, recoveredFrom: "disk_transcript" };
   }
@@ -457,7 +461,7 @@ module.exports = {
   classifyAgyError,
   recoverTranscriptFromDisk,
   runAgyTurn,
-  killActiveAgyTurn,
+  terminateChild,
   ensureWritableDir,
   resolveAgyCliModel,
 };
