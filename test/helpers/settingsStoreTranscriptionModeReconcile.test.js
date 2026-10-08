@@ -13,7 +13,9 @@ const MIGRATED = { _providerSettingsMigrated: "1" };
 // latch, so seed them done except where a case is about that copy.
 const COPIES_DONE = { meetingFollowsTranscription: "false", uploadTranscriptionMigrated: "true" };
 
-test("startup repairs transcription routing that disagrees with the selected mode", async (t) => {
+// Every case re-evaluates the whole store through Vite (~1 s each on a CI
+// runner), so the suite as a whole outlives the 30 s per-test default.
+test("startup repairs transcription routing that disagrees with the selected mode", { timeout: 180_000 }, async (t) => {
   const { storage } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
     cachePrefix: "openwhispr-transcription-mode-reconcile-test-",

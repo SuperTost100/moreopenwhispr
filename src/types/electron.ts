@@ -1,12 +1,37 @@
 import type { ModelDefinition } from "../models/ModelRegistry";
+import type { ReasoningConfig } from "../services/BaseReasoningService";
+import type { PermissionGuideState, PermissionGuideAction } from "./permissionGuide";
 import type { TinfoilCatalogModel } from "../models/tinfoilModels";
 import type { UsageResponse } from "../lib/usageStore";
 import type { OrgPolicy } from "./policy";
+import type { TechnicalErrorDetailsData } from "../components/ui/useToast";
+import type { ProviderSettingsTarget } from "../utils/describeProviderError";
 import type {
   ManagedEnterpriseConfig,
   ManagedEnterpriseRequestContext,
 } from "./enterpriseIdentity";
-import type { CalendarAvailabilityRequest, CalendarAvailabilityResult } from "./calendar";
+import type {
+  CalendarAvailabilityRequest,
+  CalendarAvailabilityResult,
+  MicrosoftCalendarAccount,
+} from "./calendar";
+import type {
+  ConnectorActionRecord,
+  ConnectorCancelConnectResult,
+  ConnectorCancelReason,
+  ConnectorCommitResult,
+  ConnectorConnectProgress,
+  ConnectorConnectResult,
+  ConnectorDirectResult,
+  ConnectorDisconnectResult,
+  ConnectorEdits,
+  ConnectorPrepareResult,
+  ConnectorQueryResult,
+  ConnectorStatus,
+  ContactMatch,
+  NoteAttendee,
+  NoteAttendeesRequest,
+} from "./connectors";
 
 export type LocalTranscriptionProvider = "whisper" | "nvidia" | "cohere";
 
@@ -107,6 +132,18 @@ export type TranscriptionErrorCode =
   | "INVALID_KEY"
   | "MODEL_NOT_AVAILABLE"
   | "CUSTOM_ENDPOINT_INVALID"
+  | "PROVIDER_AUTH_FAILED"
+  | "PROVIDER_ACCESS_DENIED"
+  | "PROVIDER_QUOTA_EXHAUSTED"
+  | "PROVIDER_MODEL_NOT_FOUND"
+  | "PROVIDER_PAYLOAD_TOO_LARGE"
+  | "PROVIDER_BAD_REQUEST"
+  | "PROVIDER_UNAVAILABLE"
+  | "PROVIDER_TIMEOUT"
+  | "PROVIDER_UNREACHABLE"
+  | "PROVIDER_NO_RESPONSE"
+  | "PROVIDER_ERROR"
+  | "CRASH_RECOVERY"
   | null;
 
 export type MeetingPromptVariant = "detected" | "starting" | "underway";
@@ -120,6 +157,52 @@ export interface MeetingNotificationData {
   joinUrl: string | null;
 }
 
+export interface MeetingFolderRef {
+  folderId: number;
+  spaceId: number;
+}
+export interface MeetingExistingNote {
+  noteId: number;
+  spaceId: number;
+  folderId: number | null;
+  spaceName: string;
+  folderName: string | null;
+  shared: boolean;
+}
+export interface MeetingDestinationContext {
+  folders: FolderItem[];
+  spaces: SpaceItem[];
+  defaultDestination: MeetingFolderRef | null;
+  selectedDestination: MeetingFolderRef | null;
+  recentDestinations: MeetingFolderRef[];
+  existingNote: MeetingExistingNote | null;
+}
+
+export interface MeetingSurfaceState {
+  revision: number;
+  mode: "closed" | "list" | "form";
+  contentHeight: number;
+  regions: { x: number; y: number; width: number; height: number }[];
+  focus: "request" | "release" | "keep";
+}
+
+export type MeetingError =
+  | "STALE_NOTIFICATION"
+  | "INVALID_REQUEST"
+  | "FOLDERS_UNAVAILABLE"
+  | "FOLDER_UNAVAILABLE"
+  | "SPACE_UNAVAILABLE"
+  | "FOLDER_NAME_REQUIRED"
+  | "FOLDER_NAME_TAKEN"
+  | "CREATE_FAILED"
+  | "LINKED_NOTE_CHANGED"
+  | "NOTE_UNAVAILABLE"
+  | "START_FAILED";
+
+export type MeetingResult<T> =
+  | { success: true; value: T }
+  | { success: false; code: MeetingError; context?: MeetingDestinationContext };
+
 /** Why auto-end concluded the meeting is over. */
 export type MeetingAutoEndReason = "mic-released" | "silence" | "process-exit";
 
@@ -128,13 +211,24 @@ export interface MeetingAutoEndRequest {
   reason?: MeetingAutoEndReason;
 }
 
+/** Fields a main-process handler resolves with in place of a rejected Error. */
+export interface IpcErrorFields {
+  error: string;
+  code?: string;
+  messageKey?: string;
+  messageParams?: Record<string, string | number>;
+  settingsTarget?: string;
+  technicalDetails?: TechnicalErrorDetailsData;
+  status?: number;
+  surface?: "transcription" | "llm";
+}
+
 /**
  * Proxied-transcription IPC results. `ipcMain.handle` drops custom error props on
  * rejection, so these handlers resolve with a serialized error instead of throwing.
  */
 export type ProxyTranscriptionResult =
-  | { text: string; model?: string; error?: undefined }
-  | { error: string; code?: string; messageKey?: string; text?: undefined };
+  { text: string; model?: string; error?: undefined } | (IpcErrorFields & { text?: undefined });
 
 export interface AuthTokenState {
   token: string | null;
@@ -310,6 +404,8 @@ export interface NoteItem {
   content: string;
   enhanced_content: string | null;
   enhancement_prompt: string | null;
+  /** The client_id of the template that produced enhanced_content. */
+  enhancement_template_id: string | null;
   enhanced_at_content_hash: string | null;
   note_type: "personal" | "meeting" | "upload";
   source_file: string | null;
@@ -358,6 +454,7 @@ export type NotePushSnapshot = Pick<
   | "content"
   | "enhanced_content"
   | "enhancement_prompt"
+  | "enhancement_template_id"
   | "enhanced_at_content_hash"
   | "note_type"
   | "source_file"
@@ -678,11 +775,26 @@ export interface NewWorkspaceApiKey extends WorkspaceApiKey {
   key: string;
 }
 
+export interface TemplateSection {
+  heading: string;
+  instruction: string;
+}
+
+/** A template writes the AI summary; an action edits it or answers in the note chat. */
+export type ActionKind = "template" | "action";
+export type ActionOutput = "summary" | "chat";
+
 export interface ActionItem {
   id: number;
+  /** Stable across devices: a built-in's translation key, otherwise a UUID. */
+  client_id: string;
+  kind: ActionKind;
   name: string;
   description: string;
+  /** A template's context, or an action's instructions. */
   prompt: string;
+  sections: TemplateSection[] | null;
+  output: ActionOutput | null;
   icon: string;
   is_builtin: number;
   sort_order: number;
@@ -715,6 +827,13 @@ export interface CudaWhisperStatus {
   gpuInfo: GpuInfo;
   /** CUDA fell back to CPU on this machine and stays off until retried. */
   gpuFailed?: boolean;
+  /** The whisper-server error line saved with that failure; null when none was readable. */
+  gpuFailReason?: string | null;
+  /** The pack the GPU card describes: the one every whisper start picks, else
+   * an installed pack that failed (#1736). At most one pack reports true. */
+  inUse?: boolean;
+  /** An older release installed the pack and this version can't use it. */
+  needsUpdate?: boolean;
 }
 
 export interface VulkanWhisperStatus {
@@ -724,6 +843,13 @@ export interface VulkanWhisperStatus {
   hasNvidiaGpu: boolean;
   /** Vulkan fell back to CPU on this machine and stays off until retried. */
   gpuFailed?: boolean;
+  /** The whisper-server error line saved with that failure; null when none was readable. */
+  gpuFailReason?: string | null;
+  /** The pack the GPU card describes: the one every whisper start picks, else
+   * an installed pack that failed (#1736). At most one pack reports true. */
+  inUse?: boolean;
+  /** An older release installed the pack and this version can't use it. */
+  needsUpdate?: boolean;
 }
 
 export interface WhisperServerStatus {
@@ -797,7 +923,7 @@ export type SystemAudioStrategy =
 
 export interface MeetingSystemAudioInterruption {
   systemAudioStrategy: SystemAudioStrategy;
-  reason: "no_audio_delivered" | "device_invalidated" | "gone_quiet";
+  reason: "no_audio_delivered" | "device_invalidated" | "gone_quiet" | "loopback_takeover_failed";
   recovering: boolean;
 }
 
@@ -975,6 +1101,7 @@ export interface PasteToolsResult {
   hasUinput?: boolean;
   hasWtype?: boolean;
   isWlroots?: boolean;
+  isCosmic?: boolean;
   tools?: string[];
   recommendedInstall?: string;
 }
@@ -1113,6 +1240,16 @@ declare global {
       // Basic window operations
       setOnboardingWindowMode?: (mode: "compact" | "expanded" | "restore") => Promise<boolean>;
       setOnboardingActive?: (active: boolean) => Promise<boolean>;
+      openPermissionGuide?: (state: PermissionGuideState) => Promise<boolean>;
+      closePermissionGuide?: () => Promise<boolean>;
+      getPermissionGuideState?: () => Promise<PermissionGuideState | null>;
+      permissionGuideAction?: (action: PermissionGuideAction) => void;
+      startPermissionGuideDrag?: (
+        target: Pick<PermissionGuideState, "sessionId" | "permission">
+      ) => void;
+      onPermissionGuideState?: (callback: (state: PermissionGuideState) => void) => () => void;
+      onPermissionGuideAction?: (callback: (action: PermissionGuideAction) => void) => () => void;
+      verifySystemAudioAccess?: () => Promise<SystemAudioAccessResult>;
       beginOnboardingDemo?: (session: { id: string; kind: OnboardingDemoKind }) => Promise<boolean>;
       endOnboardingDemo?: (id: string) => Promise<boolean>;
       stopOnboardingDemo?: (id: string) => Promise<boolean>;
@@ -1137,7 +1274,7 @@ declare global {
           allowClipboardFallback?: boolean;
         }
       ) => Promise<
-        | { success: true; pasted: boolean }
+        | { success: true; pasted: boolean; reason?: "modifiers-held" }
         | {
             success: false;
             pasted: false;
@@ -1178,6 +1315,7 @@ declare global {
           | "selection_unavailable"
           | "selection_changed"
           | "paste_failed"
+          | "modifiers_held"
           | "selection_manager_unavailable";
         error?: string;
       }>;
@@ -1192,11 +1330,13 @@ declare global {
           | "session_expired"
           | "target_changed"
           | "paste_failed"
+          | "modifiers_held"
           | "selection_manager_unavailable";
         error?: string;
       }>;
       hideWindow: () => Promise<void>;
       showDictationPanel: () => Promise<void>;
+      openSettingsSection?: (section: ProviderSettingsTarget) => Promise<{ success: boolean }>;
       captureDictationTarget?: () => Promise<{ success: boolean; pid: number | null }>;
       onToggleDictation: (callback: () => void) => () => void;
       onToggleVoiceAgent?: (callback: () => void) => () => void;
@@ -1461,6 +1601,7 @@ declare global {
           content?: string;
           enhanced_content?: string | null;
           enhancement_prompt?: string | null;
+          enhancement_template_id?: string | null;
           enhanced_at_content_hash?: string | null;
           folder_id?: number | null;
           space_id?: number;
@@ -1536,7 +1677,8 @@ declare global {
       ) => () => void;
       deleteAccountData?: (
         accountId: string,
-        expectedAuthGeneration: number
+        expectedAuthGeneration: number,
+        options?: { erasingDevice?: boolean }
       ) => Promise<{
         success: boolean;
         code?: string;
@@ -1612,7 +1754,8 @@ declare global {
         name: string,
         description: string,
         prompt: string,
-        icon?: string
+        icon?: string,
+        fields?: { kind?: ActionKind; sections?: TemplateSection[]; output?: ActionOutput }
       ) => Promise<{ success: boolean; action?: ActionItem; error?: string }>;
       updateAction: (
         id: number,
@@ -1622,6 +1765,8 @@ declare global {
           prompt?: string;
           icon?: string;
           sort_order?: number;
+          sections?: TemplateSection[];
+          output?: ActionOutput;
         }
       ) => Promise<{ success: boolean; action?: ActionItem; error?: string }>;
       deleteAction: (id: number) => Promise<{ success: boolean; id?: number; error?: string }>;
@@ -1709,6 +1854,7 @@ declare global {
           localTranscriptionProvider: LocalTranscriptionProvider;
           model?: string;
           language?: string;
+          keepLocalModelLoaded: boolean;
           policySettled: boolean;
         }
       ) => Promise<void>;
@@ -1796,6 +1942,7 @@ declare global {
         }) => void
       ) => () => void;
       onGpuFallbackNotification: (callback: () => void) => () => void;
+      onWhisperGpuStatusChanged: (callback: () => void) => () => void;
 
       // One-time "GPU pack needs re-downloading" notice from the legacy-layout migration
       getGpuPackMigrationNotice: () => Promise<{ packs: string[] } | null>;
@@ -1868,7 +2015,7 @@ declare global {
         text: string,
         modelId: string,
         agentName: string | null,
-        config: any
+        config: ReasoningConfig
       ) => Promise<{
         success: boolean;
         text?: string;
@@ -1893,7 +2040,7 @@ declare global {
         modelId: string,
         agentName: string | null,
         config: any
-      ) => Promise<{ success: boolean; text?: string; error?: string; messageKey?: string }>;
+      ) => Promise<{ success: boolean; text?: string } & Partial<IpcErrorFields>>;
 
       // Antigravity (agy) subscription reasoning / STT
       processAntigravityReasoning?: (
@@ -2128,6 +2275,7 @@ declare global {
         isNixOS: boolean;
         isKde: boolean;
         isWlroots: boolean;
+        isCosmic: boolean;
         hasXclip: boolean;
         hasXsel: boolean;
       }>;
@@ -2143,12 +2291,14 @@ declare global {
       onHotkeyRegistrationFailed?: (
         callback: (data: { hotkey: string; error: string; suggestions: string[] }) => void
       ) => () => void;
+      onApiKeyUpdated?: (callback: (storeKey: string) => void) => () => void;
       onSettingUpdated?: (callback: (data: { key: string; value: unknown }) => void) => () => void;
       onDictationKeyActive?: (callback: (key: string) => void) => () => void;
       onLinuxPttPermissionDenied?: (callback: () => void) => () => void;
 
       // Settings shortcut (Cmd+, / Ctrl+,)
       onShowSettings?: (callback: () => void) => () => void;
+      getPendingSettingsSection?: () => Promise<string | null>;
 
       // Accessibility permission events (macOS)
       markMacAccessibilityFeaturesReady?: (expectedAccountScope?: ActiveAccountScope) => void;
@@ -2693,9 +2843,9 @@ declare global {
       }>;
 
       // Agent Mode
-      updateVoiceAgentHotkey?: (hotkey: string) => Promise<{ success: boolean; message: string }>;
+      updateVoiceAgentHotkey?: (hotkey: string) => Promise<{ success: boolean; message?: string }>;
       getVoiceAgentKey?: () => Promise<string>;
-      updateTranslationHotkey?: (hotkey: string) => Promise<{ success: boolean; message: string }>;
+      updateTranslationHotkey?: (hotkey: string) => Promise<{ success: boolean; message?: string }>;
       getTranslationKey?: () => Promise<string>;
       createAgentConversation?: (
         title: string,
@@ -2903,6 +3053,7 @@ declare global {
           systemPrompt?: string;
           tools?: Array<{ name: string; description: string; parameters: Record<string, unknown> }>;
           screenContext?: { data: string; mediaType: string };
+          noteChat?: boolean;
         }
       ) => void;
       cancelAgentStream?: (requestId: string) => void;
@@ -2959,6 +3110,55 @@ declare global {
       gcalGetUpcomingEvents?: (
         windowMinutes?: number
       ) => Promise<{ success: boolean; events: any[] }>;
+      connectorStatus?: () => Promise<ConnectorStatus[]>;
+      connectorPrepare?: (
+        connectorId: string,
+        action: string,
+        args: Record<string, unknown>
+      ) => Promise<ConnectorPrepareResult>;
+      /** Reads provider data for the model (an issue search); never writes. */
+      connectorQuery?: (
+        connectorId: string,
+        action: string,
+        args: Record<string, unknown>
+      ) => Promise<ConnectorQueryResult>;
+      connectorCommit?: (actionId: string, edits: ConnectorEdits) => Promise<ConnectorCommitResult>;
+      /** Cancels a pending approval, or a direct run (by its runId) still waiting on policy. */
+      connectorCancel?: (
+        actionId: string,
+        reason: ConnectorCancelReason
+      ) => Promise<{ cancelled: boolean }>;
+      connectorRunDirect?: (
+        connectorId: string,
+        action: string,
+        args: Record<string, unknown>,
+        runId?: string
+      ) => Promise<ConnectorDirectResult>;
+      connectorRecentActions?: (
+        connectorId: string,
+        limit?: number
+      ) => Promise<ConnectorActionRecord[]>;
+      connectorFindContacts?: (
+        query: string
+      ) => Promise<{ contacts: ContactMatch[]; hasMore?: boolean; unavailableReason?: string }>;
+      /**
+       * A note's participants, plus its calendar event's organizer, minus the
+       * user and rooms (main applies find_contact's exclusions).
+       */
+      connectorNoteAttendees?: (
+        request: NoteAttendeesRequest
+      ) => Promise<{ attendees: NoteAttendee[]; unavailableReason?: string }>;
+      connectorConnect?: (connectorId: string) => Promise<ConnectorConnectResult>;
+      /**
+       * Stops this connector's connect in progress, whichever account started it
+       * (including one still waiting on policy); the connect ends as oauth_cancelled.
+       */
+      connectorCancelConnect?: (connectorId: string) => Promise<ConnectorCancelConnectResult>;
+      connectorDisconnect?: (connectorId: string) => Promise<ConnectorDisconnectResult>;
+      onConnectorStatusChanged?: (callback: (statuses: ConnectorStatus[]) => void) => () => void;
+      onConnectorConnectProgress?: (
+        callback: (progress: ConnectorConnectProgress) => void
+      ) => () => void;
       calendarGetAvailability?: (
         request: CalendarAvailabilityRequest
       ) => Promise<
@@ -3001,6 +3201,7 @@ declare global {
         noteId?: number | null;
         sessionId: string;
         autoEndEligible: boolean;
+        aecEnabled?: boolean;
       }) => Promise<
         {
           success: boolean;
@@ -3191,11 +3392,16 @@ declare global {
       onGcalEventsSynced?: (callback: (data: any) => void) => () => void;
 
       // Microsoft Calendar
-      mcalStartOAuth?: () => Promise<{ success: boolean; email?: string; error?: string }>;
+      mcalStartOAuth?: () => Promise<{
+        success: boolean;
+        email?: string;
+        tenantId?: string | null;
+        error?: string;
+      }>;
       mcalDisconnect?: (email?: string) => Promise<{ success: boolean; error?: string }>;
       mcalGetConnectionStatus?: () => Promise<{
         connected: boolean;
-        accounts: Array<{ email: string }>;
+        accounts: MicrosoftCalendarAccount[];
       }>;
       mcalSetPrimaryOnly?: (value: boolean) => Promise<{ success: boolean; error?: string }>;
       onMcalConnectionChanged?: (callback: (data: any) => void) => () => void;
@@ -3255,17 +3461,47 @@ declare global {
       onMeetingAutoEndRequested?: (
         callback: (request: MeetingAutoEndRequest) => void
       ) => () => void;
+      getMeetingNotificationDestination: () => Promise<MeetingResult<MeetingDestinationContext>>;
+      selectMeetingNotificationFolder: (
+        folder: MeetingFolderRef
+      ) => Promise<MeetingResult<MeetingDestinationContext>>;
+      createMeetingNotificationFolder: (request: {
+        requestId: string;
+        name: string;
+        spaceId: number;
+      }) => Promise<MeetingResult<MeetingDestinationContext & { createdFolder: MeetingFolderRef }>>;
+      onMeetingNotificationFolderCreated: (
+        callback: (hint: { folderId: number }) => void
+      ) => () => void;
+      setMeetingNotificationSurface: (
+        state: MeetingSurfaceState
+      ) => Promise<MeetingResult<{ width: number; height: number; maxHeight: number }>>;
+      onMeetingNotificationSurfaceClosed: (
+        callback: (data: { revision: number }) => void
+      ) => () => void;
+      onMeetingNotificationSurfaceResized: (
+        callback: (data: { revision: number }) => void
+      ) => () => void;
       getMeetingNotificationData?: () => Promise<MeetingNotificationData | null>;
       meetingNotificationReady?: () => Promise<void>;
       meetingNotificationRespond?: (
         detectionId: string,
-        action: string
-      ) => Promise<{ success: boolean }>;
+        action: string,
+        options?: {
+          existingNote?: Pick<MeetingExistingNote, "noteId" | "spaceId" | "folderId">;
+        }
+      ) => Promise<MeetingResult<null>>;
+      confirmMeetingNoteNavigation: (
+        navigationId: string,
+        status?: "ready" | "cancel"
+      ) => Promise<MeetingResult<NoteItem>>;
       joinCalendarMeeting?: (eventId: string) => Promise<{ success: boolean }>;
       startManualMeeting?: () => Promise<void>;
       getPendingMeetingNoteNavigation?: () => Promise<{
+        navigationId?: string;
+        spaceId?: number;
         noteId: number;
-        folderId: number;
+        folderId: number | null;
         event: any;
         trigger?: "hotkey" | "manual" | "calendar-join";
       } | null>;

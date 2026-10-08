@@ -75,7 +75,8 @@ test("technical output values remain LTR inside an Arabic document", () => {
     ],
     ["src/components/ui/TechnicalErrorDetails.tsx", /<pre\s+dir="ltr"[\s\S]*?\{text\}/],
     ["src/components/ui/NixOsPasteInfo.tsx", /<div\s+dir="ltr"[\s\S]*?<pre/],
-    ["src/components/McpIntegrationCard.tsx", /<span\s+dir="ltr"[\s\S]*?\{MCP_URL\}/],
+    ["src/components/integrations/McpPane.tsx", /<CopyableCommand\s+command=\{MCP_URL\}/],
+    ["src/components/ui/CopyableCommand.tsx", /<div\s+dir="ltr"[\s\S]*?\{command\}/],
     [
       "src/components/settings/WorkspaceBillingCard.tsx",
       /<span\s+dir="ltr"[^>]*>\s*\{seatsUsed\} \/ \{seatsTotal\}/,
@@ -99,7 +100,7 @@ test("technical output values remain LTR inside an Arabic document", () => {
     ],
     [
       "src/components/notes/UploadAudioView.tsx",
-      /<p\s+dir="ltr"[^>]*max-w-50[^>]*>\s*\{file\.name\}/,
+      /<p\s+dir="ltr"[^>]*max-w-sm[^>]*>\s*\{file\.name\}/,
     ],
     // Fork extracted the version footer out of SidebarModal.tsx into
     // SidebarNavRail.tsx (see SidebarNavRail's own doc comment).
@@ -113,6 +114,7 @@ test("technical output values remain LTR inside an Arabic document", () => {
       "src/components/onboarding/RequiredModelDownloadStep.tsx",
       /<span\s+dir="ltr"[\s\S]*?\{info\?\.name \?\? modelId\}/,
     ],
+    ["src/components/TranscriptionModelPicker.tsx", /<p\s+dir="ltr"[^>]*>\s*\{gpuFailReason\}/],
   ];
 
   for (const [file, pattern] of expectations) {
@@ -147,11 +149,11 @@ test("localized sentences isolate technical interpolations without changing word
       /<BidiInterpolatedText[\s\S]*?members\.invited[\s\S]*?value=\{invitedEmail\}/,
     ],
     [
-      "src/components/IntegrationsView.tsx",
+      "src/components/integrations/CalendarsPane.tsx",
       /<BidiInterpolatedText[\s\S]*?googleCalendar\.disconnectConfirm[\s\S]*?value=\{confirmDisconnectEmail\}/,
     ],
     [
-      "src/components/IntegrationsView.tsx",
+      "src/components/integrations/CalendarsPane.tsx",
       /<BidiInterpolatedText[\s\S]*?microsoftCalendar\.disconnectConfirm[\s\S]*?value=\{confirmMsDisconnectEmail\}/,
     ],
   ];

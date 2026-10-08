@@ -205,7 +205,11 @@ export async function* runAntigravityChatStream({
   messages: Array<{ role: string; content: string | Array<Record<string, unknown>> }>;
   tools: AntigravityToolSchema[];
   model: string;
-  executeToolCall?: (name: string, argsJson: string) => Promise<AntigravityToolExecutionResult>;
+  executeToolCall?: (
+    name: string,
+    argsJson: string,
+    toolCallId: string
+  ) => Promise<AntigravityToolExecutionResult>;
   abortSignal?: AbortSignal;
   screenContext?: ScreenContextImage | null;
 }): AsyncGenerator<AgentStreamChunk, void, unknown> {
@@ -355,7 +359,7 @@ export async function* runAntigravityChatStream({
       yield { type: "tool_calls", calls: [{ id: callId, name: call.name, arguments: argsJson }] };
 
       try {
-        const toolResult = await executeToolCall(call.name, argsJson);
+        const toolResult = await executeToolCall(call.name, argsJson, callId);
         if (abortSignal?.aborted) return;
         yield {
           type: "tool_result",
