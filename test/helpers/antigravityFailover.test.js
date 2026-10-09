@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
+  attemptStageMs,
   computeSttBudgetMs,
   decideAntigravityFailover,
 } = require("../../src/helpers/antigravityFailover");
@@ -49,4 +50,12 @@ test("decideAntigravityFailover decision table", () => {
     "subprocess"
   );
   stop(Object.assign(new TypeError("fetch failed"), { code: "ENOTFOUND" }), { remainingMs: 1000 });
+});
+
+test("attemptStageMs keeps budget back for the candidates still queued", () => {
+  assert.equal(attemptStageMs(20_000, 1), 20_000, "the last candidate gets everything left");
+  assert.equal(attemptStageMs(20_000, 3), 12_000);
+  assert.equal(attemptStageMs(5_000, 2), 4_000, "never below the floor");
+  assert.equal(attemptStageMs(3_000, 2), 3_000, "never above what is left");
+  assert.equal(attemptStageMs(undefined, 2), 0);
 });

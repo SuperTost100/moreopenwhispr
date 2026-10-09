@@ -161,6 +161,32 @@ function clearModelCooldowns() {
   modelCooldowns.clear();
 }
 
+// The catalog's quota data and the cooldowns describe one agy account.
+// After `agy auth login` with another account they'd hide models the new
+// account can use, so both are dropped when the signed-in account changes.
+function defaultAccountKeyResolver() {
+  const auth = require("./antigravityAuth");
+  return auth.accountKeyFor(auth.readTokenFile()?.token?.refresh_token) || null;
+}
+
+let accountKeyResolver = defaultAccountKeyResolver;
+let onAccountChanged = () => refreshQuietly("account-changed");
+let lastSeenAccountKey = null;
+
+function currentAccountKey() {
+  try {
+    return accountKeyResolver() || null;
+  } catch {
+    return null;
+  }
+}
+
+function _setAccountKeyResolverForTests(resolver, accountChanged) {
+  accountKeyResolver = resolver || defaultAccountKeyResolver;
+  onAccountChanged = accountChanged || (() => refreshQuietly("account-changed"));
+  lastSeenAccountKey = null;
+}
+
 // --- Pure resolver -----------------------------------------------------------
 
 function supportsAudio(entry) {
@@ -249,12 +275,17 @@ function resolveAntigravityModels(
   const notices = [];
   const result = { candidates: {}, notices, emptyResetMs: {} };
 
+  // A model rate-limited this session is skipped even when the catalog
+  // doesn't list it (the pinned fallback, an explicit pick).
+  const cooling = (id) => {
+    const coolingUntil = cooldowns?.get?.(id);
+    return Number.isFinite(coolingUntil) && coolingUntil > now;
+  };
   const usable = (id) => {
     const entry = models[id];
     if (!entry) return false;
     if (isQuotaExhausted(entry, now)) return false;
-    const coolingUntil = cooldowns?.get?.(id);
-    return !(Number.isFinite(coolingUntil) && coolingUntil > now);
+    return !cooling(id);
   };
 
   for (const [slot, tiers] of Object.entries(SLOT_TIERS)) {
@@ -303,10 +334,14 @@ function resolveAntigravityModels(
     // quota-exhausted or cooling. If it's simply absent from a
     // possibly-stale catalog, its state is unknown, so keep it as an
     // unconditional fallback.
-    if (!models[PINNED_FALLBACK_MODEL] || usable(PINNED_FALLBACK_MODEL)) {
+    if (
+      models[PINNED_FALLBACK_MODEL]
+        ? usable(PINNED_FALLBACK_MODEL)
+        : !cooling(PINNED_FALLBACK_MODEL)
+    ) {
       push(PINNED_FALLBACK_MODEL);
     }
-    push(lastResortIfMissing);
+    if (!cooling(lastResortIfMissing)) push(lastResortIfMissing);
 
     result.candidates[slot] = list;
     result[slot] = list[0];
@@ -368,30 +403,44 @@ function readPersistedCatalog() {
     const parsed = JSON.parse(fs.readFileSync(catalogCacheFilePath(), "utf8"));
     const catalog = validateCatalog(parsed?.catalog);
     if (!catalog) return null;
-    return { ...catalog, source: "persisted", fetchedAt: parsed.fetchedAt ?? null };
+    return {
+      ...catalog,
+      source: "persisted",
+      fetchedAt: parsed.fetchedAt ?? null,
+      accountKey: typeof parsed.accountKey === "string" ? parsed.accountKey : null,
+    };
   } catch {
     return null;
   }
 }
 
-function persistCatalog(catalog, fetchedAt) {
+function persistCatalog(catalog, fetchedAt, accountKey) {
   try {
     const filePath = catalogCacheFilePath();
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, JSON.stringify({ fetchedAt, catalog }));
+    fs.writeFileSync(filePath, JSON.stringify({ fetchedAt, accountKey, catalog }));
   } catch {
     // best-effort; the memory copy still serves this session
   }
 }
 
+function belongsToAnotherAccount(catalog, accountKey) {
+  return Boolean(accountKey && catalog?.accountKey && catalog.accountKey !== accountKey);
+}
+
 function getCatalog() {
-  if (memoryCatalog) return memoryCatalog;
-  const persisted = readPersistedCatalog();
-  if (persisted) {
-    memoryCatalog = persisted;
-    return persisted;
+  const accountKey = currentAccountKey();
+  if (accountKey && lastSeenAccountKey && accountKey !== lastSeenAccountKey) {
+    modelCooldowns.clear();
   }
-  return STATIC_FALLBACK_CATALOG;
+  if (accountKey) lastSeenAccountKey = accountKey;
+
+  if (!memoryCatalog) memoryCatalog = readPersistedCatalog();
+  if (belongsToAnotherAccount(memoryCatalog, accountKey)) {
+    memoryCatalog = null;
+    onAccountChanged();
+  }
+  return memoryCatalog || STATIC_FALLBACK_CATALOG;
 }
 
 async function doRefresh({ reason, op, fetchImpl, getAccessToken, getProjectId }) {
@@ -422,8 +471,9 @@ async function doRefresh({ reason, op, fetchImpl, getAccessToken, getProjectId }
     );
   }
   const fetchedAt = Date.now();
-  memoryCatalog = { ...catalog, source: "remote", fetchedAt };
-  persistCatalog(catalog, fetchedAt);
+  const accountKey = auth.accountKey || null;
+  memoryCatalog = { ...catalog, source: "remote", fetchedAt, accountKey };
+  persistCatalog(catalog, fetchedAt, accountKey);
   debugLogger.info(
     "Antigravity model catalog refreshed",
     { reason, models: Object.keys(catalog.models).length },
@@ -494,6 +544,7 @@ function stopAntigravityCatalogRefresh() {
 }
 
 function _resetCatalogForTests() {
+  lastSeenAccountKey = null;
   memoryCatalog = null;
   inFlightRefresh = null;
   lastUnavailableRefreshAt = 0;
@@ -515,4 +566,5 @@ module.exports = {
   startAntigravityCatalogRefresh,
   stopAntigravityCatalogRefresh,
   _resetCatalogForTests,
+  _setAccountKeyResolverForTests,
 };

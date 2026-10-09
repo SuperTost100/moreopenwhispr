@@ -10,6 +10,20 @@ function computeSttBudgetMs({ audioDurationSec } = {}) {
   return Math.min(90_000, 12_000 + Math.round(sec * 500));
 }
 
+// While other candidates are still queued, one attempt may use only part of
+// the remaining budget, so a model that stalls leaves time to fail over.
+const ATTEMPT_BUDGET_SHARE = 0.6;
+const ATTEMPT_MIN_MS = 4_000;
+
+function attemptStageMs(remainingMs, candidatesLeft) {
+  const remaining = Math.max(0, Number(remainingMs) || 0);
+  if (!(candidatesLeft > 1)) return remaining;
+  return Math.min(
+    remaining,
+    Math.max(ATTEMPT_MIN_MS, Math.round(remaining * ATTEMPT_BUDGET_SHARE))
+  );
+}
+
 function isNetworkUnreachableError(error) {
   if (!error) return false;
   const code = error.code;
@@ -100,6 +114,7 @@ function applyFailoverSideEffects(decision, modelId) {
 }
 
 module.exports = {
+  attemptStageMs,
   computeSttBudgetMs,
   isNetworkUnreachableError,
   decideAntigravityFailover,

@@ -330,3 +330,36 @@ test("prepareAudioBuffer reports the caller's cancel as AGY_CANCELLED and remove
     fs.rmSync(binDir, { recursive: true, force: true });
   }
 });
+
+test("a stalled first model leaves budget for the next candidate", async () => {
+  const models = [];
+  const result = await transcribeWithAntigravity({
+    audioBuffer: Buffer.from("fake-audio"),
+    contentType: "audio/wav",
+    getAccessToken: fakeAuth,
+    getProjectId: async () => "daily-proj",
+    fetchImpl: async (_url, init) => {
+      const { model } = JSON.parse(init.body);
+      models.push(model);
+      if (models.length === 1) {
+        // Hang until this attempt's stage signal gives up on it.
+        await new Promise((_resolve, reject) => {
+          init.signal.addEventListener("abort", () => reject(init.signal.reason), { once: true });
+        });
+      }
+      return {
+        ok: true,
+        text: async () =>
+          'data: {"response":{"candidates":[{"content":{"parts":[{"text":"second model"}]},"finishReason":"STOP"}]}}\n',
+      };
+    },
+    op: require("../../src/helpers/antigravityOperation").createAntigravityOperation({
+      budgetMs: 6_000,
+      label: "test",
+    }),
+  });
+
+  assert.equal(result.text, "second model");
+  assert.equal(models.length, 2);
+  assert.notEqual(models[0], models[1]);
+});

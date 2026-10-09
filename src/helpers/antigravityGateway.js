@@ -204,7 +204,17 @@ function ensureOperation(op, budgetMs, label) {
   return op || createAntigravityOperation({ budgetMs, label });
 }
 
-async function readJsonBody(response) {
+// The body arrives after the headers, so an abort can land while it's being
+// read; classify that like a fetch abort instead of leaking a raw AbortError.
+async function readJsonBody(response, operation) {
+  try {
+    return await readJsonBodyUnwrapped(response);
+  } catch (error) {
+    throw operation ? wrapFetchAbort(error, operation) : error;
+  }
+}
+
+async function readJsonBodyUnwrapped(response) {
   // Prefer .text() (works for both real fetch Responses and simple test
   // doubles that mock it); fall back to .json() for doubles that only mock
   // that instead, so both mocking styles used across the antigravity test
@@ -345,7 +355,7 @@ async function loadCodeAssistFromBase(base, accessToken, fetchImpl, operation, p
   } catch (error) {
     throw wrapFetchAbort(error, operation);
   }
-  const { bodyText, payload } = await readJsonBody(response);
+  const { bodyText, payload } = await readJsonBody(response, operation);
   if (!response.ok) {
     throwTypedGatewayError(response.status, bodyText, payload, response.headers);
   }
@@ -436,6 +446,42 @@ function _resetProjectIdCacheForTests() {
 }
 
 /**
+ * Drops every cached entry (memory and userData file) pointing at projectId,
+ * so the next request rediscovers it with loadCodeAssist. Called when the
+ * gateway refuses a request in a way that can mean the cached project is no
+ * longer this account's (revoked, re-provisioned, account switched in agy).
+ */
+function forgetAntigravityProjectId(projectId) {
+  if (!projectId) return false;
+  let forgot = false;
+  for (const [key, value] of memoryProjectIdCache) {
+    if (value === projectId) {
+      memoryProjectIdCache.delete(key);
+      forgot = true;
+    }
+  }
+  try {
+    const all = readProjectIdCacheFile();
+    const kept = Object.fromEntries(
+      Object.entries(all).filter(([, entry]) => entry?.projectId !== projectId)
+    );
+    if (Object.keys(kept).length !== Object.keys(all).length) {
+      fs.writeFileSync(projectIdCacheFilePath(), JSON.stringify(kept));
+      forgot = true;
+    }
+  } catch {
+    // best-effort; the memory entry is already gone
+  }
+  return forgot;
+}
+
+function forgetProjectIdOnRejection(status, bodyText, projectId) {
+  if (status === 403 || (status === 404 && /project/i.test(String(bodyText || "")))) {
+    forgetAntigravityProjectId(projectId);
+  }
+}
+
+/**
  * getAntigravityProjectId({ accessToken, accountKey, fetchImpl, op }) ->
  *   Promise<string>
  *
@@ -519,8 +565,9 @@ async function postGatewayJson({
   } catch (error) {
     throw wrapFetchAbort(error, operation);
   }
-  const { bodyText, payload } = await readJsonBody(response);
+  const { bodyText, payload } = await readJsonBody(response, operation);
   if (!response.ok) {
+    forgetProjectIdOnRejection(response.status, bodyText, body?.project);
     throwTypedGatewayError(response.status, bodyText, payload, response.headers);
   }
   return payload;
@@ -601,8 +648,9 @@ async function generateContent({
     throw wrapFetchAbort(error, operation);
   }
 
-  const { bodyText, payload } = await readJsonBody(response);
+  const { bodyText, payload } = await readJsonBody(response, operation);
   if (!response.ok) {
+    forgetProjectIdOnRejection(response.status, bodyText, projectId);
     throwTypedGatewayError(response.status, bodyText, payload, response.headers);
   }
 
@@ -648,7 +696,8 @@ async function streamGenerateContent({
   }
 
   if (!response.ok) {
-    const { bodyText, payload } = await readJsonBody(response);
+    const { bodyText, payload } = await readJsonBody(response, operation);
+    forgetProjectIdOnRejection(response.status, bodyText, projectId);
     throwTypedGatewayError(response.status, bodyText, payload, response.headers);
   }
 
@@ -716,7 +765,8 @@ async function streamChatTurn({
   }
 
   if (!response.ok) {
-    const { bodyText, payload } = await readJsonBody(response);
+    const { bodyText, payload } = await readJsonBody(response, operation);
+    forgetProjectIdOnRejection(response.status, bodyText, projectId);
     throwTypedGatewayError(response.status, bodyText, payload, response.headers);
   }
 
@@ -794,6 +844,7 @@ async function transcribeAudioViaGateway({
   fetchImpl = fetch,
   gatewayBase = DAILY_CLOUDCODE_BASE,
   op,
+  stageMs,
 }) {
   const operation = ensureOperation(op, DEFAULT_OPERATION_BUDGET_MS, "antigravity-stt");
 
@@ -829,7 +880,7 @@ async function transcribeAudioViaGateway({
     fetchImpl,
     request,
     op: operation,
-    stageMs: operation.remainingMs(),
+    stageMs: stageMs ?? operation.remainingMs(),
   });
 
   return { text, model: backendModel, base: gatewayBase, finishReason };
@@ -845,6 +896,7 @@ async function generateTextViaGateway({
   fetchImpl = fetch,
   gatewayBase = DAILY_CLOUDCODE_BASE,
   op,
+  stageMs,
 }) {
   const operation = ensureOperation(op, DEFAULT_OPERATION_BUDGET_MS, "antigravity-generateText");
   const resolvedProjectId =
@@ -874,7 +926,7 @@ async function generateTextViaGateway({
     fetchImpl,
     base: gatewayBase,
     op: operation,
-    stageMs: operation.remainingMs(),
+    stageMs: stageMs ?? operation.remainingMs(),
   });
   return text.trim();
 }
@@ -885,6 +937,7 @@ module.exports = {
   DEFAULT_STT_BACKEND_MODEL,
   loadCodeAssist,
   getAntigravityProjectId,
+  forgetAntigravityProjectId,
   postGatewayJson,
   resolveUserDataDir,
   generateContent,

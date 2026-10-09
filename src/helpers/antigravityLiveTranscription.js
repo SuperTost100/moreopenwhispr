@@ -79,6 +79,7 @@ function createAntigravityLiveStream({
   let previewInFlight = null;
   let previewAbort = null;
   let finishInFlight = null;
+  let finishAbort = null;
   let aborted = false;
   let debounceTimer = null;
 
@@ -174,6 +175,10 @@ function createAntigravityLiveStream({
         return { text: latestText, final: false };
       }
 
+      // abort() during the final pass stops the request instead of letting
+      // it run out its budget for a result nobody will use.
+      const controller = new AbortController();
+      finishAbort = controller;
       finishInFlight = (async () => {
         try {
           const text = await transcribeFn({
@@ -187,9 +192,11 @@ function createAntigravityLiveStream({
               finishOp ||
               createAntigravityOperation({
                 budgetMs: 60_000,
+                signal: controller.signal,
                 label: "antigravity-live-final",
               }),
           });
+          if (aborted) return { text: latestText, final: false };
           const trimmed = String(text || "").trim();
           if (trimmed) {
             latestText = trimmed;
@@ -200,6 +207,7 @@ function createAntigravityLiveStream({
           return { text: latestText, final: false };
         } finally {
           finishInFlight = null;
+          if (finishAbort === controller) finishAbort = null;
         }
       })();
       return finishInFlight;
@@ -207,6 +215,10 @@ function createAntigravityLiveStream({
     abort() {
       aborted = true;
       cancelPreview();
+      if (finishAbort) {
+        finishAbort.abort();
+        finishAbort = null;
+      }
       if (debounceTimer) {
         clearTimeout(debounceTimer);
         debounceTimer = null;

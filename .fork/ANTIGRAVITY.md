@@ -19,9 +19,9 @@ Dictation STT uses the **daily Cloud Code gateway** (`daily-cloudcode-pa.googlea
 
 **Models:** `fetchAvailableModels` populates a persisted catalog. Settings offer **Automatic (latest)** (tier order + pinned `gemini-2.5-flash-lite` fallback) or an explicit gateway id per slot (STT / cleanup / chat). Synthetic ids `gemini-3.5-transcribe*` are **modes** (SMART/VERBATIM, live preview), not gateway model ids.
 
-**Failover:** Within one operation budget, STT/cleanup walk `candidates.<slot>` on stage timeout, HTTP 5xx, model unavailable, model-scoped rate limits, or empty output (STT with speech). Account quota exhaustion, auth required, cancel, and safety blocks stop immediately. One 401 retry refreshes the token.
+**Failover:** Within one operation budget, STT/cleanup walk `candidates.<slot>` on stage timeout, HTTP 5xx, model unavailable, model-scoped rate limits, or empty output (STT with speech). Account quota exhaustion, auth required, cancel, and safety blocks stop immediately. One 401 retry refreshes the token. While other candidates are still queued, one attempt gets 60% of the remaining budget (at least 4 s), so a stalled model leaves time to try the next one. Model cooldowns also cover the pinned fallback. The catalog and cooldowns belong to the signed-in agy account; signing in with another account drops both and refetches the catalog. A 403 drops the cached project id, so the next request looks it up again.
 
-**Budgets & cancel:** IPC builds `createAntigravityOperation` per request (`requestId` → `AbortController`; `cloud-transcribe-cancel` aborts in-flight Antigravity work and kills the CLI child). STT budget = 12 s + 0.5 × audio seconds (cap 90 s; unknown duration assumes 30 s). FFmpeg convert is async and killed on abort.
+**Budgets & cancel:** IPC builds `createAntigravityOperation` per request (`requestId` → `AbortController`; `cloud-transcribe-cancel` aborts the sender's in-flight Antigravity work, which also stops any `agy` child it started: SIGTERM, then SIGKILL after 3 s). STT budget = 12 s + 0.5 × audio seconds (cap 90 s; unknown duration assumes 30 s). FFmpeg convert is async and killed on abort.
 
 **Fast mode (default):** SMART transcribe skips the separate cleanup pass (`shouldSkipAntigravityDictationCleanup`).
 

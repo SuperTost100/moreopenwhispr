@@ -6896,12 +6896,8 @@ class IPCHandlers {
 
     ipcMain.on("cloud-transcribe-cancel", (event) => {
       this._cloudTranscriptionRequests.cancelSender(event.sender.id);
+      // Aborting the sender's requests also kills any agy child they started.
       this._antigravityRequests.cancelSender(event.sender.id);
-      try {
-        require("./antigravityCli").killActiveAgyTurn();
-      } catch {
-        // best-effort
-      }
     });
 
     ipcMain.handle("cloud-health-check", async () => {
@@ -8750,6 +8746,7 @@ class IPCHandlers {
     let dictationPreviewChunkCount = 0;
     // Online-runtime models stream here instead of the 1.5s chunked path.
     let dictationPreviewStream = null;
+    let dictationPreviewFinishingStream = null;
     // false = headless streaming session (commit-only, no preview window).
     let dictationPreviewDisplay = true;
     // Bumped on every reset so async preview work can detect a stale session.
@@ -8777,6 +8774,10 @@ class IPCHandlers {
       if (dictationPreviewStream) {
         dictationPreviewStream.abort();
         dictationPreviewStream = null;
+      }
+      if (dictationPreviewFinishingStream) {
+        dictationPreviewFinishingStream.abort();
+        dictationPreviewFinishingStream = null;
       }
       dictationPreviewMode = false;
       if (!preserveSession) {
@@ -10054,8 +10055,12 @@ class IPCHandlers {
       if (dictationPreviewStream) {
         const stream = dictationPreviewStream;
         dictationPreviewStream = null;
+        // Kept so a reset while the final pass runs (hide, a new dictation)
+        // can abort it.
+        dictationPreviewFinishingStream = stream;
         const gen = dictationPreviewGen;
         const result = await stream.finish().catch(() => null);
+        if (dictationPreviewFinishingStream === stream) dictationPreviewFinishingStream = null;
         if (gen !== dictationPreviewGen) {
           return { success: true, streamed: false, text: "" };
         }

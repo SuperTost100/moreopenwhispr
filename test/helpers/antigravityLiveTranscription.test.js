@@ -108,3 +108,24 @@ test("createAntigravityLiveStream abort stops further work", async () => {
   await stream.finish();
   assert.equal(calls, 0);
 });
+
+test("abort() during finish() cancels the final pass", async () => {
+  let finalSignal = null;
+  const stream = createAntigravityLiveStream({
+    language: "en",
+    minChunkBytes: Number.MAX_SAFE_INTEGER,
+    transcribeFn: async ({ op }) => {
+      finalSignal = op.signal;
+      await new Promise((_resolve, reject) => {
+        op.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
+      });
+    },
+  });
+  stream.sendPcm16(Buffer.alloc(3200));
+  const finishing = stream.finish();
+  await new Promise((resolve) => setImmediate(resolve));
+  stream.abort();
+  const result = await finishing;
+  assert.equal(finalSignal.aborted, true);
+  assert.equal(result.final, false);
+});

@@ -15,6 +15,7 @@ const {
   emptyCandidatesError,
 } = require("./antigravityModelCatalog");
 const {
+  attemptStageMs,
   decideAntigravityFailover,
   applyFailoverSideEffects,
   isNetworkUnreachableError,
@@ -197,6 +198,7 @@ async function reasonWithAntigravityGateway({
           fetchImpl,
           gatewayBase: DAILY_CLOUDCODE_BASE,
           op,
+          stageMs: attemptStageMs(op?.remainingMs?.(), candidates.length - index),
         }),
         notices: resolved.notices,
       };

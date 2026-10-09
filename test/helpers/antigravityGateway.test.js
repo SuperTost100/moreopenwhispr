@@ -11,6 +11,7 @@ const {
   transcribeAudioViaGateway,
   generateTextViaGateway,
   getAntigravityProjectId,
+  postGatewayJson,
   extractResponseText,
   resolveBackendModel,
   isModelRetirementNotice,
@@ -815,4 +816,66 @@ test("generateContent respects an explicitly passed daily base and never falls b
       assert.ok(requestedHost);
     }
   );
+});
+
+test("a cancel while the response body is being read surfaces as AGY_CANCELLED", async () => {
+  const { createAntigravityOperation } = require("../../src/helpers/antigravityOperation");
+  const caller = new AbortController();
+  const op = createAntigravityOperation({ budgetMs: 10_000, signal: caller.signal });
+  await assert.rejects(
+    postGatewayJson({
+      accessToken: "tok",
+      method: "fetchAvailableModels",
+      body: {},
+      op,
+      fetchImpl: async () => ({
+        ok: true,
+        status: 200,
+        text: () => {
+          caller.abort();
+          return Promise.reject(new DOMException("aborted", "AbortError"));
+        },
+      }),
+    }),
+    (error) => error.code === "AGY_CANCELLED"
+  );
+});
+
+test("a 403 drops the cached project id so the next request rediscovers it", async (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agy-projectid-403-"));
+  _setUserDataDirForTests(dir);
+  _resetProjectIdCacheForTests();
+  t.after(() => {
+    _setUserDataDirForTests(sandboxUserDataDir);
+    _resetProjectIdCacheForTests();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  let discoveries = 0;
+  const fetchImpl = async (url) => {
+    if (String(url).includes("loadCodeAssist")) {
+      discoveries += 1;
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ cloudaicompanionProject: `proj-${discoveries}` }),
+      };
+    }
+    return {
+      ok: false,
+      status: 403,
+      text: async () => JSON.stringify({ error: { message: "Permission denied on project" } }),
+    };
+  };
+
+  const first = await getAntigravityProjectId({ accessToken: "tok", accountKey: "k", fetchImpl });
+  assert.equal(first, "proj-1");
+  await assert.rejects(
+    generateContent({ accessToken: "tok", projectId: first, model: "m", request: {}, fetchImpl }),
+    (error) => error.status === 403
+  );
+  _resetProjectIdCacheForTests(); // a new process reads only the persisted file
+  const second = await getAntigravityProjectId({ accessToken: "tok", accountKey: "k", fetchImpl });
+  assert.equal(second, "proj-2");
+  assert.equal(discoveries, 2);
 });
