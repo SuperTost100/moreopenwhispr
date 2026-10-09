@@ -48,7 +48,10 @@ export function SettingsProviderChips({
             }}
             className={cn(
               "flex min-h-9 items-center justify-center gap-1.5 rounded-md border px-2.5 py-2 text-xs font-medium transition-colors duration-150",
-              layout === "row" && "min-w-[7.75rem] flex-1",
+              // A chip starts at 7.75rem and grows to its label, so a long
+              // label (Dictation Cleanup, German, Russian) wraps the row
+              // instead of being cut off.
+              layout === "row" && "grow basis-[7.75rem]",
               isDisabled
                 ? "cursor-not-allowed border-border bg-muted/40 text-muted-foreground opacity-60"
                 : isSelected
@@ -57,7 +60,9 @@ export function SettingsProviderChips({
             )}
           >
             {renderIcon ? renderIcon(provider.id) : <ProviderIcon provider={provider.id} />}
-            <span className="truncate">{provider.name}</span>
+            <span className={layout === "row" ? "whitespace-nowrap" : "truncate"}>
+              {provider.name}
+            </span>
             {provider.recommended && (
               <span className="text-[10px] font-medium text-primary/80 shrink-0">
                 {t("common.recommended")}
