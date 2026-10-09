@@ -2533,6 +2533,13 @@
           "refreshing": "Aggiornamento…",
           "refreshFailed": "Impossibile aggiornare l'elenco dei modelli. Viene mostrato l'ultimo."
         }
+      },
+      "localFallback": {
+        "label": "Riserva locale",
+        "description": "Se il provider cloud non risponde, ad esempio quando la quota di Antigravity è esaurita, la registrazione viene trascritta con un modello Whisper scaricato.",
+        "noModels": "Scarica un modello Whisper in Locale per avere una riserva locale quando il provider cloud non risponde.",
+        "model": "Modello di riserva",
+        "modelDescription": "Funziona su questo computer. Sono elencati solo i modelli scaricati."
       }
     },
     "intelligence": {

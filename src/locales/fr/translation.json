@@ -2831,6 +2831,13 @@
           "refreshing": "Actualisation…",
           "refreshFailed": "Impossible d'actualiser la liste des modèles. La dernière est affichée."
         }
+      },
+      "localFallback": {
+        "label": "Solution locale de secours",
+        "description": "Si le fournisseur cloud échoue, par exemple quand votre quota Antigravity est épuisé, l'enregistrement est transcrit avec un modèle Whisper téléchargé.",
+        "noModels": "Téléchargez un modèle Whisper dans Local pour disposer d'une solution de secours quand le fournisseur cloud échoue.",
+        "model": "Modèle de secours",
+        "modelDescription": "S'exécute sur cet ordinateur. Seuls les modèles téléchargés sont proposés."
       }
     },
     "intelligence": {

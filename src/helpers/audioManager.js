@@ -4152,6 +4152,9 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       }
     } catch (error) {
       if (error.name === "AbortError") throw error;
+      // Antigravity reports a cancel as an error code, not an AbortError; a
+      // cancelled dictation must not be transcribed again locally.
+      if (wasCancelled() || error?.code === "AGY_CANCELLED") throw error;
       if (error.selectionEditFatal) {
         throw error;
       }

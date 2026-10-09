@@ -2533,6 +2533,13 @@
           "refreshing": "正在重新整理…",
           "refreshFailed": "無法重新整理模型清單。正在顯示上一次的清單。"
         }
+      },
+      "localFallback": {
+        "label": "本機備援",
+        "description": "雲端服務失敗時（例如 Antigravity 配額用完），改用已下載的 Whisper 模型轉寫錄音。",
+        "noModels": "請先在「本機」中下載 Whisper 模型，才能在雲端服務失敗時使用本機備援。",
+        "model": "備援模型",
+        "modelDescription": "在這台電腦上執行，只列出已下載的模型。"
       }
     },
     "intelligence": {
