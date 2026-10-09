@@ -22,6 +22,7 @@ import {
 } from "../../models/ModelRegistry";
 import type { OnboardingSetupMode } from "./flow";
 import { getOnboardingSetupAvailability, hasAvailableOnboardingSetup } from "./setupEligibility";
+import { AntigravityStatus } from "../settings/AntigravityStatus";
 import geminiIcon from "../../assets/icons/providers/gemini.svg";
 import { LOCAL_ASR_ORGANIZATIONS } from "../../helpers/localASROrganization";
 import { getProviderIcon, isMonochromeProvider } from "@/utils/providerIcons";
@@ -81,7 +82,7 @@ function Feature({
 // Compact setup card: content stays pinned to the top and the action to the bottom.
 function SetupCard({ children }: { children: React.ReactNode }) {
   return (
-    <section className="onboarding-setup-card relative flex h-[350px] w-68 shrink-0 flex-col justify-between overflow-hidden rounded-xl border border-border bg-[var(--onboarding-surface)] px-4 pb-5 pt-4 text-start">
+    <section className="onboarding-setup-card relative flex min-h-[350px] w-68 shrink-0 flex-col justify-between gap-4 overflow-hidden rounded-xl border border-border bg-[var(--onboarding-surface)] px-4 pb-5 pt-4 text-start">
       {children}
     </section>
   );
@@ -227,7 +228,7 @@ export default function SetupChoiceStep({
     // Show More Options pill.
     <div className="mx-auto mt-5 flex w-full flex-col items-center gap-4">
       {/* Frame 60: row, gap 16. */}
-      <div className="onboarding-stagger flex items-start justify-center gap-3">
+      <div className="onboarding-stagger flex items-stretch justify-center gap-3">
         {localAllowed && (
           <SetupCard>
             <div className="flex flex-col gap-4">
@@ -342,6 +343,7 @@ export default function SetupChoiceStep({
                     {t("onboarding.rehaul.setupChoice.antigravity.features.features")}
                   </Feature>
                 </ul>
+                <AntigravityStatus variant="onboarding" />
               </div>
             </div>
             <CardAction brand onClick={() => onSelect("antigravity")}>

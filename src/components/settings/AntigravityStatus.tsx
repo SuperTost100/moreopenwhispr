@@ -17,7 +17,25 @@ const MESSAGE_KEYS: Record<StatusState, string> = {
  * the binary alone used to read as "ready" even when `agy auth login` had
  * never run, and the first dictation was where the user found out.
  */
-export function AntigravityStatus({ className }: { className?: string }) {
+const TONES = {
+  default: {
+    text: "text-muted-foreground",
+    action: "text-foreground hover:text-primary",
+  },
+  // Onboarding draws on its own canvas tokens, not the app's.
+  onboarding: {
+    text: "text-[var(--onboarding-text-secondary)]",
+    action: "text-[var(--onboarding-text-primary)] hover:text-[var(--onboarding-text-secondary)]",
+  },
+} as const;
+
+export function AntigravityStatus({
+  className,
+  variant = "default",
+}: {
+  className?: string;
+  variant?: keyof typeof TONES;
+}) {
   const { t } = useTranslation();
   const [state, setState] = useState<StatusState>("checking");
   const latest = useRef(0);
@@ -48,6 +66,9 @@ export function AntigravityStatus({ className }: { className?: string }) {
   }, [check]);
 
   const isProblem = state === "missing" || state === "signedOut";
+  // The onboarding card already promises "no API key"; it only needs a line
+  // when something stands in the way.
+  if (variant === "onboarding" && (state === "checking" || state === "signedIn")) return null;
 
   return (
     <p
@@ -55,7 +76,7 @@ export function AntigravityStatus({ className }: { className?: string }) {
       aria-live="polite"
       className={cn(
         "flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs",
-        isProblem ? "text-destructive" : "text-muted-foreground",
+        isProblem ? "text-destructive" : TONES[variant].text,
         className
       )}
     >
@@ -64,7 +85,10 @@ export function AntigravityStatus({ className }: { className?: string }) {
         <button
           type="button"
           onClick={() => void check()}
-          className="rounded-sm font-medium text-foreground underline underline-offset-2 outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn(
+            "rounded-sm font-medium underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            TONES[variant].action
+          )}
         >
           {t("reasoning.antigravity.checkAgain")}
         </button>
