@@ -6,11 +6,11 @@
 
 let
   pname = "openwhispr";
-  version = "1.10.2";
+  version = "1.10.3";
 
   src = fetchurl {
     url = "https://github.com/SuperTost100/moreopenwhispr/releases/download/v${version}/MoreOpenWhisperer-${version}-linux-x86_64.AppImage";
-    hash = "sha256-2ja2l6mH9xfth1VyhUjNPyqDiNVzrgQDRxdTUvxVNkI=";
+    hash = "sha256-YKEW3aH78Qj1mXskJlnWp9p0ACkGSxd9bTXlIscl0gY=";
   };
 
   appimageContents = appimageTools.extractType2 { inherit pname version src; };
