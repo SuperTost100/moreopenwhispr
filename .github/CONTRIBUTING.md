@@ -6,7 +6,7 @@ Upstream's contributing guide still applies for how the Electron app is structur
 
 ## Filing issues
 
-- Bugs and feature requests: [SuperTost100/moreopenwhispr/issues](https://github.com/SuperTost100/moreopenwhispr/issues)
+- Bugs and feature requests: [SuperTost100/moreopenwhisperer/issues](https://github.com/SuperTost100/moreopenwhisperer/issues)
 - Use the issue templates (`bug_report`, `feature_request`)
 - Transcription or audio problems: attach debug logs. [DEBUG.md](../DEBUG.md) and [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
 
@@ -14,14 +14,14 @@ Do not send Antigravity OAuth tokens, API keys, or `.env` contents.
 
 ## Reporting security issues
 
-**Do not open a public issue.** Follow [SECURITY.md](../SECURITY.md). Use [private vulnerability reporting](https://github.com/SuperTost100/moreopenwhispr/security/advisories/new).
+**Do not open a public issue.** Follow [SECURITY.md](../SECURITY.md). Use [private vulnerability reporting](https://github.com/SuperTost100/moreopenwhisperer/security/advisories/new).
 
 ## Contributing code
 
 1. Branch off `main`.
 2. Keep the diff focused.
 3. `nvm use` (Node 24), then `npm ci`, `npm run lint`, `npm test`.
-4. Open a pull request against `main` on `SuperTost100/moreopenwhispr`.
+4. Open a pull request against `main` on `SuperTost100/moreopenwhisperer`.
 
 ### Local setup
 

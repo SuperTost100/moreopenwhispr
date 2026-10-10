@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   check:
-    if: github.repository == 'SuperTost100/moreopenwhispr'
+    if: github.repository == 'SuperTost100/moreopenwhisperer'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4

@@ -93,7 +93,7 @@
   "author": {
     "name": "MoreOpenWhisperer",
     "email": "supertost100@users.noreply.github.com",
-    "url": "https://github.com/SuperTost100/moreopenwhispr"
+    "url": "https://github.com/SuperTost100/moreopenwhisperer"
   },
   "license": "MIT",
   "devDependencies": {
@@ -232,12 +232,12 @@
     "shell-quote": "1.12.0",
     "tmp": "0.2.7"
   },
-  "homepage": "https://github.com/SuperTost100/moreopenwhispr",
+  "homepage": "https://github.com/SuperTost100/moreopenwhisperer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SuperTost100/moreopenwhispr.git"
+    "url": "https://github.com/SuperTost100/moreopenwhisperer.git"
   },
   "bugs": {
-    "url": "https://github.com/SuperTost100/moreopenwhispr/issues"
+    "url": "https://github.com/SuperTost100/moreopenwhisperer/issues"
   }
 }

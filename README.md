@@ -5,10 +5,10 @@
 <h1 align="center">MoreOpenWhisperer</h1>
 
 <p align="center">
-  <a href="https://github.com/SuperTost100/moreopenwhispr/blob/main/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/moreopenwhispr?style=flat" alt="License" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhisperer/blob/main/LICENSE"><img src="https://img.shields.io/github/license/SuperTost100/moreopenwhisperer?style=flat" alt="License" /></a>
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=flat" alt="Platform" />
-  <a href="https://github.com/SuperTost100/moreopenwhispr/releases/latest"><img src="https://img.shields.io/github/v/release/SuperTost100/moreopenwhispr?style=flat&sort=semver" alt="GitHub release" /></a>
-  <a href="https://github.com/SuperTost100/moreopenwhispr/releases"><img src="https://img.shields.io/github/downloads/SuperTost100/moreopenwhispr/total?style=flat&color=blue" alt="Downloads" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhisperer/releases/latest"><img src="https://img.shields.io/github/v/release/SuperTost100/moreopenwhisperer?style=flat&sort=semver" alt="GitHub release" /></a>
+  <a href="https://github.com/SuperTost100/moreopenwhisperer/releases"><img src="https://img.shields.io/github/downloads/SuperTost100/moreopenwhisperer/total?style=flat&color=blue" alt="Downloads" /></a>
 </p>
 
 <p align="center">
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/SuperTost100/moreopenwhispr/releases/latest">Download</a> &middot;
+  <a href="https://github.com/SuperTost100/moreopenwhisperer/releases/latest">Download</a> &middot;
   <a href="docs/macos.md">macOS</a> &middot;
   <a href="docs/windows.md">Windows</a> &middot;
   <a href="docs/linux.md">Linux</a> &middot;
@@ -39,10 +39,10 @@ Unsigned builds. macOS will ask you to right-click → Open the first time. If i
 
 | Platform              | File                                                                                                                                                                                                                                                                                              |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| macOS (Apple Silicon) | [`.dmg`](https://github.com/SuperTost100/moreopenwhispr/releases/latest)                                                                                                                                                                                                                              |
-| macOS (Intel) \*      | [`.dmg`](https://github.com/SuperTost100/moreopenwhispr/releases/latest)                                                                                                                                                                                                                              |
-| Windows               | [`.exe` installer](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [portable](https://github.com/SuperTost100/moreopenwhispr/releases/latest)                                                                                                                                           |
-| Linux                 | [`.AppImage`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [`.deb`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [`.rpm`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) / [`.tar.gz`](https://github.com/SuperTost100/moreopenwhispr/releases/latest) |
+| macOS (Apple Silicon) | [`.dmg`](https://github.com/SuperTost100/moreopenwhisperer/releases/latest)                                                                                                                                                                                                                              |
+| macOS (Intel) \*      | [`.dmg`](https://github.com/SuperTost100/moreopenwhisperer/releases/latest)                                                                                                                                                                                                                              |
+| Windows               | [`.exe` installer](https://github.com/SuperTost100/moreopenwhisperer/releases/latest) / [portable](https://github.com/SuperTost100/moreopenwhisperer/releases/latest)                                                                                                                                           |
+| Linux                 | [`.AppImage`](https://github.com/SuperTost100/moreopenwhisperer/releases/latest) / [`.deb`](https://github.com/SuperTost100/moreopenwhisperer/releases/latest) / [`.rpm`](https://github.com/SuperTost100/moreopenwhisperer/releases/latest) / [`.tar.gz`](https://github.com/SuperTost100/moreopenwhisperer/releases/latest) |
 
 \* On Intel Macs, live speaker identification and voice fingerprinting are unavailable. ONNX Runtime [stopped shipping macOS x86_64 binaries in 1.24](https://github.com/microsoft/onnxruntime/releases/tag/v1.24.1). Meetings still record and transcribe. Notes search falls back to keyword matching.
 
@@ -87,8 +87,8 @@ Upstream README is kept at [README.upstream.md](./README.upstream.md).
 Needs [Node.js 24](https://nodejs.org/) (see `.nvmrc`).
 
 ```bash
-git clone https://github.com/SuperTost100/moreopenwhispr.git
-cd moreopenwhispr
+git clone https://github.com/SuperTost100/moreopenwhisperer.git
+cd moreopenwhisperer
 nvm use
 npm ci
 npm run dev
@@ -125,7 +125,7 @@ React 19, TypeScript, Tailwind CSS v4, Electron 41, better-sqlite3, whisper.cpp,
 
 1. Branch off `main`.
 2. `nvm use && npm ci && npm run lint && npm test`
-3. Open a PR against `main` on [SuperTost100/moreopenwhispr](https://github.com/SuperTost100/moreopenwhispr).
+3. Open a PR against `main` on [SuperTost100/moreopenwhisperer](https://github.com/SuperTost100/moreopenwhisperer).
 
 See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md), not a public issue.
 

@@ -272,7 +272,7 @@
   "publish": {
     "provider": "github",
     "owner": "SuperTost100",
-    "repo": "moreopenwhispr",
+    "repo": "moreopenwhisperer",
     "private": false,
     "releaseType": "draft"
   }

@@ -3,7 +3,7 @@
 // ponytail: CJS mirror of mowProfile.ts for Electron main / node --test require().
 // Named .cjs so Vite SSR prefers mowProfile.ts (its resolve order ranks .js before .ts).
 const githubOwner = "SuperTost100";
-const githubRepo = "moreopenwhispr";
+const githubRepo = "moreopenwhisperer";
 const repoUrl = `https://github.com/${githubOwner}/${githubRepo}`;
 
 const MOW_PROFILE = {
