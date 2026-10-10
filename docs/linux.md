@@ -9,7 +9,7 @@
 
 ## Which package
 
-From [Releases](https://github.com/SuperTost100/moreopenwhispr/releases/latest):
+From [Releases](https://github.com/SuperTost100/moreopenwhisperer/releases/latest):
 
 | Format | For |
 | --- | --- |

@@ -3,8 +3,8 @@
 Node.js **24** only (`.nvmrc`). CI uses 24. Do not regenerate `package-lock.json` with another major.
 
 ```bash
-git clone https://github.com/SuperTost100/moreopenwhispr.git
-cd moreopenwhispr
+git clone https://github.com/SuperTost100/moreopenwhisperer.git
+cd moreopenwhisperer
 nvm use
 npm ci
 ```
@@ -101,7 +101,7 @@ git push fork v1.9.3
 
 Or Actions → Release → Run workflow → version `1.9.3`.
 
-Artifacts upload to [GitHub Releases](https://github.com/SuperTost100/moreopenwhispr/releases) as drafts (`electron-builder.json` `releaseType: draft`). Publish the draft when you have clicked through Gatekeeper/SmartScreen once yourself.
+Artifacts upload to [GitHub Releases](https://github.com/SuperTost100/moreopenwhisperer/releases) as drafts (`electron-builder.json` `releaseType: draft`). Publish the draft when you have clicked through Gatekeeper/SmartScreen once yourself.
 
 `GITHUB_TOKEN` is enough. Apple and Azure signing secrets are not used. Optional `.env` calendar client IDs (`GOOGLE_CALENDAR_CLIENT_ID`, `GOOGLE_CALENDAR_CLIENT_SECRET`, `MICROSOFT_CALENDAR_CLIENT_ID`) can be repo secrets if you want packaged calendar OAuth. Empty means those buttons stay unconfigured.
 

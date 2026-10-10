@@ -80,7 +80,7 @@ Loggers should emit `hasScreenContext` booleans, not screenshots. Still redact A
 1. Enable debug, reproduce once
 2. Grab the newest `debug-*.log`
 3. Redact secrets
-4. Attach to a [GitHub issue](https://github.com/SuperTost100/moreopenwhispr/issues)
+4. Attach to a [GitHub issue](https://github.com/SuperTost100/moreopenwhisperer/issues)
 
 ## Disable
 

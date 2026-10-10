@@ -9,7 +9,7 @@ let
   version = "1.10.3";
 
   src = fetchurl {
-    url = "https://github.com/SuperTost100/moreopenwhispr/releases/download/v${version}/MoreOpenWhisperer-${version}-linux-x86_64.AppImage";
+    url = "https://github.com/SuperTost100/moreopenwhisperer/releases/download/v${version}/MoreOpenWhisperer-${version}-linux-x86_64.AppImage";
     hash = "sha256-YKEW3aH78Qj1mXskJlnWp9p0ACkGSxd9bTXlIscl0gY=";
   };
 
@@ -51,8 +51,8 @@ appimageTools.wrapType2 {
 
   meta = {
     description = "Unofficial OpenWhispr fork: desktop dictation with Antigravity, BYOK, and local models";
-    homepage = "https://github.com/SuperTost100/moreopenwhispr";
-    changelog = "https://github.com/SuperTost100/moreopenwhispr/releases/tag/v${version}";
+    homepage = "https://github.com/SuperTost100/moreopenwhisperer";
+    changelog = "https://github.com/SuperTost100/moreopenwhisperer/releases/tag/v${version}";
     license = lib.licenses.mit;
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [ "x86_64-linux" ];

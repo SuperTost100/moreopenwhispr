@@ -10,7 +10,7 @@ MoreOpenWhisperer runs from the system tray. Press the hotkey, speak, and the te
 
 ## Install
 
-From [Releases](https://github.com/SuperTost100/moreopenwhispr/releases/latest):
+From [Releases](https://github.com/SuperTost100/moreopenwhisperer/releases/latest):
 
 | File | Use |
 | --- | --- |

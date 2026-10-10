@@ -1,7 +1,7 @@
 import type { InferenceMode } from "../types/electron";
 
 const githubOwner = "SuperTost100";
-const githubRepo = "moreopenwhispr";
+const githubRepo = "moreopenwhisperer";
 const repoUrl = `https://github.com/${githubOwner}/${githubRepo}` as const;
 
 /** MoreOpenWhisperer (MOW): no OpenWhispr Cloud accounts, billing, sync, or telemetry. */
